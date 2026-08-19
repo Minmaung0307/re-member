@@ -50,12 +50,6 @@ function App() {
   );
 }
 
-const MainDashboard = () => (
-  <div style={{ marginTop: '20px', padding: '20px', borderTop: '1px solid #ccc' }}>
-    <h3>သင်၏ Feed (Coming Soon...)</h3>
-  </div>
-);
-
 const buttonStyle = {
   padding: '10px 20px',
   fontSize: '16px',

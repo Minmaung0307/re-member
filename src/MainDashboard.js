@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { db, storage, auth } from './firebase';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { Camera, Send, Image as ImageIcon, Clock } from 'lucide-react'; // Icon လေးတွေ သုံးမယ်
 
 const MainDashboard = () => {
     const [caption, setCaption] = useState("");
     const [image, setImage] = useState(null);
     const [posts, setPosts] = useState([]);
+    const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
 
-    // ၁။ Firestore ကနေ Post တွေကို အချိန်နဲ့တပြေးညီ ဆွဲထုတ်ခြင်း (Real-time Feed)
     useEffect(() => {
         const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -18,69 +19,74 @@ const MainDashboard = () => {
         return () => unsubscribe();
     }, []);
 
-    // ၂။ ပုံတင်ခြင်းလုပ်ဆောင်ချက်
     const handleUpload = () => {
         if (!image) return;
-
+        setUploading(true);
         const storageRef = ref(storage, `images/${Date.now()}_${image.name}`);
         const uploadTask = uploadBytesResumable(storageRef, image);
 
-        uploadTask.on(
-            "state_changed",
+        uploadTask.on("state_changed",
             (snapshot) => {
                 const prog = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
                 setProgress(prog);
             },
-            (error) => console.error(error),
+            (error) => { console.error(error); setUploading(false); },
             async () => {
                 const url = await getDownloadURL(uploadTask.snapshot.ref);
-                
-                // Firestore ထဲကို Data ထည့်မယ်
                 await addDoc(collection(db, "posts"), {
-                    caption: caption,
-                    imageUrl: url,
+                    caption, imageUrl: url,
                     userName: auth.currentUser.displayName,
                     userImage: auth.currentUser.photoURL,
                     createdAt: serverTimestamp(),
                 });
-
-                setCaption("");
-                setImage(null);
-                setProgress(0);
-                alert("အမှတ်တရလေး တင်ပြီးပါပြီ! ❤️");
+                setCaption(""); setImage(null); setProgress(0); setUploading(false);
             }
         );
     };
 
     return (
-        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
-            {/* Upload Section */}
-            <div style={cardStyle}>
-                <h4>အမှတ်တရအသစ် တင်မယ် 📸</h4>
+        <div style={containerStyle}>
+            {/* Create Post Section */}
+            <div style={uploadCardStyle}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                    <img src={auth.currentUser?.photoURL} style={avatarSmall} alt="me" />
+                    <strong style={{ fontSize: '14px' }}>မင်္ဂလာပါ၊ {auth.currentUser?.displayName}</strong>
+                </div>
                 <textarea 
-                    placeholder="ဒီနေ့ ဘာတွေထူးခြားလဲ..." 
+                    placeholder="ဒီနေ့ ဘာတွေ ထူးခြားလဲ..." 
                     value={caption} 
                     onChange={(e) => setCaption(e.target.value)}
-                    style={inputStyle}
+                    style={textAreaStyle}
                 />
-                <input type="file" onChange={(e) => setImage(e.target.files[0])} style={{ margin: '10px 0' }} />
-                {progress > 0 && <progress value={progress} max="100" style={{ width: '100%' }} />}
-                <button onClick={handleUpload} style={btnStyle} disabled={!image}>တင်မည်</button>
+                <div style={actionRow}>
+                    <label style={uploadBtn}>
+                        <ImageIcon size={18} /> ပုံရွေးမည်
+                        <input type="file" hidden onChange={(e) => setImage(e.target.files[0])} />
+                    </label>
+                    <button onClick={handleUpload} disabled={!image || uploading} style={submitBtn}>
+                        {uploading ? `တင်နေသည် (${progress}%)` : <><Send size={18} /> တင်မည်</>}
+                    </button>
+                </div>
+                {image && <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>📍 Selected: {image.name}</p>}
             </div>
 
-            {/* Feed Section */}
-            <div style={{ marginTop: '30px' }}>
+            {/* Post Feed */}
+            <div style={feedContainer}>
                 {posts.map(post => (
-                    <div key={post.id} style={cardStyle}>
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                            <img src={post.userImage} alt="user" style={avatarStyle} />
-                            <strong>{post.userName}</strong>
+                    <div key={post.id} style={postCard}>
+                        <div style={postHeader}>
+                            <img src={post.userImage} style={avatarStyle} alt="u" />
+                            <div>
+                                <div style={{ fontWeight: '600', fontSize: '15px' }}>{post.userName}</div>
+                                <div style={timeStyle}><Clock size={12} /> {post.createdAt?.toDate().toLocaleDateString()}</div>
+                            </div>
                         </div>
-                        <img src={post.imageUrl} alt="post" style={{ width: '100%', borderRadius: '8px' }} />
-                        <p style={{ marginTop: '10px' }}>{post.caption}</p>
-                        <small style={{ color: 'gray' }}>
-                            {post.createdAt?.toDate().toLocaleString()}
-                        </small>
+                        <p style={captionStyle}>{post.caption}</p>
+                        <img src={post.imageUrl} style={postImage} alt="memory" />
+                        <div style={postFooter}>
+                            <button style={footerBtn}>❤️ Like</button>
+                            <button style={footerBtn}>💬 Comment</button>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -88,40 +94,37 @@ const MainDashboard = () => {
     );
 };
 
-// Styles
-const cardStyle = {
-    backgroundColor: '#fff',
-    padding: '20px',
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    marginBottom: '20px',
-    textAlign: 'left'
+// --- Styles (Professional Theme) ---
+const containerStyle = { backgroundColor: '#f0f2f5', minHeight: '100vh', padding: '20px 10px' };
+const uploadCardStyle = { 
+    maxWidth: '550px', margin: '0 auto 25px', backgroundColor: '#fff', 
+    padding: '20px', borderRadius: '15px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' 
 };
-
-const inputStyle = {
-    width: '100%',
-    padding: '10px',
-    borderRadius: '5px',
-    border: '1px solid #ddd',
-    marginBottom: '10px'
+const textAreaStyle = { 
+    width: '100%', border: 'none', backgroundColor: '#f0f2f5', borderRadius: '10px', 
+    padding: '15px', fontSize: '15px', minHeight: '80px', outline: 'none', resize: 'none' 
 };
-
-const btnStyle = {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#ff4b5c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontWeight: 'bold'
+const actionRow = { display: 'flex', justifyContent: 'space-between', marginTop: '15px', alignItems: 'center' };
+const uploadBtn = { 
+    cursor: 'pointer', color: '#444', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px',
+    padding: '8px 15px', borderRadius: '8px', backgroundColor: '#eee'
 };
-
-const avatarStyle = {
-    width: '35px',
-    height: '35px',
-    borderRadius: '50%',
-    marginRight: '10px'
+const submitBtn = { 
+    backgroundColor: '#ff4b5c', color: '#fff', border: 'none', padding: '8px 20px', 
+    borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' 
 };
+const feedContainer = { maxWidth: '550px', margin: '0 auto' };
+const postCard = { 
+    backgroundColor: '#fff', borderRadius: '15px', marginBottom: '20px', 
+    boxShadow: '0 2px 10px rgba(0,0,0,0.05)', overflow: 'hidden' 
+};
+const postHeader = { display: 'flex', alignItems: 'center', padding: '15px', gap: '12px' };
+const avatarStyle = { width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' };
+const avatarSmall = { width: '30px', height: '30px', borderRadius: '50%' };
+const timeStyle = { fontSize: '11px', color: '#888', display: 'flex', alignItems: 'center', gap: '4px' };
+const captionStyle = { padding: '0 15px 15px', fontSize: '15px', lineHeight: '1.5', color: '#333' };
+const postImage = { width: '100%', maxHeight: '500px', objectFit: 'cover' };
+const postFooter = { display: 'flex', borderTop: '1px solid #eee', padding: '5px' };
+const footerBtn = { flex: 1, padding: '10px', border: 'none', background: 'none', color: '#666', fontWeight: '600', cursor: 'pointer' };
 
 export default MainDashboard;
