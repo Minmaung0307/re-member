@@ -33,13 +33,14 @@ import {
     Share2, 
     MoreHorizontal, 
     Trash2, 
-    X 
+    X,
+    Search
 } from 'lucide-react';
 
-const MainDashboard = () => {
+const MainDashboard = ({ posts }) => {
     const [caption, setCaption] = useState("");
     const [file, setFile] = useState(null);
-    const [posts, setPosts] = useState([]);
+    // const [posts, setPosts] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [commentText, setCommentText] = useState({});
     
@@ -53,7 +54,9 @@ const MainDashboard = () => {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
     const [externalUrl, setExternalUrl] = useState(""); // Online Link အတွက်
-    const [selectedStyle, setSelectedStyle] = useState("white"); // Post နောက်ခံအတွက်
+    const [selectedStyle, setSelectedStyle] = useState("white"); // Post 
+    const [searchQuery, setSearchQuery] = useState("");
+
     const cardStyles = [
         "linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%)",
         "linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%)",
@@ -77,13 +80,13 @@ const MainDashboard = () => {
         "#a78bfa", "#2dd4bf", "#fb923c", "#4ade80", "#22d3ee"
     ];
 
-    useEffect(() => {
-        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
-        return () => unsubscribe();
-    }, []);
+    // useEffect(() => {
+    //     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    //     const unsubscribe = onSnapshot(q, (snapshot) => {
+    //         setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    //     });
+    //     return () => unsubscribe();
+    // }, []);
 
     // ၁။ Like Function
     const handleReaction = async (postId, emoji) => {
@@ -220,7 +223,30 @@ const MainDashboard = () => {
     };
 
     return (
-        <div style={feedWrapper}>
+        // <div style={feedWrapper}>
+        <div style={{ maxWidth: '650px', margin: '0 auto' }}>
+            {/* Search Bar */}
+            <div style={{display: 'flex', gap: '10px', marginBottom: '20px', backgroundColor: '#fff', padding: '10px 20px', borderRadius: '15px', border: '1px solid #eee', alignItems: 'center'}}>
+                <Search size={20} color="#64748b" />
+                <input 
+                    type="text" 
+                    placeholder="ရှာဖွေပါ (ဥပမာ - နာမည် သို့မဟုတ် စာသား)..." 
+                    style={{border: 'none', outline: 'none', width: '100%', fontSize: '14px'}}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)} 
+                />
+            </div>
+
+            <div style={{display: 'flex', gap: '10px', marginBottom: '20px', backgroundColor: '#fff', padding: '10px 20px', borderRadius: '15px', border: '1px solid #eee'}}>
+                <Search size={20} color="#64748b" />
+                <input 
+                    type="text" 
+                    placeholder="အမှတ်တရများကို ရှာဖွေပါ (ဥပမာ - နာမည် သို့မဟုတ် စာသား)..." 
+                    style={{border: 'none', outline: 'none', width: '100%', fontSize: '14px'}}
+                    onChange={(e) => setSearchQuery(e.target.value)} 
+                />
+            </div>
+
             {/* Input Card */}
             <div style={inputCardStyle}>
                 {/* အပိုင်း (၁) - Avatar နှင့် စာသားရိုက်ရန်နေရာ */}
@@ -358,7 +384,10 @@ const MainDashboard = () => {
 
             {/* Posts List */}
             <div style={postsGrid}>
-                {posts.map(post => (
+                {posts.filter(p => 
+                    p.caption?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    p.userName?.toLowerCase().includes(searchQuery.toLowerCase())
+                ).map(post => (
                     <div key={post.id} style={{...postCardStyle, background: post.layoutStyle || '#fff'}}>
                         <div style={postUserBar}>
                             <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
