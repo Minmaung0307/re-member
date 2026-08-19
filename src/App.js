@@ -20,7 +20,8 @@ import {
   Palette, 
   Gift, 
   Search,
-  X
+  X,
+  Trash2
 } from 'lucide-react';
 
 function App() {
@@ -28,7 +29,10 @@ function App() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const [activeTab, setActiveTab] = useState('feed');
+  const [darkMode, setDarkMode] = useState(false);
+
   const [posts, setPosts] = useState([]); 
   const [events, setEvents] = useState([]);
 
@@ -40,6 +44,12 @@ function App() {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null); 
+
+  const [showBucketList, setShowBucketList] = useState(false);
+  const [goals, setGoals] = useState([]);
+
+  const [showBucketModal, setShowBucketModal] = useState(false);
+  const [bucketInput, setBucketInput] = useState("");
 
   useEffect(() => {
     console.log("App Started...");
@@ -108,6 +118,14 @@ function App() {
       return () => { unsubPosts(); unsubEvents(); };
   }, []);
 
+  // Database ကနေ Goals တွေကို ဆွဲယူမယ်
+  useEffect(() => {
+      const unsub = onSnapshot(collection(db, "bucketList"), (snap) => {
+          setGoals(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+      return () => unsub();
+  }, []);
+
   // အခု Popup နဲ့ စမ်းကြည့်ပါမယ်
   const handleLogin = () => {
     signInWithPopup(auth, googleProvider)
@@ -124,40 +142,125 @@ function App() {
     <div key={u.id} style={userItem} onClick={() => setSelectedUser(u)}>
       <div style={{ position: 'relative' }}>
         <img src={u.photoURL} style={smallAvatar} alt="u" />
-        {/* Online ဖြစ်နေရင် အစိမ်းစက် */}
         {u.lastSeen && Date.now() - u.lastSeen.toMillis() < 300000 && (
-          <div style={{ width: '10px', height: '10px', backgroundColor: '#10b981', borderRadius: '50%', position: 'absolute', bottom: 0, right: 0, border: '2px solid #fff' }} />
+          <div style={{ 
+            width: '10px', height: '10px', backgroundColor: '#10b981', 
+            borderRadius: '50%', position: 'absolute', bottom: 0, right: 0, 
+            border: '2px solid #fff' 
+          }} />
         )}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, marginLeft: '10px' }}>
-        <span style={{ fontSize: '14px', fontWeight: '600' }}>{u.displayName}</span>
-        <span style={{ fontSize: '11px', color: u.role === 'Family' ? '#3b82f6' : '#64748b' }}>
+        {/* ၁။ နာမည် */}
+        <span style={{ fontSize: '14px', fontWeight: '600', color: darkMode ? '#fff' : '#1e293b' }}>
+          {u.displayName}
+        </span>
+        
+        {/* ၂။ Role (ဥပမာ - Family Member) */}
+        <span style={{ fontSize: '11px', color: '#3b82f6', marginBottom: '2px' }}>
           {u.role || 'Member'}
         </span>
-        <span style={{fontSize: '14px', fontWeight: '600'}}>{u.displayName}</span>
-        <span style={{fontSize: '10px', color: '#10b981'}}>{u.interests ? `🌟 ${u.interests}` : ''}</span>
+
+        {/* ၃။ ဝါသနာ (အခု ဒါလေး ပြန်ထည့်လိုက်ပါပြီ) */}
+        {u.interests && (
+          <span style={{ fontSize: '10px', color: '#10b981', fontStyle: 'italic' }}>
+            🌟 {u.interests}
+          </span>
+        )}
       </div>
-      
-      {/* စာအသစ်ရှိရင် အနီရောင်စက်လေး ပြချင်ရင် (ဥပမာပြထားခြင်း) */}
-      {u.hasNewMessage && (
-        <div style={{ width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '50%' }} />
-      )}
     </div>
   );
 
   return (
-    <div style={appContainer}>
+    
+    <div style={{
+        ...appContainer, 
+        backgroundColor: darkMode ? '#0f172a' : '#f8fafc', 
+        color: darkMode ? '#f8fafc' : '#1e293b',
+        minHeight: '100vh', // တစ်မျက်နှာလုံး အရောင်ပြည့်နေအောင် ဒါလေးပါရမယ်
+        transition: '0.3s'   // အရောင်ပြောင်းရင် ငြင်သာအောင်လို့ပါ
+    }}>
+
       {user ? (
         <>
           <nav style={navbarStyle}>
             <div style={navContent}>
-              <h2 style={logoText}>Re<span>Member</span></h2>
-              <div style={{display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '5px'}}>
-                  <button onClick={() => setActiveTab('feed')} style={activeTab === 'feed' ? activeTabBtn : tabBtn}><Home size={18}/> Feed</button>
-                  <button onClick={() => setActiveTab('gallery')} style={activeTab === 'gallery' ? activeTabBtn : tabBtn}><Palette size={18}/> Gallery</button>
-                  <button onClick={() => setActiveTab('events')} style={activeTab === 'events' ? activeTabBtn : tabBtn}><Gift size={18}/> Events</button>
-                  <button onClick={() => setActiveTab('admin')} style={activeTab === 'admin' ? activeTabBtn : tabBtn}><ShieldCheck size={18}/> Admin</button>
-              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h2 style={{
+                  ...logoText, 
+                  margin: 0, 
+                  color: darkMode ? '#ffffff' : '#1e293b' // Dark mode ဆိုရင် အဖြူ၊ မဟုတ်ရင် အမည်း
+              }}>
+                  <span style={{ color: '#c86202' }}>Re</span>
+                  <span style={{ color: '#06b715' }}>@</span>
+                  <span style={{ color: '#3b82f6' }}>Member</span>
+              </h2>
+                
+                <button 
+                    onClick={() => setDarkMode(!darkMode)} 
+                    style={{
+                        border: 'none', 
+                        background: 'none', 
+                        cursor: 'pointer', 
+                        fontSize: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: 0,
+                        marginTop: '2px' // စာသားနဲ့ အညီဖြစ်အောင် နည်းနည်း ညှိထားတာပါ
+                    }}
+                >
+                    {darkMode ? '☀️' : '🌙'}
+                </button>
+            </div>
+              <div style={{ display: 'flex', gap: '15px', overflowX: 'auto' }}>
+                {/* Feed Tab */}
+                <button 
+                    onClick={() => setActiveTab('feed')} 
+                    style={{
+                        ...(activeTab === 'feed' ? activeTabBtn : tabBtn),
+                        // အရောင်ကို ဒီမှာပဲ darkMode နဲ့ စစ်ပါမယ်
+                        color: activeTab === 'feed' ? '#3b82f6' : (darkMode ? '#94a3b8' : '#64748b')
+                    }}
+                >
+                    <Home size={18}/> Feed
+                </button>
+
+                {/* Gallery Tab */}
+                <button 
+                    onClick={() => setActiveTab('gallery')} 
+                    style={{
+                        ...(activeTab === 'gallery' ? activeTabBtn : tabBtn),
+                        // အရောင်ကို ဒီမှာပဲ darkMode နဲ့ စစ်ပါမယ်
+                        color: activeTab === 'gallery' ? '#3b82f6' : (darkMode ? '#94a3b8' : '#64748b')
+                    }}
+                >
+                    <Palette size={18}/> Gallery
+                </button>
+
+                {/* Events Tab */}
+                <button 
+                    onClick={() => setActiveTab('events')} 
+                    style={{
+                        ...(activeTab === 'events' ? activeTabBtn : tabBtn),
+                        // အရောင်ကို ဒီမှာပဲ darkMode နဲ့ စစ်ပါမယ်
+                        color: activeTab === 'events' ? '#3b82f6' : (darkMode ? '#94a3b8' : '#64748b')
+                    }}
+                >
+                    <Gift size={18}/> Events
+                </button>
+
+                {/* Admin Tab - ဒီနေရာကို အထူးသတိထားပြီး ပြင်ပါ */}
+                <button 
+                    onClick={() => setActiveTab('admin')} 
+                    style={{
+                        ...(activeTab === 'admin' ? activeTabBtn : tabBtn),
+                        // အရောင်ကို ဒီမှာပဲ darkMode နဲ့ စစ်ပါမယ်
+                        color: activeTab === 'admin' ? '#3b82f6' : (darkMode ? '#94a3b8' : '#64748b')
+                    }}
+                >
+                    <ShieldCheck size={18}/> Admin
+                </button>
+            </div>
               <div style={userProfileArea}>
                 <img src={user.photoURL} alt="p" style={avatarStyle} />
                 <button onClick={handleLogout} style={logoutBtn}><LogOut size={18} /></button>
@@ -167,52 +270,64 @@ function App() {
 
           {/* Birthday Alert Banner (ယနေ့ နှင့် ကြိုတင်အသိပေးချက်) */}
           {users.map(u => {
-              if (!u.birthday || !u.birthday.includes('/')) return null;
+            // Birthday မရှိရင် သို့မဟုတ် Format မမှန်ရင် ကျော်သွားမယ်
+            if (!u.birthday || !u.birthday.includes('/')) return null;
 
-              // ၁။ MM/DD/YYYY ကို ခွဲထုတ်ပြီး Date Object တည်ဆောက်ခြင်း
-              const [m, d] = u.birthday.split('/');
-              const today = new Date();
-              today.setHours(0, 0, 0, 0); // အချိန်ကို ၀ အထိ လျှော့ချထားမယ် (ရက်ပဲ စစ်ဖို့)
+            // ၁။ MM/DD/YYYY ကို ခွဲထုတ်ခြင်း
+            const [m, d] = u.birthday.split('/');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // ယနေ့ ၀ နာရီ
 
-              const currentYear = today.getFullYear();
-              let bdayDate = new Date(currentYear, parseInt(m) - 1, parseInt(d));
+            const currentYear = today.getFullYear();
+            // ဒီနှစ်အတွက် မွေးနေ့ရက်စွဲကို တည်ဆောက်ခြင်း
+            let bdayDate = new Date(currentYear, parseInt(m) - 1, parseInt(d));
+            bdayDate.setHours(0, 0, 0, 0); // မွေးနေ့ကိုလည်း ၀ နာရီ သတ်မှတ်မယ်
 
-              // ၂။ မွေးနေ့နဲ့ ယနေ့ကြား ရက်ခြားနားချက်ကို တွက်ချက်ခြင်း
-              const diffTime = bdayDate - today;
-              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            // ၂။ အရေးကြီးဆုံးအချက် - အကယ်၍ ဒီနှစ်အတွက် မွေးနေ့က ကျော်သွားပြီဆိုလျှင် (ဥပမာ ဒီနေ့ Dec 28, မွေးနေ့က Jan 5)
+            // နောက်နှစ်ထဲက မွေးနေ့ကို ယူပြီး တွက်ချက်ပေးရပါမယ်
+            if (bdayDate < today) {
+                bdayDate.setFullYear(currentYear + 1);
+            }
 
-              // အကယ်၍ ဒီနေ့ မွေးနေ့ဖြစ်လျှင်
-              if (diffDays === 0) {
-                  return (
-                      <div key={u.id} style={bdayBannerToday}>
-                          <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
-                              <img src={u.photoURL} style={{width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #fff'}} alt="u" />
-                              <div style={{textAlign: 'left'}}>
-                                  <div style={{fontWeight: 'bold'}}>🎉 Happy Birthday, {u.displayName}!</div>
-                                  <div style={{fontSize: '12px'}}>ဒီနေ့ဟာ သူ့ရဲ့ မွေးနေ့ထူးမြတ်တဲ့နေ့ ဖြစ်ပါတယ်။ ဆုတောင်းပေးလိုက်ကြရအောင်။ 🎂</div>
-                              </div>
-                          </div>
-                      </div>
-                  );
-              }
+            // ၃။ ရက်ခြားနားချက်ကို တွက်ချက်ခြင်း
+            const diffTime = bdayDate - today;
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-              // အကယ်၍ နောက် ၁ ရက် မှ ၁၄ ရက် (၂ ပတ်) အတွင်း မွေးနေ့ရှိလျှင်
-              if (diffDays > 0 && diffDays <= 14) {
-                  return (
-                      <div key={u.id} style={bdayBannerUpcoming}>
-                          <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
-                              <div style={{fontSize: '24px'}}>🎁</div>
-                              <div style={{textAlign: 'left'}}>
-                                  <div style={{fontWeight: 'bold'}}>Upcoming Birthday: {u.displayName}</div>
-                                  <div style={{fontSize: '12px'}}>နောက် {diffDays} ရက်ဆိုရင် မွေးနေ့ရောက်တော့မှာပါ။ လက်ဆောင်အတွက် ကြိုတင်ပြင်ဆင်ထားပါဦး။ ✨</div>
-                              </div>
-                          </div>
-                      </div>
-                  );
-              }
+            // စစ်ဆေးရန် (Debug) - Console မှာ ဘယ်နှစ်ရက်လိုလဲ ကြည့်နိုင်ပါတယ်
+            // console.log(`${u.displayName} birthday in: ${diffDays} days`);
 
-              return null;
-          })}
+            // ယနေ့ မွေးနေ့ဖြစ်လျှင်
+            if (diffDays === 0) {
+                return (
+                    <div key={u.id} style={bdayBannerToday}>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+                            <img src={u.photoURL} style={{width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #fff'}} alt="u" />
+                            <div style={{textAlign: 'left'}}>
+                                <div style={{fontWeight: 'bold'}}>🎉 Happy Birthday, {u.displayName}!</div>
+                                <div style={{fontSize: '12px'}}>ဒီနေ့ဟာ သူ့ရဲ့ မွေးနေ့ထူးမြတ်တဲ့နေ့ ဖြစ်ပါတယ်။ ဆုတောင်းပေးလိုက်ကြရအောင်။ 🎂</div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // နောက် ၁ ရက် မှ ၁၄ ရက် (၂ ပတ်) အတွင်း မွေးနေ့ရှိလျှင်
+            if (diffDays > 0 && diffDays <= 14) {
+                return (
+                    <div key={u.id} style={bdayBannerUpcoming}>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+                            <div style={{fontSize: '24px'}}>🎁</div>
+                            <div style={{textAlign: 'left'}}>
+                                <div style={{fontWeight: 'bold'}}>Upcoming Birthday: {u.displayName}</div>
+                                <div style={{fontSize: '12px'}}>နောက် {diffDays} ရက်ဆိုရင် မွေးနေ့ရောက်တော့မှာပါ။ လက်ဆောင်အတွက် ကြိုတင်ပြင်ဆင်ထားပါဦး။ ✨</div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return null;
+        })}
 
           <div style={mainLayout}>
           {/* ဘယ်ဘက်ခြမ်း - Content ဧရိယာ (Feed သို့မဟုတ် Admin သို့မဟုတ် Gallery) */}
@@ -361,8 +476,52 @@ function App() {
                       )}
                   </div>
               </div>
+
+              <div style={{marginTop: '30px', padding: '15px', backgroundColor: darkMode ? '#1e293b' : '#eff6ff', borderRadius: '15px', border: '1px dashed #3b82f6'}}>
+                <h4 style={{margin: '0 0 10px 0', fontSize: '14px', color: '#3b82f6'}}>📝 Family Bucket List</h4>
+                <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                    {goals.map(goal => (
+                        <div key={goal.id} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px'}}>
+                            <label style={{fontSize: '12px', display: 'flex', gap: '8px', cursor: 'pointer', flex: 1, textDecoration: goal.completed ? 'line-through' : 'none', color: goal.completed ? '#94a3b8' : 'inherit'}}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={goal.completed} 
+                                    onChange={async () => {
+                                        await updateDoc(doc(db, "bucketList", goal.id), { completed: !goal.completed });
+                                    }} 
+                                />
+                                {goal.text}
+                            </label>
+                            {/* ဖျက်တဲ့ခလုတ် */}
+                            <Trash2 size={14} color="#ef4444" style={{cursor: 'pointer', opacity: 0.6}} onClick={async () => {
+                                if(window.confirm("ဖျက်မှာ သေချာပါသလား?")) await deleteDoc(doc(db, "bucketList", goal.id));
+                            }} />
+                        </div>
+                    ))}
+                    
+                    {/* Add New Goal ခလုတ် */}
+                    <button 
+                      style={{border: 'none', background: 'none', color: '#3b82f6', fontSize: '11px', cursor: 'pointer', textAlign: 'left', padding: '5px 0', fontWeight: 'bold'}}
+                      onClick={() => setShowBucketModal(true)} // Modal ကို ဖွင့်ခိုင်းလိုက်တာပါ
+                  >
+                      + Add New Goal
+                  </button>
+                </div>
+            </div>
             </div>
           </div>
+
+          <footer style={{
+            textAlign: 'center', 
+            padding: '40px 20px', 
+            color: darkMode ? '#94a3b8' : '#64748b', 
+            fontSize: '14px',
+            borderTop: `1px solid ${darkMode ? '#334155' : '#f1f5f9'}`,
+            marginTop: 'auto' // ဒါက အောက်ဆုံးကို တွန်းပို့ပေးပါလိမ့်မယ်
+        }}>
+            <div style={{marginBottom: '10px'}}>Re-Member - မိသားစုအမှတ်တရများ သိမ်းဆည်းရာ</div>
+            <div style={{fontWeight: 'bold'}}>@MM {new Date().getFullYear()} • Built with Heart ❤️</div>
+        </footer>
 
           {/* Event Modal */}
           {showEventModal && (
@@ -460,6 +619,48 @@ function App() {
             </div>
         )}
 
+        {/* Bucket List Modal */}
+        {showBucketModal && (
+            <div style={modalOverlay}>
+                <div style={modalContentSmall}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
+                        <h3 style={{margin: 0, fontSize: '18px'}}>📝 ရည်မှန်းချက်အသစ်</h3>
+                        <X onClick={() => setShowBucketModal(false)} style={{cursor: 'pointer', color: '#64748b'}} />
+                    </div>
+                    
+                    <p style={{fontSize: '13px', color: '#64748b', marginBottom: '15px'}}>မိသားစုအတွက် အကောင်အထည်ဖော်ချင်တဲ့ ရည်မှန်းချက်ကို ရေးသားပါ။</p>
+                    
+                    <input 
+                        placeholder="ဥပမာ - ပုဂံသို့ မိသားစုခရီးထွက်ရန်..." 
+                        style={modalInput} 
+                        value={bucketInput}
+                        onChange={(e) => setBucketInput(e.target.value)}
+                        autoFocus
+                    />
+                    
+                    <div style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
+                        <button 
+                            onClick={async () => {
+                                if(bucketInput.trim()) {
+                                    await addDoc(collection(db, "bucketList"), { 
+                                        text: bucketInput, 
+                                        completed: false, 
+                                        createdAt: serverTimestamp() 
+                                    });
+                                    setBucketInput("");
+                                    setShowBucketModal(false);
+                                }
+                            }} 
+                            style={postBtnFull}
+                        >
+                            ထည့်သွင်းမည်
+                        </button>
+                        <button onClick={() => setShowBucketModal(false)} style={cancelBtn}>မလုပ်တော့ပါ</button>
+                    </div>
+                </div>
+            </div>
+        )}
+
         {showBdayModal && (
             <div style={modalOverlay}>
                 <div style={modalContentSmall}>
@@ -496,12 +697,20 @@ function App() {
            </div>
         </div>
       )}
+
+      {/* Scroll to Top Button ကို ဒီနေရာမှာ ထည့်ပါ */}
+      <button 
+          onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
+          style={scrollTopBtn}
+      >
+          ↑
+      </button>
     </div>
   );
 }
 
 // --- Styles ---
-const appContainer = { backgroundColor: '#f8fafc', minHeight: '100vh' };
+const appContainer = { backgroundColor: '#f8fafc', minHeight: '100vh', transition: '0.3s', fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif", };
 const navbarStyle = { height: '70px', backgroundColor: '#fff', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', position: 'fixed', width: '100%', zIndex: 1000 };
 const navContent = { width: '100%', maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', padding: '0 20px', alignItems: 'center' };
 const logoText = { fontSize: '20px', fontWeight: '800' };
@@ -532,8 +741,17 @@ const bdayBanner = {
 };
 
 const tabBtn = { 
-    background: 'none', border: 'none', cursor: 'pointer', display: 'flex', 
-    alignItems: 'center', gap: '5px', color: '#64748b', fontWeight: '600', fontSize: '14px' 
+    background: 'none', 
+    border: 'none', 
+    cursor: 'pointer', 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: '8px', 
+    padding: '10px 5px', 
+    fontSize: '15px', 
+    fontWeight: '600', 
+    transition: '0.3s',
+    borderBottom: '3px solid transparent', // ပုံမှန်ဆိုရင် လိုင်းမပေါ်ဘူး
 };
 const activeTabBtn = { ...tabBtn, color: '#3b82f6', borderBottom: '2px solid #3b82f6' };
 
@@ -723,5 +941,29 @@ const labelStyle = {
     marginBottom: '6px',
     marginLeft: '4px'
 };
+
+const scrollTopBtn = {
+    position: 'fixed',
+    bottom: '30px',
+    right: '30px',
+    width: '45px',
+    height: '45px',
+    borderRadius: '50%',
+    backgroundColor: '#3b82f6',
+    color: '#fff',
+    border: 'none',
+    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+    cursor: 'pointer',
+    fontSize: '20px',
+    fontWeight: 'bold',
+    zIndex: 2000,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+};
+
+// Dark Mode အတွက် Card Styles များကိုလည်း variable အနေနဲ့ သုံးနိုင်ပါတယ်
+// const cardBg = darkMode ? '#1e293b' : '#ffffff';
+// const textColor = darkMode ? '#f8fafc' : '#1e293b';
 
 export default App;
