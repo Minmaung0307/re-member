@@ -1,0 +1,54 @@
+[debug] [2026-08-19T01:15:45.150Z] ----------------------------------------------------------------------
+[debug] [2026-08-19T01:15:45.161Z] Command:       /opt/homebrew/bin/firebase /Users/College/.cache/firebase/tools/lib/node_modules/firebase-tools/lib/bin/firebase init
+[debug] [2026-08-19T01:15:45.162Z] CLI Version:   15.27.0
+[debug] [2026-08-19T01:15:45.163Z] Platform:      darwin
+[debug] [2026-08-19T01:15:45.163Z] Node Version:  v20.18.2
+[debug] [2026-08-19T01:15:45.165Z] Detected Agent: unknown
+[debug] [2026-08-19T01:15:45.166Z] Time:          Tue Aug 18 2026 21:15:45 GMT-0400 (Eastern Daylight Time)
+[debug] [2026-08-19T01:15:45.167Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /Users/College/projects/re-member
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-08-19T01:15:54.826Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-19T01:15:54.828Z] > authorizing via signed-in user (panna07@gmail.com)
+[debug] [2026-08-19T01:15:54.833Z] Checked if tokens are valid: true, expires at: 1787105347781
+[debug] [2026-08-19T01:15:54.833Z] Checked if tokens are valid: true, expires at: 1787105347781
+[debug] [2026-08-19T01:15:54.838Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/re-member-mm [none]
+[debug] [2026-08-19T01:15:55.421Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/re-member-mm 200
+[debug] [2026-08-19T01:15:55.424Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/re-member-mm {"projectId":"re-member-mm","projectNumber":"173625464157","displayName":"re-member","name":"projects/re-member-mm","resources":{"hostingSite":"re-member-mm"},"state":"ACTIVE","labels":{"firebase":"enabled","firebase/storage-default-bucket":"created"},"etag":"1_1886007a-e4c0-4fe3-8bde-07cda4e6151d"}
+[info] i  Using project re-member-mm (re-member) . 
+[info] 
+=== Hosting Setup
+[debug] [2026-08-19T01:15:55.523Z] Checked if tokens are valid: true, expires at: 1787105347781
+[debug] [2026-08-19T01:15:55.523Z] Checked if tokens are valid: true, expires at: 1787105347781
+[debug] [2026-08-19T01:15:55.523Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/re-member-mm [none]
+[debug] [2026-08-19T01:15:55.807Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/re-member-mm 200
+[debug] [2026-08-19T01:15:55.807Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/re-member-mm {"projectId":"re-member-mm","projectNumber":"173625464157","displayName":"re-member","name":"projects/re-member-mm","resources":{"hostingSite":"re-member-mm"},"state":"ACTIVE","labels":{"firebase":"enabled","firebase/storage-default-bucket":"created"},"etag":"1_1886007a-e4c0-4fe3-8bde-07cda4e6151d"}
+[info] 
+[info] Your public directory is the folder (relative to your project directory) that
+[info] will contain Hosting assets to be uploaded with firebase deploy. If you
+[info] have a build process for your assets, use your build's output directory.
+[info] 
+[info] 
+[info] i  Detected a .git folder at /Users/College/projects/re-member 
+[info] i  Authorizing with GitHub to upload your service account to a GitHub repository's secrets store. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://github.com/login/oauth/authorize?client_id=89cf50f02ac6aaed3484&state=1002638923&redirect_uri=http%3A%2F%2Flocalhost%3A9005&scope=read%3Auser%20repo%20public_repo
+[info] 
+[info] Waiting for authentication...
