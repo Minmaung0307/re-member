@@ -7,7 +7,7 @@ import {
   onAuthStateChanged, 
   signOut 
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, query, onSnapshot, serverTimestamp, updateDoc, addDoc, orderBy, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, query, onSnapshot, serverTimestamp, updateDoc, addDoc, orderBy, deleteDoc, where } from 'firebase/firestore';
 
 import MainDashboard from './MainDashboard';
 import Chat from './Chat';
@@ -56,6 +56,9 @@ function App() {
   const [showBucketModal, setShowBucketModal] = useState(false);
   const [bucketInput, setBucketInput] = useState("");
 
+  const [userFamilyCode, setUserFamilyCode] = useState(null);
+  const [showFamilyModal, setShowFamilyModal] = useState(false); 
+
   useEffect(() => {
     console.log("App Started...");
     getRedirectResult(auth).catch((err) => console.error(err));
@@ -69,59 +72,91 @@ function App() {
   }, []);
 
   useEffect(() => {
-      const syncUserAndFetchList = async () => {
+        const syncUserAndFetchList = async () => {
         if (user) {
-          const userRef = doc(db, "users", user.uid);
-          
-          // ၁။ User data ရှိမရှိ အရင်စစ်မယ်
-          const { getDoc } = await import('firebase/firestore');
-          const docSnap = await getDoc(userRef);
-          
-          // ၂။ အကယ်၍ user က အသစ်ဖြစ်နေရင် သို့မဟုတ် မွေးနေ့ မရှိသေးရင် Modal ပြမယ်
-          if (!docSnap.exists() || !docSnap.data().birthday) {
-            setShowBdayModal(true); // ဒီမှာ Modal ကို ပွင့်ခိုင်းလိုက်တာပါ
-          }
+            const userRef = doc(db, "users", user.uid);
+            const { getDoc } = await import('firebase/firestore');
+            const docSnap = await getDoc(userRef);
+            
+            const existingData = docSnap.exists() ? docSnap.data() : {};
 
-          // ၃။ အခြေခံ ဒေတာတွေကို အရင် Update လုပ်မယ် (Birthday မပါသေးဘဲ)
-          const userData = {
+            // ၁။ မွေးနေ့ရှိမရှိ စစ်ဆေးခြင်း (လက်ရှိအတိုင်း)
+            if (!existingData.birthday) {
+            setShowBdayModal(true);
+            }
+
+            // ၂။ မိသားစုကုဒ် ရှိမရှိ စစ်ဆေးခြင်း (အသစ်ထည့်သည့် Logic)
+            if (!existingData.familyCode) {
+            setShowFamilyModal(true); // ကုဒ်မရှိသေးရင် Modal ပြမယ်
+            } else {
+            setUserFamilyCode(existingData.familyCode); // ရှိပြီးသားဆိုရင် State ထဲ ထည့်မယ်
+            }
+
+            // ၃။ အခြေခံ ဒေတာများကို Update လုပ်ခြင်း
+            const userData = {
             id: user.uid,
             displayName: user.displayName,
             photoURL: user.photoURL,
             lastSeen: serverTimestamp()
-          };
+            };
+            await setDoc(userRef, userData, { merge: true });
 
-          await setDoc(userRef, userData, { merge: true });
-
-          // ၄။ User စာရင်းကို အမြဲစောင့်ကြည့်မယ်
-          const q = query(collection(db, "users"));
-          const unsubUsers = onSnapshot(q, (snapshot) => {
-            setUsers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-          });
-
-          return unsubUsers;
+            // ၄။ User စာရင်းကို ကိုယ့်မိသားစုကုဒ်တူသူများကိုပဲ Filter လုပ်ပြီး ဆွဲယူမယ်
+            if (existingData.familyCode) {
+            const q = query(
+                collection(db, "users"), 
+                where("familyCode", "==", existingData.familyCode) // 👈 ဒါက အဓိက Filter ပါ
+            );
+            const unsubUsers = onSnapshot(q, (snapshot) => {
+                setUsers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            });
+            return unsubUsers;
+            }
         }
-      };
+        };
 
-      let unsub;
-      syncUserAndFetchList().then(cleanup => {
+        let unsub;
+        syncUserAndFetchList().then(cleanup => {
         unsub = cleanup;
-      });
+        });
 
-      return () => unsub && unsub();
-  }, [user]);
+        return () => unsub && unsub();
+    }, [user, userFamilyCode]); // dependency ထဲမှာ userFamilyCode ထည့်ပေးပါ
 
-  // posts နဲ့ events တွေကို database ကနေ အမြဲစောင့်ကြည့်ဖို့
-  useEffect(() => {
-      // Posts ဆွဲယူခြင်း
-      const unsubPosts = onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snap) => {
-          setPosts(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      });
-      // Events ဆွဲယူခြင်း
-      const unsubEvents = onSnapshot(collection(db, "events"), (snap) => {
-          setEvents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      });
-      return () => { unsubPosts(); unsubEvents(); };
-  }, []);
+    // posts နဲ့ events တွေကို database ကနေ အမြဲစောင့်ကြည့်ဖို့
+    useEffect(() => {
+        // Family Code မရှိသေးရင် ဘာမှမလုပ်နဲ့ဦး (ဒေတာတွေ ရောကုန်မှာစိုးလို့ပါ)
+        if (!userFamilyCode) {
+            setPosts([]);
+            setEvents([]);
+            return;
+        }
+
+        // ၁။ Posts ဆွဲယူခြင်း (Filter ပါဝင်သည်)
+        const qPosts = query(
+            collection(db, "posts"),
+            where("familyCode", "==", userFamilyCode), // 👈 ကိုယ့်မိသားစုကုဒ် တူမှပြမယ်
+            orderBy("createdAt", "desc")
+        );
+        
+        const unsubPosts = onSnapshot(qPosts, (snap) => {
+            setPosts(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        }, (error) => {
+            console.log("Post Index Error:", error.message);
+        });
+
+        // ၂။ Events ဆွဲယူခြင်း (Filter ပါဝင်သည်)
+        const qEvents = query(
+            collection(db, "events"),
+            where("familyCode", "==", userFamilyCode) // 👈 ကိုယ့်မိသားစုကုဒ် တူမှပြမယ်
+        );
+        
+        const unsubEvents = onSnapshot(qEvents, (snap) => {
+            setEvents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+
+        return () => { unsubPosts(); unsubEvents(); };
+    }, [userFamilyCode]); // 👈 userFamilyCode ပြောင်းလဲတိုင်း ဒေတာအသစ်ပြန်ဆွဲမယ်
 
   // Database ကနေ Goals တွေကို ဆွဲယူမယ်
   useEffect(() => {
@@ -333,7 +368,7 @@ function App() {
                 transition: '0.3s' // အကူးအပြောင်း ညင်သာအောင်
             }}>
                 {/* Tab အလိုက် Content ပြခြင်း */}
-                {activeTab === 'feed' && <MainDashboard posts={posts} setPosts={setPosts} />}
+                {activeTab === 'feed' && <MainDashboard posts={posts} setPosts={setPosts} userFamilyCode={userFamilyCode} />}
                 {activeTab === 'workspace' && <Workspace darkMode={darkMode} user={user} />}
 
                 {activeTab === 'admin' && (
@@ -343,6 +378,11 @@ function App() {
                             <h3 style={{ margin: 0 }}>
                                 {isAdmin ? "👥 Family & Friends Management" : "👤 My Profile Settings"}
                             </h3>
+
+                            {/* လက်ရှိအုပ်စုကုဒ်ကို ပြမည့်နေရာ (အရင်ပေးထားတဲ့ ကုဒ်) */}
+                            <div style={{ backgroundColor: '#3b82f6', color: '#fff', padding: '8px 15px', borderRadius: '10px', marginBottom: '20px', display: 'inline-block', fontSize: '12px' }}>
+                                🏠 လက်ရှိအုပ်စု: <strong>{userFamilyCode}</strong>
+                            </div>
                             
                             {/* နာမည်ဖြင့် ရှာဖွေရန် Box */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: darkMode ? '#1e293b' : '#f1f5f9', padding: '8px 15px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '280px' }}>
@@ -430,6 +470,11 @@ function App() {
                                                                 defaultValue={u.birthday || ""}
                                                                 onChange={(e) => setAdminBirthdays({...adminBirthdays, [u.id]: e.target.value})}
                                                             />
+
+                                                            {/* 🌟 အခု ဒီနေရာမှာ ကျွန်တော်ပေးတဲ့ ID ပြတဲ့ code ကို ထည့်လိုက်ပါ 🌟 */}
+                                                            <div style={{ fontSize: '11px', color: '#64748b', backgroundColor: '#f1f5f9', padding: '5px 10px', borderRadius: '8px' }}>
+                                                                ID: {u.familyCode || "No Code"}
+                                                            </div>
                                                             
                                                             <button 
                                                                 onClick={async () => {
@@ -539,6 +584,28 @@ function App() {
                     </div>
                 </div>
             )}
+
+            {showFamilyModal && (
+                <div style={modalOverlay}>
+                    <div style={modalContentSmall}>
+                        <h3>🏠 မိသားစု အသိုင်းအဝိုင်း</h3>
+                        <p style={{fontSize: '12px', color: '#64748b'}}>ကိုယ့်မိသားစုရဲ့ သီးသန့်ကုဒ်ကို ရိုက်ထည့်ပါ (သို့မဟုတ်) ကုဒ်အသစ်တစ်ခု ဖန်တီးပြီး မိသားစုဝင်တွေကို မျှဝေပါ။</p>
+                        <input 
+                            placeholder="ဥပမာ- CHO-FAMILY-2026" 
+                            style={modalInput} 
+                            id="familyCodeInput"
+                        />
+                        <button onClick={async () => {
+                            const code = document.getElementById("familyCodeInput").value.trim().toUpperCase();
+                            if(code) {
+                                await updateDoc(doc(db, "users", user.uid), { familyCode: code });
+                                setUserFamilyCode(code);
+                                setShowFamilyModal(false);
+                            }
+                        }} style={postBtnFull}>Join / Create Family</button>
+                    </div>
+                </div>
+            )}
         </div>
 
         {/* Footer */}
@@ -575,7 +642,7 @@ function App() {
                         <div style={{display: 'flex', gap: '12px', marginTop: '10px'}}>
                             <button onClick={async () => {
                                 if(newEvent.title && newEvent.date) {
-                                    await addDoc(collection(db, "events"), { ...newEvent, createdAt: serverTimestamp() });
+                                    await addDoc(collection(db, "events"), { ...newEvent, createdAt: serverTimestamp(), familyCode: userFamilyCode, });
                                     setShowEventModal(false);
                                     setNewEvent({ title: "", date: "", location: "", details: "" });
                                 } else {

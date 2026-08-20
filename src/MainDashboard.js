@@ -40,7 +40,7 @@ import {
     Search
 } from 'lucide-react';
 
-const MainDashboard = ({ posts, setPosts }) => {
+const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
     const [caption, setCaption] = useState("");
     const [file, setFile] = useState(null);
     // const [posts, setPosts] = useState([]);
@@ -206,6 +206,8 @@ const MainDashboard = ({ posts, setPosts }) => {
                 reactions: {},
                 comments: [],
                 createdAt: serverTimestamp(),
+                familyCode: auth.currentUser.familyCode,
+                familyCode: userFamilyCode,
             });
 
             // Form ကို Reset လုပ်ခြင်း
@@ -254,6 +256,8 @@ const MainDashboard = ({ posts, setPosts }) => {
             likes: [],
             comments: [],
             createdAt: serverTimestamp(),
+            familyCode: auth.currentUser.familyCode,
+            familyCode: userFamilyCode,
         });
         setCaption(""); setFile(null); setExternalUrl(""); setUploading(false);
     };
