@@ -5,6 +5,9 @@ import {
     addDoc, 
     query, 
     orderBy, 
+    limit, 
+    startAfter, 
+    getDocs,
     onSnapshot, 
     serverTimestamp, 
     doc, 
@@ -37,7 +40,7 @@ import {
     Search
 } from 'lucide-react';
 
-const MainDashboard = ({ posts }) => {
+const MainDashboard = ({ posts, setPosts }) => {
     const [caption, setCaption] = useState("");
     const [file, setFile] = useState(null);
     // const [posts, setPosts] = useState([]);
@@ -56,6 +59,9 @@ const MainDashboard = ({ posts }) => {
     const [externalUrl, setExternalUrl] = useState(""); // Online Link အတွက်
     const [selectedStyle, setSelectedStyle] = useState("white"); // Post 
     const [searchQuery, setSearchQuery] = useState("");
+
+    const [lastVisible, setLastVisible] = useState(null);
+    const [loadingMore, setLoading] = useState(false);
 
     const cardStyles = [
         "linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%)",
@@ -87,6 +93,36 @@ const MainDashboard = ({ posts }) => {
     //     });
     //     return () => unsubscribe();
     // }, []);
+
+    // ၁။ ပထမဆုံးအကြိမ် Post ၁၀ ခုပဲ ဆွဲမယ်
+    useEffect(() => {
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(10));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            setLastVisible(snapshot.docs[snapshot.docs.length - 1]); // နောက်ဆုံး post ကို သိမ်းမယ်
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // ၂။ နောက်ထပ် ၁၀ ခု ထပ်ဆွဲမယ့် function
+    const fetchMorePosts = async () => {
+        if (!lastVisible) return;
+        setLoading(true);
+        
+        const nextQuery = query(
+            collection(db, "posts"), 
+            orderBy("createdAt", "desc"), 
+            startAfter(lastVisible), 
+            limit(10)
+        );
+        
+        const querySnapshot = await getDocs(nextQuery);
+        const newPosts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        setPosts([...posts, ...newPosts]); // ရှိပြီးသား post တွေနဲ့ အသစ်တွေကို ပေါင်းမယ်
+        setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+        setLoading(false);
+    };
 
     // ၁။ Like Function
     const handleReaction = async (postId, emoji) => {
@@ -552,6 +588,18 @@ const MainDashboard = ({ posts }) => {
                         </div>
                     </div>
                 ))}
+
+                {lastVisible && (
+                    <div style={{ textAlign: 'center', margin: '30px 0' }}>
+                        <button 
+                            onClick={fetchMorePosts} 
+                            disabled={loadingMore}
+                            style={loadMoreBtnStyle}
+                        >
+                            {loadingMore ? "ခဏစောင့်ပါ..." : "နောက်ထပ် အမှတ်တရများ ကြည့်ရန် ↓"}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -743,6 +791,19 @@ const linkBtnStyle = {
     fontSize: '14px',
     border: '1px dashed #3b82f6',
     margin: '10px 0'
+};
+
+const loadMoreBtnStyle = {
+    padding: '12px 24px',
+    backgroundColor: '#fff',
+    border: '1px solid #3b82f6',
+    color: '#3b82f6',
+    borderRadius: '30px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    fontSize: '14px',
+    transition: '0.3s',
+    boxShadow: '0 4px 10px rgba(59, 130, 246, 0.1)'
 };
 
 export default MainDashboard;

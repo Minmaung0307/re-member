@@ -11,6 +11,7 @@ import { doc, setDoc, getDoc, collection, query, onSnapshot, serverTimestamp, up
 
 import MainDashboard from './MainDashboard';
 import Chat from './Chat';
+import Workspace from './Workspace';
 
 import { 
   LogOut, 
@@ -21,10 +22,12 @@ import {
   Gift, 
   Search,
   X,
-  Trash2
+  Trash2,
+  CheckSquare
 } from 'lucide-react';
 
 function App() {
+  const [adminSearch, setAdminSearch] = useState("");
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -40,7 +43,9 @@ function App() {
   const [newEvent, setNewEvent] = useState({ title: "", date: "", location: "", details: "" });
   const [showBdayModal, setShowBdayModal] = useState(false);
   const [tempBday, setTempBday] = useState("");
+
   const [adminInterests, setAdminInterests] = useState({}); 
+  const [adminBirthdays, setAdminBirthdays] = useState({});
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null); 
@@ -171,6 +176,8 @@ function App() {
     </div>
   );
 
+  const isAdmin = user?.email === "minmaung0307@gmail.com";
+
   return (
     
     <div style={{
@@ -212,55 +219,42 @@ function App() {
                     {darkMode ? '☀️' : '🌙'}
                 </button>
             </div>
-              <div style={{ display: 'flex', gap: '15px', overflowX: 'auto' }}>
-                {/* Feed Tab */}
-                <button 
-                    onClick={() => setActiveTab('feed')} 
-                    style={{
-                        ...(activeTab === 'feed' ? activeTabBtn : tabBtn),
-                        // အရောင်ကို ဒီမှာပဲ darkMode နဲ့ စစ်ပါမယ်
-                        color: activeTab === 'feed' ? '#3b82f6' : (darkMode ? '#94a3b8' : '#64748b')
-                    }}
-                >
+
+            {/* Navbar Tabs */}
+            <div style={{ display: 'flex', gap: '15px', overflowX: 'auto' }}>
+                <button onClick={() => setActiveTab('feed')} style={activeTab === 'feed' ? activeTabBtn : tabBtn}>
                     <Home size={18}/> Feed
                 </button>
-
-                {/* Gallery Tab */}
-                <button 
-                    onClick={() => setActiveTab('gallery')} 
-                    style={{
-                        ...(activeTab === 'gallery' ? activeTabBtn : tabBtn),
-                        // အရောင်ကို ဒီမှာပဲ darkMode နဲ့ စစ်ပါမယ်
-                        color: activeTab === 'gallery' ? '#3b82f6' : (darkMode ? '#94a3b8' : '#64748b')
-                    }}
-                >
+                <button onClick={() => setActiveTab('gallery')} style={activeTab === 'gallery' ? activeTabBtn : tabBtn}>
                     <Palette size={18}/> Gallery
                 </button>
-
-                {/* Events Tab */}
-                <button 
-                    onClick={() => setActiveTab('events')} 
-                    style={{
-                        ...(activeTab === 'events' ? activeTabBtn : tabBtn),
-                        // အရောင်ကို ဒီမှာပဲ darkMode နဲ့ စစ်ပါမယ်
-                        color: activeTab === 'events' ? '#3b82f6' : (darkMode ? '#94a3b8' : '#64748b')
-                    }}
-                >
+                <button onClick={() => setActiveTab('events')} style={activeTab === 'events' ? activeTabBtn : tabBtn}>
                     <Gift size={18}/> Events
                 </button>
 
-                {/* Admin Tab - ဒီနေရာကို အထူးသတိထားပြီး ပြင်ပါ */}
+                {/* Admin ဆိုရင် Admin လို့ပြမယ်၊ ရိုးရိုး User ဆိုရင် Profile လို့ပြမယ် */}
                 <button 
                     onClick={() => setActiveTab('admin')} 
+                    style={activeTab === 'admin' ? activeTabBtn : tabBtn}
+                >
+                    {isAdmin ? (
+                        <><ShieldCheck size={18}/> Admin</>
+                    ) : (
+                        <><Users size={18}/> Profile</>
+                    )}
+                </button>
+
+                <button 
+                    onClick={() => setActiveTab('workspace')} 
                     style={{
-                        ...(activeTab === 'admin' ? activeTabBtn : tabBtn),
-                        // အရောင်ကို ဒီမှာပဲ darkMode နဲ့ စစ်ပါမယ်
-                        color: activeTab === 'admin' ? '#3b82f6' : (darkMode ? '#94a3b8' : '#64748b')
+                        ...(activeTab === 'workspace' ? activeTabBtn : tabBtn),
+                        color: activeTab === 'workspace' ? '#3b82f6' : (darkMode ? '#94a3b8' : '#64748b')
                     }}
                 >
-                    <ShieldCheck size={18}/> Admin
+                    <CheckSquare size={18}/> Workspace
                 </button>
             </div>
+
               <div style={userProfileArea}>
                 <img src={user.photoURL} alt="p" style={avatarStyle} />
                 <button onClick={handleLogout} style={logoutBtn}><LogOut size={18} /></button>
@@ -330,194 +324,227 @@ function App() {
         })}
 
           <div style={mainLayout}>
-          {/* ဘယ်ဘက်ခြမ်း - Content ဧရိယာ (Feed သို့မဟုတ် Admin သို့မဟုတ် Gallery) */}
-          <div style={contentBody}>
-              {/* ၁။ Feed Tab - Dashboard ကို ဒီမှာပဲပြမယ် */}
-              {activeTab === 'feed' && <MainDashboard posts={posts} />}
+            {/* ၁။ ဘယ်ဘက်ခြမ်း - Content ဧရိယာ (Feed, Workspace, Gallery, Admin, Events) */}
+            <div style={{
+                ...contentBody, 
+                // Workspace ဆိုရင် နေရာအပြည့်ယူမယ်၊ မဟုတ်ရင် Sidebar အတွက် နေရာချန်မယ်
+                flex: activeTab === 'workspace' ? '1 1 100%' : '1 1 70%',
+                maxWidth: activeTab === 'workspace' ? '100%' : '850px',
+                transition: '0.3s' // အကူးအပြောင်း ညင်သာအောင်
+            }}>
+                {/* Tab အလိုက် Content ပြခြင်း */}
+                {activeTab === 'feed' && <MainDashboard posts={posts} setPosts={setPosts} />}
+                {activeTab === 'workspace' && <Workspace darkMode={darkMode} user={user} />}
 
-              {/* ၂။ Admin Tab - Management ကို ဒီမှာပြမယ် */}
-              {activeTab === 'admin' && (
-                <div style={adminCardStyle}>
-                    <h3>👥 Family & Friends Management</h3>
-                    {users.map(u => (
-                        <div key={u.id} style={adminUserRow}>
-                            <div style={{display: 'flex', alignItems: 'center', gap: '10px', flex: 1}}>
-                                <img src={u.photoURL} style={smallAvatar} alt="u" />
-                                <div style={{fontSize: '14px', fontWeight: '600'}}>{u.displayName}</div>
-                            </div>
-
-                            <div style={{display: 'flex', gap: '10px', flex: 2, alignItems: 'center'}}>
-                                <select 
-                                    onChange={async (e) => await updateDoc(doc(db, "users", u.id), { role: e.target.value })}
-                                    defaultValue={u.role || "Member"}
-                                    style={roleSelectStyle}
-                                >
-                                    <option value="Family">Family</option>
-                                    <option value="Friend">Friend</option>
-                                    <option value="Member">Member</option>
-                                </select>
-
+                {activeTab === 'admin' && (
+                    <div style={adminCardStyle}>
+                        {/* Header နှင့် Search Bar အပိုင်း */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
+                            <h3 style={{ margin: 0 }}>
+                                {isAdmin ? "👥 Family & Friends Management" : "👤 My Profile Settings"}
+                            </h3>
+                            
+                            {/* နာမည်ဖြင့် ရှာဖွေရန် Box */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: darkMode ? '#1e293b' : '#f1f5f9', padding: '8px 15px', borderRadius: '12px', border: '1px solid #e2e8f0', width: '280px' }}>
+                                <Search size={18} color="#64748b" />
                                 <input 
-                                    placeholder="ဝါသနာ (ဥပမာ- ခွေးချစ်သူ)" 
-                                    style={interestInputStyle}
-                                    defaultValue={u.interests || ""}
-                                    onChange={(e) => setAdminInterests({...adminInterests, [u.id]: e.target.value})}
+                                    placeholder="နာမည်ဖြင့် ရှာဖွေပါ..." 
+                                    style={{ border: 'none', background: 'none', outline: 'none', fontSize: '14px', color: darkMode ? '#fff' : '#1e293b', width: '100%' }}
+                                    onChange={(e) => setAdminSearch(e.target.value.toLowerCase())}
                                 />
-                                
-                                <button 
-                                    onClick={async () => {
-                                        const val = adminInterests[u.id] || u.interests;
-                                        await updateDoc(doc(db, "users", u.id), { interests: val });
-                                        alert("သိမ်းဆည်းပြီးပါပြီ! ✨");
-                                    }}
-                                    style={saveBtnSmall}
-                                >
-                                    Save
-                                </button>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
 
-              {/* ၃။ Gallery Tab - (အမှတ်တရပုံများ Grid နဲ့ကြည့်ရန်) */}
-              {activeTab === 'gallery' && (
-                  <div style={adminCardStyle}>
-                      <h3 style={{marginBottom: '20px'}}><Palette size={20} /> Memory Gallery</h3>
-                      <div style={galleryGrid}>
-                          {posts.filter(p => (p.fileUrl || p.imageUrl)).map(p => (
-                            <div key={p.id} style={galleryItem}>
-                                <img 
-                                    src={p.fileUrl || p.imageUrl} 
-                                    style={galleryImg} 
-                                    alt="memory" 
-                                    referrerPolicy="no-referrer"
-                                    onError={(e) => e.target.parentElement.style.display = 'none'} // ပုံပျက်နေရင် အဲ့ဒီ box ကို ဖျောက်ထားလိုက်မယ်
-                                />
+                        {/* အုပ်စုလိုက် ခွဲခြားပြသခြင်း Logic */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                            {['Family', 'Friend', 'Member'].map(groupKey => {
+                                // လက်ရှိ Group နဲ့ ကိုက်ညီတဲ့ User တွေကို Filter လုပ်မယ်
+                                const filteredGroup = users.filter(u => {
+                                    const matchesRole = groupKey === 'Member' ? (!u.role || u.role === 'Member') : u.role === groupKey;
+                                    const matchesSearch = u.displayName.toLowerCase().includes(adminSearch);
+                                    const canSee = isAdmin || u.id === user.uid; // လုံခြုံရေး logic
+                                    return matchesRole && matchesSearch && canSee;
+                                });
+
+                                // ရှာဖွေလို့ မတွေ့ရင် အဲ့ဒီ Group ကို ဖျောက်ထားမယ်
+                                if (filteredGroup.length === 0) return null;
+
+                                return (
+                                    <div key={groupKey}>
+                                        {/* Group ခေါင်းစဉ် (ဥပမာ - 🏠 Family) */}
+                                        <h4 style={{ 
+                                            marginBottom: '15px', 
+                                            color: '#64748b', 
+                                            fontSize: '15px', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            gap: '10px',
+                                            borderBottom: '1px solid #f1f5f9',
+                                            paddingBottom: '8px'
+                                        }}>
+                                            {groupKey === 'Family' && '🏠 Family Members'}
+                                            {groupKey === 'Friend' && '🤝 Friends List'}
+                                            {groupKey === 'Member' && '👥 New / Others'}
+                                            <span style={{ fontSize: '12px', backgroundColor: '#e2e8f0', padding: '2px 8px', borderRadius: '10px', color: '#475569' }}>
+                                                {filteredGroup.length}
+                                            </span>
+                                        </h4>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            {filteredGroup.map(u => {
+                                                const isMe = u.id === user.uid;
+                                                return (
+                                                    <div key={u.id} style={adminUserRow}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                                                            <img src={u.photoURL} style={smallAvatar} alt="u" />
+                                                            <div style={{ fontSize: '14px', fontWeight: '600', color: darkMode ? '#fff' : '#1e293b' }}>
+                                                                {u.displayName} {isMe && "(Me)"}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div style={{ display: 'flex', gap: '10px', flex: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                                                            {isAdmin ? (
+                                                                <select 
+                                                                    onChange={async (e) => await updateDoc(doc(db, "users", u.id), { role: e.target.value })}
+                                                                    defaultValue={u.role || "Member"}
+                                                                    style={roleSelectStyle}
+                                                                >
+                                                                    <option value="Family">Family</option>
+                                                                    <option value="Friend">Friend</option>
+                                                                    <option value="Member">Member</option>
+                                                                </select>
+                                                            ) : (
+                                                                <span style={{ fontSize: '12px', padding: '5px 12px', backgroundColor: '#e2e8f0', borderRadius: '10px', color: '#475569' }}>
+                                                                    {u.role || "Member"}
+                                                                </span>
+                                                            )}
+                                                            
+                                                            <input 
+                                                                placeholder="ဝါသနာ" style={interestInputStyle}
+                                                                defaultValue={u.interests || ""}
+                                                                onChange={(e) => setAdminInterests({...adminInterests, [u.id]: e.target.value})}
+                                                            />
+                                                            
+                                                            <input 
+                                                                placeholder="MM/DD/YYYY" style={{ ...interestInputStyle, width: '120px' }}
+                                                                defaultValue={u.birthday || ""}
+                                                                onChange={(e) => setAdminBirthdays({...adminBirthdays, [u.id]: e.target.value})}
+                                                            />
+                                                            
+                                                            <button 
+                                                                onClick={async () => {
+                                                                    const finalInterest = adminInterests[u.id] !== undefined ? adminInterests[u.id] : (u.interests || "");
+                                                                    const finalBirthday = adminBirthdays[u.id] !== undefined ? adminBirthdays[u.id] : (u.birthday || "");
+                                                                    await updateDoc(doc(db, "users", u.id), { interests: finalInterest, birthday: finalBirthday });
+                                                                    alert("အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ! ✨");
+                                                                }}
+                                                                style={saveBtnSmall}
+                                                            >Save</button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'gallery' && (
+                    <div style={adminCardStyle}>
+                        <h3 style={{marginBottom: '20px'}}><Palette size={20} /> Memory Gallery</h3>
+                        <div style={galleryGrid}>
+                            {posts.filter(p => (p.fileUrl || p.imageUrl)).map(p => (
+                                <div key={p.id} style={galleryItem}>
+                                    <img src={p.fileUrl || p.imageUrl} style={galleryImg} alt="memory" referrerPolicy="no-referrer"
+                                        onError={(e) => e.target.parentElement.style.display = 'none'} 
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'events' && (
+                    <div style={adminCardStyle}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '20px'}}>
+                            <h3>🗓️ Family Events</h3>
+                            <button onClick={() => setShowEventModal(true)} style={postBtnMini}>+ ပွဲသစ်ထည့်ရန်</button>
+                        </div>
+                        {events.map(ev => (
+                            <div key={ev.id} style={{padding: '15px', borderBottom: '1px solid #eee', position: 'relative'}}>
+                                <div style={{fontWeight: 'bold', fontSize: '16px'}}>{ev.title} {ev.isAnnual && "🔁"}</div>
+                                <div style={{fontSize: '13px', color: '#3b82f6'}}>{ev.date} | 📍 {ev.location || 'No location'}</div>
+                                <p style={{fontSize: '13px', color: '#64748b', margin: '5px 0'}}>{ev.details}</p>
+                                <div style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
+                                    <button onClick={() => deleteDoc(doc(db, "events", ev.id))} style={{border: 'none', background: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer'}}>Delete</button>
+                                    <button onClick={() => { setEditingEvent(ev); setShowEditModal(true); }} style={{border: 'none', background: 'none', color: '#3b82f6', fontSize: '12px', cursor: 'pointer'}}>Edit</button>
+                                </div>
                             </div>
                         ))}
-                      </div>
-                  </div>
-              )}
-
-              {activeTab === 'events' && (
-                <div style={adminCardStyle}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '20px'}}>
-                        <h3>🗓️ Family Events</h3>
-                        {/* ဒီနေရာမှာ prompt တွေဖြုတ်ပြီး setShowEventModal(true) ပဲ ထည့်ပါမယ် */}
-                        <button 
-                            onClick={() => setShowEventModal(true)} 
-                            style={postBtnMini}
-                        >
-                            + ပွဲသစ်ထည့်ရန်
-                        </button>
                     </div>
-                    
-                    {events.map(ev => (
-                        <div key={ev.id} style={{padding: '15px', borderBottom: '1px solid #eee', position: 'relative'}}>
-                            <div style={{fontWeight: 'bold', fontSize: '16px'}}>{ev.title} {ev.isAnnual && "🔁"}</div>
-                            <div style={{fontSize: '13px', color: '#3b82f6'}}>{ev.date} | 📍 {ev.location || 'No location'}</div>
-                            <p style={{fontSize: '13px', color: '#64748b', margin: '5px 0'}}>{ev.details}</p>
-                            
-                            <div style={{display: 'flex', gap: '10px', marginTop: '10px'}}>
-                                <button onClick={() => deleteDoc(doc(db, "events", ev.id))} style={{border: 'none', background: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer'}}>Delete</button>
-                                
-                                {/* Edit ခလုတ်ကိုလည်း prompt မသုံးချင်ရင် နောက်ပိုင်းမှာ Modal ပြောင်းလို့ရပါတယ် */}
-                                <button 
-                                  onClick={() => {
-                                      setEditingEvent(ev); // လက်ရှိပွဲရဲ့ data ကို သိမ်းမယ်
-                                      setShowEditModal(true); // Edit Modal ကို ဖွင့်မယ်
-                                  }} 
-                                  style={{border: 'none', background: 'none', color: '#3b82f6', fontSize: '12px', cursor: 'pointer'}}
-                              >
-                                  Edit
-                              </button>
-                            </div>
+                )}
+            </div>
+
+            {/* ၂။ ညာဘက်ခြမ်း - Sidebar (Workspace မဟုတ်မှသာ ပြပါမယ်) */}
+            {activeTab !== 'workspace' && (
+                <div style={sidebar}>
+                    {/* Family Group */}
+                    <div style={{ marginBottom: '25px' }}>
+                        <h3 style={sidebarTitle}><Users size={16} /> Family</h3>
+                        <div style={userList}>
+                            {users.filter(u => u.id !== user.uid && u.role === 'Family').length > 0 ? (
+                                users.filter(u => u.id !== user.uid && u.role === 'Family').map(u => renderUserItem(u))
+                            ) : ( <p style={emptyText}>No family members found</p> )}
                         </div>
-                    ))}
+                    </div>
+
+                    {/* Friends Group */}
+                    <div style={{ marginBottom: '25px' }}>
+                        <h3 style={sidebarTitle}><Users size={16} /> Friends</h3>
+                        <div style={userList}>
+                            {users.filter(u => u.id !== user.uid && u.role === 'Friend').length > 0 ? (
+                                users.filter(u => u.id !== user.uid && u.role === 'Friend').map(u => renderUserItem(u))
+                            ) : ( <p style={emptyText}>No friends found</p> )}
+                        </div>
+                    </div>
+
+                    {/* General Members */}
+                    <div>
+                        <h3 style={sidebarTitle}><Users size={16} /> Members</h3>
+                        <div style={userList}>
+                            {users.filter(u => u.id !== user.uid && (!u.role || u.role === 'Member')).length > 0 ? (
+                                users.filter(u => u.id !== user.uid && (!u.role || u.role === 'Member')).map(u => renderUserItem(u))
+                            ) : ( <p style={emptyText}>No other members</p> )}
+                        </div>
+                    </div>
+
+                    {/* Bucket List */}
+                    <div style={{marginTop: '30px', padding: '15px', backgroundColor: darkMode ? '#1e293b' : '#eff6ff', borderRadius: '15px', border: '1px dashed #3b82f6'}}>
+                        <h4 style={{margin: '0 0 10px 0', fontSize: '14px', color: '#3b82f6'}}>📝 Family Bucket List</h4>
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                            {goals.map(goal => (
+                                <div key={goal.id} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px'}}>
+                                    <label style={{fontSize: '12px', display: 'flex', gap: '8px', cursor: 'pointer', flex: 1, textDecoration: goal.completed ? 'line-through' : 'none', color: goal.completed ? '#94a3b8' : 'inherit'}}>
+                                        <input type="checkbox" checked={goal.completed} onChange={async () => await updateDoc(doc(db, "bucketList", goal.id), { completed: !goal.completed })} />
+                                        {goal.text}
+                                    </label>
+                                    <Trash2 size={14} color="#ef4444" style={{cursor: 'pointer', opacity: 0.6}} onClick={async () => { if(window.confirm("ဖျက်မှာ သေချာပါသလား?")) await deleteDoc(doc(db, "bucketList", goal.id)); }} />
+                                </div>
+                            ))}
+                            <button style={{border: 'none', background: 'none', color: '#3b82f6', fontSize: '11px', cursor: 'pointer', textAlign: 'left', padding: '5px 0', fontWeight: 'bold'}} onClick={() => setShowBucketModal(true)}>+ Add New Goal</button>
+                        </div>
+                    </div>
                 </div>
             )}
-          </div>
+        </div>
 
-          {/* ညာဘက်ခြမ်း - Sidebar (ဘယ် Tab ရောက်ရောက် အမြဲပြနေမယ်) */}
-          <div style={sidebar}>
-              {/* Family Group */}
-              <div style={{ marginBottom: '25px' }}>
-                  <h3 style={sidebarTitle}><Users size={16} /> Family</h3>
-                  <div style={userList}>
-                      {users.filter(u => u.id !== user.uid && u.role === 'Family').length > 0 ? (
-                          users.filter(u => u.id !== user.uid && u.role === 'Family').map(u => renderUserItem(u))
-                      ) : (
-                          <p style={emptyText}>No family members found</p>
-                      )}
-                  </div>
-              </div>
-
-              {/* Friends Group */}
-              <div style={{ marginBottom: '25px' }}>
-                  <h3 style={sidebarTitle}><Users size={16} /> Friends</h3>
-                  <div style={userList}>
-                      {users.filter(u => u.id !== user.uid && u.role === 'Friend').length > 0 ? (
-                          users.filter(u => u.id !== user.uid && u.role === 'Friend').map(u => renderUserItem(u))
-                      ) : (
-                          <p style={emptyText}>No friends found</p>
-                      )}
-                  </div>
-              </div>
-
-              {/* General Members */}
-              <div>
-                  <h3 style={sidebarTitle}><Users size={16} /> Members</h3>
-                  <div style={userList}>
-                      {users.filter(u => u.id !== user.uid && (!u.role || u.role === 'Member')).length > 0 ? (
-                          users.filter(u => u.id !== user.uid && (!u.role || u.role === 'Member')).map(u => renderUserItem(u))
-                      ) : (
-                          <p style={emptyText}>No other members</p>
-                      )}
-                  </div>
-              </div>
-
-              <div style={{marginTop: '30px', padding: '15px', backgroundColor: darkMode ? '#1e293b' : '#eff6ff', borderRadius: '15px', border: '1px dashed #3b82f6'}}>
-                <h4 style={{margin: '0 0 10px 0', fontSize: '14px', color: '#3b82f6'}}>📝 Family Bucket List</h4>
-                <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                    {goals.map(goal => (
-                        <div key={goal.id} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px'}}>
-                            <label style={{fontSize: '12px', display: 'flex', gap: '8px', cursor: 'pointer', flex: 1, textDecoration: goal.completed ? 'line-through' : 'none', color: goal.completed ? '#94a3b8' : 'inherit'}}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={goal.completed} 
-                                    onChange={async () => {
-                                        await updateDoc(doc(db, "bucketList", goal.id), { completed: !goal.completed });
-                                    }} 
-                                />
-                                {goal.text}
-                            </label>
-                            {/* ဖျက်တဲ့ခလုတ် */}
-                            <Trash2 size={14} color="#ef4444" style={{cursor: 'pointer', opacity: 0.6}} onClick={async () => {
-                                if(window.confirm("ဖျက်မှာ သေချာပါသလား?")) await deleteDoc(doc(db, "bucketList", goal.id));
-                            }} />
-                        </div>
-                    ))}
-                    
-                    {/* Add New Goal ခလုတ် */}
-                    <button 
-                      style={{border: 'none', background: 'none', color: '#3b82f6', fontSize: '11px', cursor: 'pointer', textAlign: 'left', padding: '5px 0', fontWeight: 'bold'}}
-                      onClick={() => setShowBucketModal(true)} // Modal ကို ဖွင့်ခိုင်းလိုက်တာပါ
-                  >
-                      + Add New Goal
-                  </button>
-                </div>
-            </div>
-            </div>
-          </div>
-
-          <footer style={{
-            textAlign: 'center', 
-            padding: '40px 20px', 
-            color: darkMode ? '#94a3b8' : '#64748b', 
-            fontSize: '14px',
-            borderTop: `1px solid ${darkMode ? '#334155' : '#f1f5f9'}`,
-            marginTop: 'auto' // ဒါက အောက်ဆုံးကို တွန်းပို့ပေးပါလိမ့်မယ်
+        {/* Footer */}
+        <footer style={{
+            textAlign: 'center', padding: '40px 20px', color: darkMode ? '#94a3b8' : '#64748b', fontSize: '14px',
+            borderTop: `1px solid ${darkMode ? '#334155' : '#f1f5f9'}`, marginTop: 'auto'
         }}>
             <div style={{marginBottom: '10px'}}>Re-Member - မိသားစုအမှတ်တရများ သိမ်းဆည်းရာ</div>
             <div style={{fontWeight: 'bold'}}>@MM {new Date().getFullYear()} • Built with Heart ❤️</div>
@@ -717,9 +744,9 @@ const logoText = { fontSize: '20px', fontWeight: '800' };
 const userProfileArea = { display: 'flex', alignItems: 'center', gap: '10px' };
 const avatarStyle = { width: '30px', height: '30px', borderRadius: '50%' };
 const logoutBtn = { border: 'none', background: '#fee2e2', color: '#ef4444', padding: '8px', borderRadius: '10px', cursor: 'pointer' };
-const mainLayout = { display: 'flex', maxWidth: '1200px', margin: '0 auto', paddingTop: '90px', gap: '20px', paddingLeft: '15px', paddingRight: '15px' };
-const contentBody = { flex: 2 };
-const sidebar = { flex: 0.8, backgroundColor: '#fff', borderRadius: '20px', padding: '20px', height: 'fit-content', position: 'sticky', top: '90px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' };
+const mainLayout = { display: 'flex', flexWrap: 'wrap', maxWidth: '1250px', margin: '0 auto', paddingTop: '90px', gap: '30px', paddingLeft: '15px', paddingRight: '15px' };
+const contentBody = { minWidth: '320px', transition: '0.3s' };
+const sidebar = { flex: '1 1 250px', backgroundColor: '#fff', borderRadius: '24px', padding: '20px', height: 'fit-content', position: 'sticky', top: '90px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' };
 const userList = { display: 'flex', flexDirection: 'column', gap: '12px' };
 const userItem = { display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '8px', borderRadius: '12px', backgroundColor: '#f8fafc' };
 const smallAvatar = { width: '35px', height: '35px', borderRadius: '50%' };
@@ -945,7 +972,7 @@ const labelStyle = {
 const scrollTopBtn = {
     position: 'fixed',
     bottom: '30px',
-    right: '30px',
+    left: '30px',   // right: '30px' အစား left: '30px' လို့ ပြောင်းလိုက်ပါ
     width: '45px',
     height: '45px',
     borderRadius: '50%',
@@ -960,6 +987,70 @@ const scrollTopBtn = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
+};
+
+const searchContainerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    backgroundColor: '#f1f5f9',
+    padding: '8px 15px',
+    borderRadius: '12px',
+    width: '250px'
+};
+
+const adminSearchInput = {
+    border: 'none',
+    background: 'none',
+    outline: 'none',
+    fontSize: '14px',
+    width: '100%'
+};
+
+const statsContainer = {
+    display: 'flex',
+    gap: '15px',
+    marginBottom: '25px',
+    flexWrap: 'wrap'
+};
+
+const statBox = {
+    backgroundColor: '#fff',
+    padding: '10px 20px',
+    borderRadius: '12px',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#3b82f6',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+};
+
+const groupHeaderStyle = {
+    marginBottom: '15px',
+    color: '#64748b',
+    fontSize: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    borderBottom: '1px solid #f1f5f9',
+    paddingBottom: '8px'
+};
+
+const countBadge = {
+    backgroundColor: '#e2e8f0',
+    color: '#475569',
+    padding: '2px 8px',
+    borderRadius: '10px',
+    fontSize: '11px',
+    fontWeight: '700'
+};
+
+const roleBadge = {
+    fontSize: '12px',
+    padding: '5px 12px',
+    backgroundColor: '#e2e8f0',
+    borderRadius: '10px',
+    color: '#475569'
 };
 
 // Dark Mode အတွက် Card Styles များကိုလည်း variable အနေနဲ့ သုံးနိုင်ပါတယ်

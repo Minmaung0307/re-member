@@ -130,8 +130,8 @@ const Chat = ({ recipient, onClose }) => {
 };
 
 // ... (Styles တွေက အရင်အတိုင်းပဲ သုံးလို့ရပါတယ်)
-const chatBoxContainer = { width: '320px', height: '450px', backgroundColor: '#fff', borderRadius: '15px 15px 0 0', boxShadow: '0 5px 25px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', position: 'fixed', bottom: 0, right: '20px', zIndex: 2000 };
-const chatHeader = { padding: '12px 15px', backgroundColor: '#3b82f6', color: '#fff', borderRadius: '15px 15px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
+const chatBoxContainer = { width: '320px', height: '450px', backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', position: 'fixed', bottom: '20px', right: '20px', zIndex: 2000, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)'};
+const chatHeader = { padding: '12px 15px', backgroundColor: '#3b82f6', color: '#fff', borderRadius: '15px 15px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'default' };
 const smallAvatar = { width: '25px', height: '25px', borderRadius: '50%' };
 const closeBtn = { background: 'none', border: 'none', color: '#fff', cursor: 'pointer' };
 const messageArea = { flex: 1, padding: '15px', overflowY: 'auto', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '8px' };
