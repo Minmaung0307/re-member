@@ -16,5 +16,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+// အမြဲတမ်း အကောင့်ရွေးခိုင်းဖို့ ဒါလေး ထည့်ပါ
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 export const db = getFirestore(app);
 export const storage = getStorage(app);

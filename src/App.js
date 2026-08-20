@@ -20,6 +20,9 @@ import {
   orderBy,
   deleteDoc,
   where,
+  or,
+  and,
+  getDocs,
 } from "firebase/firestore";
 
 import MainDashboard from "./MainDashboard";
@@ -80,6 +83,11 @@ function App() {
 
   const [isPaidUser, setIsPaidUser] = useState(false);
 
+  const [connections, setConnections] = useState([]); // လက်ခံပြီးသား သူငယ်ချင်းများ
+  const [pendingRequests, setPendingRequests] = useState([]); // ကိုယ့်ဆီလာထားတဲ့ Request များ
+  const [searchEmail, setSearchSearchEmail] = useState(""); // ရှာဖွေမည့် Email
+  const [allUsers, setAllUsers] = useState([]);
+
   //   အကောင့်ဝင်ခြင်းနှင့် မိသားစုကုဒ် စစ်ဆေးခြင်း Effect
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -90,35 +98,49 @@ function App() {
         const { getDoc } = await import("firebase/firestore");
         const docSnap = await getDoc(userRef);
 
+        let finalFamilyCode = null;
+
         if (docSnap.exists()) {
           // --- (၁) လူဟောင်းဖြစ်ပါက ---
           const data = docSnap.data();
+          finalFamilyCode = data.familyCode;
 
-          // Database ထဲက isPaid အတိုင်း သတ်မှတ်မယ်
-          setIsPaidUser(data.isPaid === true);
+          // isPaid status ကို db အတိုင်းယူမယ် (မရှိသေးရင် false လို့ ယူဆမယ်)
+          const paidStatus = data.isPaid || false;
+          setIsPaidUser(paidStatus);
+
+          // လူဟောင်းဖြစ်ပေမယ့် db မှာ isPaid field လုံးဝမပါသေးရင် ထည့်ပေးမယ်
+          if (data.isPaid === undefined) {
+            await setDoc(userRef, { isPaid: false }, { merge: true });
+          }
 
           if (!data.birthday) setShowBdayModal(true);
-
           if (!data.familyCode) {
             setShowFamilyModal(true);
           } else {
             setUserFamilyCode(data.familyCode);
           }
         } else {
-          // --- (၂) လူအသစ်ဖြစ်ပါက (ပထမဆုံးအကြိမ်ဝင်သူ) ---
-          // အသစ်ဆောက်မှသာ isPaid: false လို့ သတ်မှတ်မယ်
-          await setDoc(userRef, {
-            id: currentUser.uid,
-            displayName: currentUser.displayName,
-            photoURL: currentUser.photoURL,
-            isPaid: false, // အသစ်မို့လို့ အရင် ပိတ်ထားမယ်
-            createdAt: serverTimestamp(),
-          });
+          // --- (၂) လူအသစ်ဖြစ်ပါက ---
+          await setDoc(
+            userRef,
+            {
+              id: currentUser.uid,
+              displayName: currentUser.displayName,
+              photoURL: currentUser.photoURL,
+              email: currentUser.email.toLowerCase(), // စနစ်တကျ တစ်ကြောင်းတည်းသိမ်းပါ
+              isPaid: false, // အသစ်ဆိုရင် default ပိတ်ထားမယ်
+              createdAt: serverTimestamp(),
+              lastSeen: serverTimestamp(),
+            },
+            { merge: true },
+          );
+
           setIsPaidUser(false);
           setShowFamilyModal(true);
         }
 
-        // basic info ကို အမြဲ update လုပ်မယ် (lastSeen စတာတွေ)
+        // Basic Info (DisplayName, Photo, LastSeen) ကို အမြဲ Update လုပ်မယ်
         await setDoc(
           userRef,
           {
@@ -129,13 +151,14 @@ function App() {
           { merge: true },
         );
 
-        // User List Listener (ကိုယ့်အုပ်စုကလူတွေပဲပြဖို့)
-        // familyCode ရှိမှ နားထောင်မယ်
-        if (docSnap.exists() && docSnap.data().familyCode) {
+        // --- (၃) User List Listener ---
+        // လူဟောင်းရော လူသစ်ရောအတွက် familyCode ရှိရင် Listener စဖွင့်မယ်
+        if (finalFamilyCode || userFamilyCode) {
+          const targetCode = finalFamilyCode || userFamilyCode;
           onSnapshot(
             query(
               collection(db, "users"),
-              where("familyCode", "==", docSnap.data().familyCode),
+              where("familyCode", "==", targetCode),
             ),
             (snap) => {
               setUsers(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
@@ -150,8 +173,9 @@ function App() {
       }
       setLoading(false);
     });
+
     return () => unsubscribe();
-  }, []);
+  }, [userFamilyCode]); // userFamilyCode ပြောင်းရင် list ပြန်ဆွဲဖို့ dependency ထည့်ထားပါတယ်
 
   // Posts, Events နှင့် Goals များအား Filter ခံပြီး ဆွဲယူသည့် Effect
   useEffect(() => {
@@ -221,6 +245,61 @@ function App() {
       unsubBucket && unsubBucket();
     };
   }, [user, userFamilyCode]);
+
+  useEffect(() => {
+    if (!user) return;
+    // အက်ပ်ထဲက လူအားလုံးကို ဆွဲယူထားမယ် (Email နဲ့ ရှာတွေ့နိုင်ဖို့)
+    const unsubAll = onSnapshot(collection(db, "users"), (snap) => {
+      setAllUsers(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubAll();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // ၁။ Pending Requests ကို and() ဖြင့် အုပ်ပေးပါ
+    const qPending = query(
+      collection(db, "connections"),
+      and(
+        where("receiverId", "==", user.uid),
+        where("status", "==", "pending"),
+      ),
+    );
+    const unsubPending = onSnapshot(qPending, (snap) => {
+      setPendingRequests(
+        snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+      );
+    });
+
+    // ၂။ Accepted Connections ကို and() နှင့် or() တွဲသုံးပြီး ပြင်ပါ
+    const qAccepted = query(
+      collection(db, "connections"),
+      and(
+        where("status", "==", "accepted"),
+        or(
+          where("requesterId", "==", user.uid),
+          where("receiverId", "==", user.uid),
+        ),
+      ),
+    );
+
+    const unsubAccepted = onSnapshot(
+      qAccepted,
+      (snap) => {
+        setConnections(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      },
+      (error) => {
+        if (error.code === "permission-denied") return;
+        console.error("Connections Error:", error);
+      },
+    );
+
+    return () => {
+      unsubPending();
+      unsubAccepted();
+    };
+  }, [user]);
 
   // အခု Popup နဲ့ စမ်းကြည့်ပါမယ်
   const handleLogin = () => {
@@ -328,6 +407,69 @@ function App() {
       </div>
     </div>
   );
+
+  // ၁။ သူငယ်ချင်းအသစ် ရှာပြီး Request ပို့မယ်
+  const handleAddFriend = async () => {
+    // ၁။ ရိုက်လိုက်တဲ့ Email ကို နေရာလွတ်တွေဖြတ်ပြီး စာလုံးအသေး (lowercase) ပြောင်းမယ်
+    const targetEmail = searchEmail.trim().toLowerCase();
+
+    // အကယ်၍ ဘာမှမရိုက်ထားရင် ဘာမှမလုပ်ဘူး
+    if (!targetEmail) return;
+
+    try {
+      // ၂။ Firestore မှာ အဲ့ဒီ Email နဲ့လူရှိလား ရှာမယ်
+      const q = query(
+        collection(db, "users"),
+        where("email", "==", targetEmail),
+      );
+      const snap = await getDocs(q);
+
+      // ၃။ ရှာမတွေ့ရင် (တစ်ခါမှ Login မဝင်ဖူးတဲ့လူဆိုရင် ရှာမတွေ့ပါဘူး)
+      if (snap.empty) {
+        alert(
+          "ဤ Email နှင့် အသုံးပြုသူ မရှိပါ။ စာလုံးပေါင်း မှန်/မမှန် ပြန်စစ်ပေးပါ။ (မှတ်ချက် - တစ်ဖက်လူသည် အက်ပ်သို့ အနည်းဆုံး တစ်ကြိမ် Login ဝင်ဖူးထားရပါမည်)",
+        );
+        return;
+      }
+
+      const targetUser = snap.docs[0].data();
+
+      // ၄။ ကိုယ့် Email ကိုယ် ပြန်ရှာမိတာလား စစ်မယ်
+      if (targetUser.id === user.uid) {
+        alert("ကိုယ့်ကိုယ်ကို သူငယ်ချင်းဖွဲ့လို့မရပါဘူးခင်ဗျာ။");
+        return;
+      }
+
+      // ၅။ Connection Request (သူငယ်ချင်းတောင်းဆိုချက်) ပို့မယ်
+      await addDoc(collection(db, "connections"), {
+        requesterId: user.uid,
+        requesterName: user.displayName,
+        receiverId: targetUser.id,
+        status: "pending",
+        createdAt: serverTimestamp(),
+      });
+
+      alert(
+        "Request ပို့လိုက်ပါပြီ! တစ်ဖက်လူက လက်ခံ (Accept) လုပ်မှ Sidebar မှာ ပေါ်လာမှာပါ။",
+      );
+      setSearchSearchEmail(""); // ရိုက်ထားတဲ့ Email အကွက်ကို ပြန်ရှင်းမယ်
+    } catch (error) {
+      console.error("Error in handleAddFriend:", error);
+      alert("အမှားတစ်ခု ရှိနေပါတယ်။ နောက်မှ ပြန်ကြိုးစားကြည့်ပါ။");
+    }
+  };
+
+  // ၂။ Request ကို လက်ခံမယ်
+  const acceptFriend = async (requestId) => {
+    await updateDoc(doc(db, "connections", requestId), { status: "accepted" });
+  };
+
+  // ၃။ Connection ကို ပယ်ဖျက်မယ် (Unfriend)
+  const removeFriend = async (connectionId) => {
+    if (window.confirm("ဤသူနှင့် ချိတ်ဆက်မှုကို ပယ်ဖျက်မှာ သေချာပါသလား?")) {
+      await deleteDoc(doc(db, "connections", connectionId));
+    }
+  };
 
   const isAdmin = user?.email === "minmaung0307@gmail.com";
 
@@ -937,17 +1079,41 @@ function App() {
                                         }
                                       />
 
-                                      {/* 🌟 အခု ဒီနေရာမှာ ကျွန်တော်ပေးတဲ့ ID ပြတဲ့ code ကို ထည့်လိုက်ပါ 🌟 */}
+                                      {/* ID ကို ရိုက်ထည့်လို့ရအောင် Input အဖြစ် ပြောင်းလဲထားသော code */}
                                       <div
                                         style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "5px",
                                           fontSize: "11px",
                                           color: "#64748b",
                                           backgroundColor: "#f1f5f9",
-                                          padding: "5px 10px",
+                                          padding: "2px 10px",
                                           borderRadius: "8px",
+                                          border: "1px solid #e2e8f0",
                                         }}
                                       >
-                                        ID: {u.familyCode || "No Code"}
+                                        <span>ID:</span>
+                                        <input
+                                          placeholder="Code"
+                                          defaultValue={u.familyCode || ""}
+                                          style={{
+                                            width: "60px",
+                                            border: "none",
+                                            background: "none",
+                                            fontSize: "11px",
+                                            fontWeight: "bold",
+                                            outline: "none",
+                                            color: "#3b82f6",
+                                            padding: "0",
+                                          }}
+                                          onChange={(e) =>
+                                            setAdminBirthdays({
+                                              ...adminBirthdays,
+                                              [`${u.id}_code`]: e.target.value,
+                                            })
+                                          }
+                                        />
                                       </div>
 
                                       <button
@@ -960,16 +1126,33 @@ function App() {
                                             adminBirthdays[u.id] !== undefined
                                               ? adminBirthdays[u.id]
                                               : u.birthday || "";
+
+                                          // 🌟 အသစ်ထည့်လိုက်သော code: ရိုက်ထည့်လိုက်တဲ့ ID ကို ယူမယ်
+                                          const finalFamilyCode =
+                                            adminBirthdays[`${u.id}_code`] !==
+                                            undefined
+                                              ? adminBirthdays[`${u.id}_code`]
+                                              : u.familyCode || "";
+
                                           await updateDoc(
                                             doc(db, "users", u.id),
                                             {
                                               interests: finalInterest,
                                               birthday: finalBirthday,
+                                              familyCode: finalFamilyCode, // 🌟 ဤစာကြောင်းကို ထည့်ပေးပါ
                                             },
                                           );
                                           alert(
                                             "အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ! ✨",
                                           );
+
+                                          // ကုဒ်ပြောင်းသွားရင် အုပ်စုတွေ အလိုလိုကွဲသွားအောင် refresh တစ်ချက်လုပ်ပေးတာ ပိုကောင်းပါတယ်
+                                          if (
+                                            adminBirthdays[`${u.id}_code`] !==
+                                            undefined
+                                          ) {
+                                            window.location.reload();
+                                          }
                                         }}
                                         style={saveBtnSmall}
                                       >
@@ -987,6 +1170,103 @@ function App() {
                   </div>
 
                   <div style={sidebar}>
+                    {/* --- ၁။ သူငယ်ချင်း ရှာဖွေရန် Box --- */}
+                    <div style={{ marginBottom: "20px" }}>
+                      <h4 style={sidebarTitle}>
+                        <Search size={14} /> Find Connection
+                      </h4>
+                      <div style={{ display: "flex", gap: "5px" }}>
+                        <input
+                          placeholder="Email ဖြင့် ရှာရန်..."
+                          value={searchEmail}
+                          onChange={(e) => setSearchSearchEmail(e.target.value)}
+                          style={modalInputSmall}
+                        />
+                        <button onClick={handleAddFriend} style={saveBtnSmall}>
+                          Add
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* --- ၂။ Incoming Requests (Request လာထားရင် ပြမယ်) --- */}
+                    {pendingRequests.length > 0 && (
+                      <div
+                        style={{
+                          marginBottom: "20px",
+                          backgroundColor: "#fff7ed",
+                          padding: "10px",
+                          borderRadius: "12px",
+                        }}
+                      >
+                        <h4 style={{ ...sidebarTitle, color: "#c2410c" }}>
+                          Pending Requests
+                        </h4>
+                        {pendingRequests.map((req) => (
+                          <div
+                            key={req.id}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginBottom: "5px",
+                            }}
+                          >
+                            <span style={{ fontSize: "12px" }}>
+                              {req.requesterName}
+                            </span>
+                            <button
+                              onClick={() => acceptFriend(req.id)}
+                              style={saveBtnSmall}
+                            >
+                              Accept
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* --- ၃။ External Connections (တခြားအိမ်က ချိတ်ထားသူများ) --- */}
+                    <div style={{ marginBottom: "25px" }}>
+                      <h3 style={sidebarTitle}>
+                        <Users size={16} /> Connections
+                      </h3>
+                      {connections.length > 0 ? (
+                        connections.map((conn) => {
+                          // ကိုယ်မဟုတ်တဲ့ တစ်ဖက်လူရဲ့ ID ကို ယူမယ်
+                          const friendId =
+                            conn.requesterId === user.uid
+                              ? conn.receiverId
+                              : conn.requesterId;
+                          const friend = allUsers.find(
+                            (u) => u.id === friendId,
+                          );
+                          if (!friend) return null;
+
+                          return (
+                            <div
+                              key={conn.id}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              {renderUserItem(friend)}
+                              {/* ပယ်ဖျက်ရန် ခလုတ်လေး */}
+                              <X
+                                size={14}
+                                color="#ef4444"
+                                style={{ cursor: "pointer" }}
+                                onClick={() => removeFriend(conn.id)}
+                              />
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p style={emptyText}>No connections yet</p>
+                      )}
+                    </div>
+
                     {/* Family Group */}
                     <div style={{ marginBottom: "25px" }}>
                       <h3 style={sidebarTitle}>
@@ -2113,6 +2393,15 @@ const logoutBtnSimple = {
   cursor: "pointer",
   fontSize: "14px",
   marginTop: "10px",
+};
+
+const modalInputSmall = {
+  flex: 1,
+  padding: "8px 12px",
+  borderRadius: "10px",
+  border: "1px solid #e2e8f0",
+  fontSize: "13px",
+  outline: "none",
 };
 
 // Dark Mode အတွက် Card Styles များကိုလည်း variable အနေနဲ့ သုံးနိုင်ပါတယ်

@@ -9,9 +9,14 @@ const LandingPage = ({ onLogin }) => {
 
             <div style={contentWrapper}>
                 <header style={header}>
-                    <h1 style={logo}>Re<span style={{ color: '#3b82f6' }}>Member</span></h1>
-                    <h2 style={mainHeading}>သင့်ရဲ့ အဖိုးတန်အမှတ်တရတွေကို <br/> <span style={highlightText}>သီးသန့် သိမ်းဆည်းထားပါ</span></h2>
-                    <p style={tagline}>မိသားစုနှင့် သူငယ်ချင်းများအတွက် သီးသန့် အမှတ်တရ ကမ္ဘာလေး</p>
+                    <h1 style={logo}>
+                <span style={{ color: "#c86202" }}>Re</span>
+                <span style={{ color: "#06b715" }}>@</span>
+                <span style={{ color: "#3b82f6" }}>Member</span>
+              </h1>
+                    {/* <h1 style={logo}>Re<span style={{ color: '#3b82f6' }}>Member</span></h1> */}
+                    <h2 style={mainHeading}>Preserve Your Precious Memories <br/> <span style={highlightText}>Privately and Securely</span></h2>
+                    <p style={tagline}>A private world of memories for family and friends.</p>
                 </header>
 
                 <div style={mainGrid}>
@@ -29,8 +34,8 @@ const LandingPage = ({ onLogin }) => {
                         <div style={price}>$3.99<span style={perMonth}>/month</span></div>
                         
                         <ul style={features}>
-                            <li style={featureLi}><span>✅</span> သီးသန့် မိသားစုအုပ်စုများ</li>
-                            <li style={featureLi}><span>✅</span> အကန့်အသတ်မရှိ ဓာတ်ပုံ/ဗီဒီယို</li>
+                            <li style={featureLi}><span>✅</span> Private Family Groups</li>
+                            <li style={featureLi}><span>✅</span> Unlimited Photos & Videos</li>
                             <li style={featureLi}><span>✅</span> Digital Postcards & Chat</li>
                             <li style={featureLi}><span>✅</span> Birthday Alert & Workspace</li>
                         </ul>
@@ -40,7 +45,7 @@ const LandingPage = ({ onLogin }) => {
                                 ☕ Buy Me A Coffee ($3.99)
                             </a>
                             
-                            <p style={infoText}>ဝယ်ယူပြီးပါက အောက်ပါခလုတ်ကိုနှိပ်၍ အသုံးပြုပါ</p>
+                            <p style={infoText}>After purchasing, click the button below to start using the service.</p>
                             
                             <button onClick={onLogin} style={loginBtn}>
                                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style={gIcon}/>
