@@ -34,14 +34,40 @@ const Chat = ({ recipient, onClose }) => {
     const scrollRef = useRef();
 
     useEffect(() => {
-        if (!recipient) return;
-        const chatId = [auth.currentUser.uid, recipient.id].sort().join('_');
-        const q = query(collection(db, "messages"), where("chatId", "==", chatId), orderBy("createdAt", "asc"));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
-        return () => unsubscribe();
-    }, [recipient]);
+        // ၁။ recipient မရှိရင် သို့မဟုတ် Login ဝင်ထားတဲ့ user မရှိရင် ဘာမှမလုပ်ဘဲ ပြန်ထွက်မယ်
+        // ဒါမှ auth.currentUser.uid ကြောင့် တက်မယ့် error ကို ကာကွယ်နိုင်မှာပါ
+        if (!recipient || !auth.currentUser) return;
+
+        let unsubscribe;
+
+        try {
+            const chatId = [auth.currentUser.uid, recipient.id].sort().join('_');
+            const q = query(
+                collection(db, "messages"), 
+                where("chatId", "==", chatId), 
+                orderBy("createdAt", "asc")
+            );
+
+            // ၂။ onSnapshot မှာ အောင်မြင်တဲ့အခါ (Success) နဲ့ အမှားတက်တဲ့အခါ (Error) နှစ်ခုလုံးကို ကိုင်တွယ်မယ်
+            unsubscribe = onSnapshot(q, 
+                (snapshot) => {
+                    setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                }, 
+                (error) => {
+                    // Logout ဖြစ်သွားတဲ့အခါ တက်လာမယ့် Permission Error ကို Console မှာ မပြခိုင်းတော့ပါဘူး
+                    if (error.code === 'permission-denied') return;
+                    console.error("Messages Listener Error:", error);
+                }
+            );
+        } catch (err) {
+            console.error("Chat Setup Error:", err);
+        }
+
+        // ၃။ Cleanup Function: စကားပြောခန်း ပိတ်လိုက်ရင် Listener ကို ပိတ်ပေးမယ်
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [recipient]); // auth.currentUser ကိုပါ စောင့်ကြည့်ချင်ရင် dependency မှာ ထည့်နိုင်ပါတယ်
 
     useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
