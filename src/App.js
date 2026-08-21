@@ -607,6 +607,32 @@ function App() {
     }
   };
 
+  // ၁။ မွေးနေ့ရှင်များကို စစ်ထုတ်ခြင်း
+const todayBDays = [];
+const upcomingBDays = [];
+
+users.forEach((u) => {
+  if (!u.birthday || !u.birthday.includes("/")) return;
+
+  const [m, d] = u.birthday.split("/");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let bdayDate = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
+  bdayDate.setHours(0, 0, 0, 0);
+
+  if (bdayDate < today) bdayDate.setFullYear(today.getFullYear() + 1);
+
+  const diffTime = bdayDate.getTime() - today.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    todayBDays.push(u);
+  } else if (diffDays > 0 && diffDays <= 14) {
+    upcomingBDays.push({ ...u, daysLeft: diffDays });
+  }
+});
+
   const isAdmin = user?.email === "minmaung0307@gmail.com";
 
   return (
@@ -696,80 +722,8 @@ function App() {
             </div>
           </nav>
 
-          {/* Birthday Banners */}
-          {users.map((u) => {
-            if (!u.birthday || !u.birthday.includes("/")) return null;
-            const [m, d] = u.birthday.split("/");
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const currentYear = today.getFullYear();
-            let bdayDate = new Date(currentYear, parseInt(m) - 1, parseInt(d));
-            bdayDate.setHours(0, 0, 0, 0);
-            if (bdayDate < today) bdayDate.setFullYear(currentYear + 1);
-            const diffTime = bdayDate - today;
-            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays === 0) {
-              return (
-                <div key={u.id} style={bdayBannerToday}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "15px",
-                    }}
-                  >
-                    <img
-                      src={u.photoURL}
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                        border: "2px solid #fff",
-                      }}
-                      alt="u"
-                    />
-                    <div style={{ textAlign: "left" }}>
-                      <div style={{ fontWeight: "bold" }}>
-                        🎉 Happy Birthday, {u.displayName}!
-                      </div>
-                      <div style={{ fontSize: "12px" }}>
-                        ဒီနေ့ဟာ သူ့ရဲ့ မွေးနေ့ထူးမြတ်တဲ့နေ့ ဖြစ်ပါတယ်။
-                        ဆုတောင်းပေးလိုက်ကြရအောင်။ 🎂
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-            if (diffDays > 0 && diffDays <= 14) {
-              return (
-                <div key={u.id} style={bdayBannerUpcoming}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "15px",
-                    }}
-                  >
-                    <div style={{ fontSize: "24px" }}>🎁</div>
-                    <div style={{ textAlign: "left" }}>
-                      <div style={{ fontWeight: "bold" }}>
-                        Upcoming Birthday: {u.displayName}
-                      </div>
-                      <div style={{ fontSize: "12px" }}>
-                        နောက် {diffDays} ရက်ဆိုရင် မွေးနေ့ရောက်တော့မှာပါ။
-                        လက်ဆောင်အတွက် ကြိုတင်ပြင်ဆင်ထားပါဦး။ ✨
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          })}
-
           <div style={mainLayout}>
+
             <div
               style={{
                 ...contentBody,
@@ -777,6 +731,58 @@ function App() {
                 maxWidth: activeTab === "workspace" ? "100%" : "850px",
               }}
             >
+                {/* Birthday Banners */}
+          <div style={{ padding: '0 15px' }}> {/* ဘေးဘောင်လွတ်အောင် */}
+  
+  {/* --- ဒီနေ့ မွေးနေ့ရှင်များ (Today) --- */}
+  {todayBDays.length > 0 && (
+    <div style={bdayBannerToday}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div style={{ display: 'flex', position: 'relative' }}>
+          {/* မွေးနေ့ရှင်အားလုံးရဲ့ Avatar တွေကို စုပြမယ် */}
+          {todayBDays.map((u, index) => (
+            <img 
+              key={u.id} 
+              src={u.photoURL} 
+              style={{ 
+                width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #fff',
+                marginLeft: index === 0 ? 0 : '-15px' // ပုံလေးတွေ တစ်ခုနဲ့တစ်ခု ထပ်နေအောင်
+              }} 
+              alt="u" 
+            />
+          ))}
+        </div>
+        <div style={{ textAlign: 'left' }}>
+          <strong>🎉 Happy Birthday!</strong>
+          <div style={{ fontSize: '13px' }}>
+            ယနေ့သည် {todayBDays.map(u => u.displayName).join(", ")} တို့၏ မွေးနေ့ဖြစ်ပါသည်။ 🎂
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* --- မကြာမီ မွေးနေ့ရှိသူများ (Upcoming) --- */}
+  {upcomingBDays.length > 0 && (
+    <div style={bdayBannerUpcoming}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <span style={{ fontSize: '24px' }}>🎁</span>
+        <div style={{ textAlign: 'left' }}>
+          <strong>Upcoming Birthdays</strong>
+          <div style={{ fontSize: '13px' }}>
+            {upcomingBDays.map((u, i) => (
+              <span key={u.id}>
+                {u.displayName} ({u.daysLeft === 1 ? "မနက်ဖြန်" : `${u.daysLeft} ရက်အလို`})
+                {i < upcomingBDays.length - 1 ? "၊ " : ""}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+
               {activeTab === "feed" && (
                 <MainDashboard
                   posts={posts}
@@ -2553,23 +2559,35 @@ const emptyText = {
 };
 
 const bdayBannerToday = {
-  backgroundColor: "#fef3c7", // အဝါနုရောင်
-  color: "#92400e",
-  padding: "15px",
-  borderRadius: "16px",
-  marginBottom: "15px",
-  border: "1px solid #fde68a",
-  boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+    backgroundColor: '#fef3c7',
+    color: '#92400e',
+    padding: '15px',
+    borderRadius: '16px',
+    marginBottom: '15px',
+    // Header အောက်ကနေ လွတ်သွားအောင် ဒီစာကြောင်းကို ထည့်ပါ
+    // marginTop: '80px', 
+    border: '1px solid #fde68a',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+    width: '90%', // ဖုန်းမှာ ဘေးဘောင်တွေနဲ့ လှအောင်
+    maxWidth: '600px',
+    marginLeft: 'auto',
+    marginRight: 'auto'
 };
 
 const bdayBannerUpcoming = {
-  backgroundColor: "#ecfdf5", // အစိမ်းနုရောင်
-  color: "#065f46",
-  padding: "15px",
-  borderRadius: "16px",
-  marginBottom: "15px",
-  border: "1px solid #a7f3d0",
-  boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+    backgroundColor: '#ecfdf5',
+    color: '#065f46',
+    padding: '15px',
+    borderRadius: '16px',
+    marginBottom: '15px',
+    // Header အောက်ကနေ လွတ်သွားအောင် ဒီစာကြောင်းကို ထည့်ပါ
+    // marginTop: '80px', 
+    border: '1px solid #a7f3d0',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+    width: '90%',
+    maxWidth: '600px',
+    marginLeft: 'auto',
+    marginRight: 'auto'
 };
 
 const adminCardStyle = {
