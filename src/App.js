@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { auth, googleProvider, db } from "./firebase";
+import { auth, googleProvider, db, storage } from "./firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   signInWithPopup, // ဒါလေး ပါသွားပါပြီ
   signInWithRedirect,
@@ -44,8 +45,10 @@ import {
 } from "lucide-react";
 
 function App() {
+  const moods = ["😊", "😴", "😋", "😢", "😡", "💪", "🤒"];
   const [adminSearch, setAdminSearch] = useState("");
   const [user, setUser] = useState(null);
+
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -87,6 +90,17 @@ function App() {
   const [pendingRequests, setPendingRequests] = useState([]); // ကိုယ့်ဆီလာထားတဲ့ Request များ
   const [searchEmail, setSearchSearchEmail] = useState(""); // ရှာဖွေမည့် Email
   const [allUsers, setAllUsers] = useState([]);
+
+  const [unreadCounts, setUnreadMessages] = useState({});
+  const [eventFile, setEventFile] = useState(null);
+
+  const [fridgeNote, setFridgeNote] = useState("");
+  const [fridgeNotes, setFridgeNotes] = useState([]);
+  const [shoppingList, setShoppingList] = useState([]);
+  const [showShoppingModal, setShowShoppingModal] = useState(false);
+  const [allNotes, setAllNotes] = useState([]);
+  const [viewImage, setViewImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   //   အကောင့်ဝင်ခြင်းနှင့် မိသားစုကုဒ် စစ်ဆေးခြင်း Effect
   useEffect(() => {
@@ -255,6 +269,25 @@ function App() {
     return () => unsubAll();
   }, [user]);
 
+  //   Chat Noti (စာအသစ်ရှိမရှိ နားထောင်ခြင်း)
+  useEffect(() => {
+    if (!user) return;
+    const q = query(
+      collection(db, "messages"),
+      where("receiverId", "==", user.uid),
+      where("isRead", "==", false),
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      let counts = {};
+      snap.docs.forEach((doc) => {
+        const senderId = doc.data().senderId;
+        counts[senderId] = (counts[senderId] || 0) + 1;
+      });
+      setUnreadMessages(counts);
+    });
+    return () => unsub();
+  }, [user]);
+
   useEffect(() => {
     if (!user) return;
 
@@ -300,6 +333,35 @@ function App() {
       unsubAccepted();
     };
   }, [user]);
+
+  // Firestore ကနေ Fridge Notes တွေကို နားထောင်မယ်
+  useEffect(() => {
+    if (!userFamilyCode) return;
+
+    // ၁။ Family Fridge (စာတိုများ) ကို ဆွဲယူခြင်း
+    const qFridge = query(
+      collection(db, "fridgeNotes"),
+      where("familyCode", "==", userFamilyCode),
+      orderBy("createdAt", "desc"),
+    );
+    const unsubFridge = onSnapshot(qFridge, (snap) => {
+      setFridgeNotes(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    });
+
+    // ၂။ Shopping List (ဈေးဝယ်စာရင်း) ကို ဆွဲယူခြင်း
+    const qShopping = query(
+      collection(db, "shoppingList"),
+      where("familyCode", "==", userFamilyCode),
+    );
+    const unsubShopping = onSnapshot(qShopping, (snap) => {
+      setShoppingList(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => {
+      unsubFridge();
+      unsubShopping();
+    };
+  }, [userFamilyCode]);
 
   // အခု Popup နဲ့ စမ်းကြည့်ပါမယ်
   const handleLogin = () => {
@@ -389,6 +451,21 @@ function App() {
           {u.displayName}
         </span>
 
+        <span
+          style={{
+            fontSize: "14px",
+            fontWeight: "600",
+            color: darkMode ? "#fff" : "#1e293b",
+          }}
+        >
+          {u.displayName}{" "}
+          {u.mood && (
+            <span title="Current Mood" style={{ marginLeft: "5px" }}>
+              {u.mood}
+            </span>
+          )}
+        </span>
+
         {/* ၂။ Role (ဥပမာ - Family Member) */}
         <span
           style={{ fontSize: "11px", color: "#3b82f6", marginBottom: "2px" }}
@@ -405,8 +482,50 @@ function App() {
           </span>
         )}
       </div>
+
+      {/* စာအသစ်ရှိရင် ပြမည့် Badge */}
+      {unreadCounts[u.id] > 0 && (
+        <div
+          style={{
+            backgroundColor: "#ef4444",
+            color: "white",
+            borderRadius: "50%",
+            width: "20px",
+            height: "20px",
+            fontSize: "10px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "bold",
+            marginLeft: "auto", // ညာဘက်အစွန်ကို ပို့ပေးမယ်
+          }}
+        >
+          {unreadCounts[u.id]}
+        </div>
+      )}
     </div>
   );
+
+  const handleFridgePost = async () => {
+    if (!fridgeNote.trim()) return;
+    await addDoc(collection(db, "fridgeNotes"), {
+      text: fridgeNote,
+      userName: user.displayName,
+      familyCode: userFamilyCode,
+      createdAt: serverTimestamp(),
+    });
+    setFridgeNote("");
+  };
+
+  const handleDeleteFridgeNote = async (id) => {
+    if (window.confirm("ဤစာတိုကို ဖျက်မှာ သေချာပါသလား?")) {
+      try {
+        await deleteDoc(doc(db, "fridgeNotes", id));
+      } catch (error) {
+        console.error("Error deleting note: ", error);
+      }
+    }
+  };
 
   // ၁။ သူငယ်ချင်းအသစ် ရှာပြီး Request ပို့မယ်
   const handleAddFriend = async () => {
@@ -658,26 +777,92 @@ function App() {
 
               {activeTab === "gallery" && (
                 <div style={adminCardStyle}>
-                  <h3 style={{ marginBottom: "20px" }}>
+                  <h3
+                    style={{
+                      marginBottom: "20px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
                     <Palette size={20} /> Memory Gallery
                   </h3>
                   <div style={galleryGrid}>
-                    {posts
-                      .filter((p) => p.fileUrl || p.imageUrl)
-                      .map((p) => (
-                        <div key={p.id} style={galleryItem}>
-                          <img
-                            src={p.fileUrl || p.imageUrl}
-                            style={galleryImg}
-                            alt="memory"
-                            referrerPolicy="no-referrer"
-                            onError={(e) =>
-                              (e.target.parentElement.style.display = "none")
-                            }
-                          />
+                    {posts.map((post) => {
+                      // ၁။ အရင်တင်ထားတဲ့ ပုံတစ်ပုံချင်းစီရော၊ အခုတင်တဲ့ ပုံအများကြီးရော အကုန်အလုပ်လုပ်အောင် Array တစ်ခုအရင်ဆောက်မယ်
+                      const allMedia =
+                        post.media ||
+                        (post.fileUrl || post.imageUrl
+                          ? [
+                              {
+                                url: post.fileUrl || post.imageUrl,
+                                type: "image",
+                              },
+                            ]
+                          : []);
+
+                      return allMedia.map((item, index) => (
+                        <div
+                          key={`${post.id}-${index}`}
+                          style={{
+                            ...galleryItem,
+                            position: "relative",
+                            cursor: "pointer",
+                            overflow: "hidden",
+                          }}
+                          onClick={() => setViewImage(item.url)} // နှိပ်လိုက်ရင် ပုံကြီးပြမယ့် Lightbox logic
+                        >
+                          {/* ၂။ ဗီဒီယိုဖြစ်ဖြစ် ပုံဖြစ်ဖြစ် Gallery မှာ Thumbnail အနေနဲ့ပြမယ် */}
+                          {item.type === "video" ? (
+                            <div
+                              style={{
+                                position: "relative",
+                                width: "100%",
+                                height: "100%",
+                              }}
+                            >
+                              <video src={item.url} style={galleryImg} />
+                              <div style={playIconOverlay}>▶️</div>
+                            </div>
+                          ) : (
+                            <img
+                              src={item.url}
+                              style={galleryImg}
+                              alt="memory"
+                              referrerPolicy="no-referrer"
+                              onError={(e) =>
+                                (e.target.parentElement.style.display = "none")
+                              }
+                            />
+                          )}
+
+                          {/* ၃။ အသုံးဝင်မယ့် Overlay - ဘယ်သူတင်ထားတာလဲဆိုတာကို ပုံပေါ်မှာပြမယ် */}
+                          <div style={galleryInfoOverlay}>
+                            <img
+                              src={post.userImage}
+                              style={tinyAvatar}
+                              alt="u"
+                            />
+                            <span style={tinyText}>{post.userName}</span>
+                          </div>
                         </div>
-                      ))}
+                      ));
+                    })}
                   </div>
+
+                  {/* ၄။ Gallery ထဲမှာ ပုံမရှိရင် ပြမယ့် စာသား */}
+                  {posts.filter((p) => p.media || p.fileUrl || p.imageUrl)
+                    .length === 0 && (
+                    <p
+                      style={{
+                        textAlign: "center",
+                        color: "#64748b",
+                        padding: "20px",
+                      }}
+                    >
+                      Gallery ထဲမှာ အမှတ်တရပုံများ မရှိသေးပါ
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -798,6 +983,49 @@ function App() {
                       >
                         {darkMode ? "ON" : "OFF"}
                       </button>
+                    </div>
+
+                    <div style={moodCardStyle}>
+                      <h4 style={{ margin: "0 0 10px 0", fontSize: "14px" }}>
+                        💡 How are you feeling today? (Mood Status)
+                      </h4>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "10px",
+                          justifyContent: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {moods.map((m) => (
+                          <span
+                            key={m}
+                            onClick={async () => {
+                              await updateDoc(doc(db, "users", user.uid), {
+                                mood: m,
+                              });
+                              alert(`ဒီနေ့အတွက် ${m} ကို ရွေးချယ်လိုက်ပါပြီ!`);
+                            }}
+                            style={{
+                              fontSize: "24px",
+                              cursor: "pointer",
+                              padding: "8px",
+                              borderRadius: "12px",
+                              backgroundColor: "#fff",
+                              boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
+                              transition: "0.2s",
+                            }}
+                            onMouseOver={(e) =>
+                              (e.target.style.transform = "scale(1.2)")
+                            }
+                            onMouseOut={(e) =>
+                              (e.target.style.transform = "scale(1)")
+                            }
+                          >
+                            {m}
+                          </span>
+                        ))}
+                      </div>
                     </div>
 
                     {/* --- SaaS Plan Info (A30, B20, C40 Concept) --- */}
@@ -1424,6 +1652,165 @@ function App() {
                         </button>
                       </div>
                     </div>
+
+                    {/* --- ၁။ Family Fridge Card --- */}
+                    <div
+                      style={{
+                        ...fridgeCardStyle,
+                        marginBottom: "20px",
+                        marginTop: "30px",
+                        padding: "15px",
+                        backgroundColor: darkMode ? "#1e293b" : "#eff6ff",
+                        borderRadius: "15px",
+                        border: "1px dashed #3b82f6",
+                      }}
+                    >
+                      <h4 style={{ margin: "0 0 10px 0", fontSize: "14px" }}>
+                        📌 Family Fridge
+                      </h4>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "5px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        <input
+                          placeholder="စာတိုလေး ချန်ခဲ့ပါ..."
+                          style={modalInputSmall}
+                          value={fridgeNote}
+                          onChange={(e) => setFridgeNote(e.target.value)}
+                        />
+                        <button onClick={handleFridgePost} style={saveBtnSmall}>
+                          Post
+                        </button>
+                      </div>
+
+                      {/* 🌟 ဤနေရာသည် စာတိုများကို ပြန်ပြမည့်နေရာဖြစ်သည် 🌟 */}
+                      <div
+                        style={{
+                          maxHeight: "150px",
+                          overflowY: "auto",
+                          marginTop: "10px",
+                        }}
+                      >
+                        {fridgeNotes.length > 0 ? (
+                          fridgeNotes.map((n) => (
+                            <div
+                              key={n.id}
+                              style={{
+                                ...noteStyle,
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                padding: "5px 0",
+                              }}
+                            >
+                              <div style={{ flex: 1, fontSize: "12px" }}>
+                                <strong>{n.userName}:</strong> {n.text}
+                              </div>
+
+                              {/* ဖျက်ရန် အမှိုက်ပုံးပုံလေး */}
+                              <Trash2
+                                size={14}
+                                color="#ef4444"
+                                style={{
+                                  cursor: "pointer",
+                                  opacity: 0.7,
+                                  marginLeft: "10px",
+                                }}
+                                onClick={() => handleDeleteFridgeNote(n.id)}
+                              />
+                            </div>
+                          ))
+                        ) : (
+                          <p style={{ fontSize: "11px", color: "#999" }}>
+                            စာတိုများ မရှိသေးပါ
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* --- ၂။ Shopping List Card --- */}
+                    <div style={{ ...shoppingCardStyle, marginBottom: "20px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        <h4 style={{ margin: 0, fontSize: "14px" }}>
+                          🛒 Shopping List
+                        </h4>
+                        <button
+                          onClick={() => {
+                            const item = prompt("ဝယ်စရာပစ္စည်းအမည်:");
+                            if (item)
+                              addDoc(collection(db, "shoppingList"), {
+                                text: item,
+                                isBought: false,
+                                familyCode: userFamilyCode,
+                                createdAt: serverTimestamp(),
+                              });
+                          }}
+                          style={saveBtnSmall}
+                        >
+                          + Item
+                        </button>
+                      </div>
+
+                      {/* 🌟 ဤနေရာသည် ဈေးဝယ်စာရင်းကို ပြန်ပြမည့်နေရာဖြစ်သည် 🌟 */}
+                      <div>
+                        {shoppingList.length > 0 ? (
+                          shoppingList.map((item) => (
+                            <div
+                              key={item.id}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                fontSize: "12px",
+                                marginBottom: "5px",
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={item.isBought}
+                                onChange={() =>
+                                  updateDoc(doc(db, "shoppingList", item.id), {
+                                    isBought: !item.isBought,
+                                  })
+                                }
+                              />
+                              <span
+                                style={{
+                                  textDecoration: item.isBought
+                                    ? "line-through"
+                                    : "none",
+                                  flex: 1,
+                                }}
+                              >
+                                {item.text}
+                              </span>
+                              <Trash2
+                                size={12}
+                                color="#ef4444"
+                                style={{ cursor: "pointer" }}
+                                onClick={() =>
+                                  deleteDoc(doc(db, "shoppingList", item.id))
+                                }
+                              />
+                            </div>
+                          ))
+                        ) : (
+                          <p style={{ fontSize: "11px", color: "#999" }}>
+                            ဈေးဝယ်စာရင်း မရှိသေးပါ
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1612,28 +1999,51 @@ function App() {
                     }
                   />
 
+                  <label style={labelStyle}>
+                    ပွဲလမ်းအမှတ်တရပုံ (ရွေးချယ်နိုင်သည်)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEventFile(e.target.files[0])}
+                    style={modalInputLarge}
+                  />
+                  {eventFile && (
+                    <p style={{ fontSize: "12px", color: "#3b82f6" }}>
+                      📍 {eventFile.name} ကို ရွေးထားသည်
+                    </p>
+                  )}
+
                   <div
                     style={{ display: "flex", gap: "12px", marginTop: "10px" }}
                   >
                     <button
                       onClick={async () => {
-                        // Debug လုပ်ဖို့အတွက် console မှာ ကြည့်မယ်
-                        console.log(
-                          "Title:",
-                          newEvent.title,
-                          "Date:",
-                          newEvent.date,
-                          "FamilyCode:",
-                          userFamilyCode,
-                        );
-
                         if (newEvent.title && newEvent.date && userFamilyCode) {
                           try {
+                            setUploading(true); // Loading စတင်မည်
+                            let eventImgUrl = "";
+
+                            // ပုံရွေးထားလျှင် Storage သို့ အရင်တင်မည်
+                            if (eventFile) {
+                              const storageRef = ref(
+                                storage,
+                                `events/${Date.now()}_${eventFile.name}`,
+                              );
+                              const snapshot = await uploadBytes(
+                                storageRef,
+                                eventFile,
+                              );
+                              eventImgUrl = await getDownloadURL(snapshot.ref);
+                            }
+
                             await addDoc(collection(db, "events"), {
                               ...newEvent,
+                              imageUrl: eventImgUrl, // image နေရာတွင် imageUrl ဟု နာမည်ပေးခြင်းက ပိုစနစ်ကျပါသည်
                               familyCode: userFamilyCode,
                               createdAt: serverTimestamp(),
                             });
+
                             setShowEventModal(false);
                             setNewEvent({
                               title: "",
@@ -1641,14 +2051,16 @@ function App() {
                               location: "",
                               details: "",
                             });
+                            setEventFile(null); // ပုံကို Reset လုပ်မည်
+                            setUploading(false);
                             alert("ပွဲသစ်ကို သိမ်းဆည်းပြီးပါပြီ!");
                           } catch (error) {
                             console.error("Error adding event:", error);
+                            setUploading(false);
                           }
                         } else {
-                          // ဘာကြောင့် သိမ်းလို့မရတာလဲဆိုတာ အသိပေးမယ်
                           alert(
-                            "ပွဲအမည်၊ ရက်စွဲ နှင့် မိသားစုကုဒ် လိုအပ်နေပါသည်။ မိသားစုကုဒ်ရှိမရှိ ပြန်စစ်ပေးပါ။",
+                            "ပွဲအမည်၊ ရက်စွဲ နှင့် မိသားစုကုဒ် လိုအပ်နေပါသည်။",
                           );
                         }
                       }}
@@ -1736,6 +2148,21 @@ function App() {
                       })
                     }
                   />
+
+                  <label style={labelStyle}>
+                    ပွဲလမ်းအမှတ်တရပုံ (ရွေးချယ်နိုင်သည်)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEventFile(e.target.files[0])}
+                    style={modalInputLarge}
+                  />
+                  {eventFile && (
+                    <p style={{ fontSize: "12px", color: "#3b82f6" }}>
+                      📍 {eventFile.name} ကို ရွေးထားသည်
+                    </p>
+                  )}
 
                   <div
                     style={{ display: "flex", gap: "12px", marginTop: "10px" }}
@@ -1886,6 +2313,42 @@ function App() {
                 >
                   အတည်ပြုမည်
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* ပုံကြီးချဲ့ကြည့်ရန် Lightbox Overlay */}
+          {viewImage && (
+            <div style={lightboxOverlay} onClick={() => setViewImage(null)}>
+              <div
+                style={{
+                  position: "relative",
+                  maxWidth: "90%",
+                  maxHeight: "90%",
+                }}
+              >
+                <img
+                  src={viewImage}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "12px",
+                    boxShadow: "0 0 20px rgba(0,0,0,0.5)",
+                  }}
+                  alt="enlarged"
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-40px",
+                    right: "0",
+                    color: "#fff",
+                    fontSize: "30px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ×
+                </div>
               </div>
             </div>
           )}
@@ -2404,6 +2867,92 @@ const modalInputSmall = {
   outline: "none",
 };
 
+const galleryInfoOverlay = {
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  right: 0,
+  background: "linear-gradient(transparent, rgba(0,0,0,0.7))",
+  padding: "8px",
+  display: "flex",
+  alignItems: "center",
+  gap: "5px",
+  opacity: 1, // ဖုန်းမှာ အမြဲမြင်နေရအောင် ၁ ထားပါ
+};
+
+const tinyAvatar = {
+  width: "18px",
+  height: "18px",
+  borderRadius: "50%",
+  objectFit: "cover",
+  border: "1px solid #fff",
+};
+
+const tinyText = {
+  color: "#fff",
+  fontSize: "10px",
+  fontWeight: "500",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+};
+
+const playIconOverlay = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  fontSize: "20px",
+  background: "rgba(255,255,255,0.3)",
+  borderRadius: "50%",
+  padding: "5px",
+};
+
+const moodCardStyle = {
+  backgroundColor: "#eff6ff",
+  padding: "20px",
+  borderRadius: "20px",
+  textAlign: "center",
+  marginBottom: "20px",
+  border: "1px solid #dbeafe",
+};
+
+const fridgeCardStyle = {
+  backgroundColor: "#fff9c4",
+  padding: "15px",
+  borderRadius: "15px",
+  marginBottom: "20px",
+  border: "1px solid #f0e68c",
+  boxShadow: "2px 2px 5px rgba(0,0,0,0.05)",
+};
+
+const shoppingCardStyle = {
+  backgroundColor: "#f0fdf4",
+  padding: "15px",
+  borderRadius: "15px",
+  marginBottom: "15px",
+  border: "1px solid #bbf7d0",
+};
+
+const noteStyle = {
+  fontSize: "12px",
+  borderBottom: "1px solid rgba(0,0,0,0.05)",
+  padding: "4px 0",
+  color: "#444",
+};
+
+const lightboxOverlay = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.85)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 5000,
+};
 // Dark Mode အတွက် Card Styles များကိုလည်း variable အနေနဲ့ သုံးနိုင်ပါတယ်
 // const cardBg = darkMode ? '#1e293b' : '#ffffff';
 // const textColor = darkMode ? '#f8fafc' : '#1e293b';

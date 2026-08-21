@@ -116,6 +116,8 @@ const Chat = ({ recipient, onClose }) => {
       text: message,
       imageUrl: imgUrl,
       senderId: auth.currentUser.uid,
+      receiverId: recipient.id,
+      isRead: false,
       createdAt: serverTimestamp(),
     });
 
@@ -123,6 +125,16 @@ const Chat = ({ recipient, onClose }) => {
     setChatImage(null);
     setUploading(false);
   };
+
+  useEffect(() => {
+    const markAsRead = async () => {
+        const unreadMessages = messages.filter(m => m.receiverId === auth.currentUser.uid && !m.isRead);
+        for (const msg of unreadMessages) {
+            await updateDoc(doc(db, "messages", msg.id), { isRead: true });
+        }
+    };
+    if (messages.length > 0) markAsRead();
+}, [messages]);
 
   return (
     <div style={chatBoxContainer}>
