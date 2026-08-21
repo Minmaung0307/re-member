@@ -352,11 +352,11 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
       setSelectedFiles([]); // array ကို ရှင်းမယ်
       setExternalUrl("");
       setUploading(false);
-      alert("အမှတ်တရကို အောင်မြင်စွာ တင်ပြီးပါပြီ! ✨");
+      alert("Memory uploaded successfully! ✨");
     } catch (error) {
       console.error("Upload Error: ", error);
       setUploading(false);
-      alert("တင်လို့မရပါ။ ပြန်ကြိုးစားကြည့်ပါ။");
+      alert("Upload failed. Please try again.");
     }
   };
 
@@ -389,7 +389,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
         <Search size={20} color="#64748b" />
         <input
           type="text"
-          placeholder="အမှတ်တရများကို ရှာဖွေပါ (ဥပမာ - နာမည် သို့မဟုတ် စာသား)..."
+          placeholder="Search memories (e.g., by name or text)..."
           style={{
             border: "none",
             outline: "none",
@@ -407,7 +407,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
           <img src={auth.currentUser?.photoURL} style={smallAvatar} alt="me" />
           <input
             type="text"
-            placeholder="ဘာတွေမျှဝေချင်လဲ..."
+            placeholder="What would you like to share?..."
             style={textInput}
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
@@ -479,7 +479,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
               fontSize: "13px",
               width: "100%",
             }}
-            placeholder="သို့မဟုတ် Online Link (URL) ထည့်ပါ..."
+            placeholder="Or add an online link (URL)..."
             value={externalUrl}
             onChange={(e) => setExternalUrl(e.target.value)}
           />
@@ -495,7 +495,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
           }}
         >
           <span style={{ fontSize: "12px", color: "#64748b" }}>
-            နောက်ခံရွေးရန်:
+            Choose a Background:
           </span>
           {cardStyles.map((s) => (
             <div
@@ -532,7 +532,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
               onClick={() => setShowPostcardEditor(true)}
               style={postcardBtn}
             >
-              🎨 Postcard ရေးမည်
+              🎨 Write a Postcard
             </button>
           </div>
 
@@ -596,7 +596,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
                 />
               )}
               <textarea
-                placeholder="ဆုတောင်းစကား ရေးပါ..."
+                placeholder="Write a Message of Blessing..."
                 style={{ ...postcardTextArea, zIndex: 1 }}
                 value={postcardMessage}
                 onChange={(e) => setPostcardMessage(e.target.value)}
@@ -1026,7 +1026,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
                 <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
                   <input
                     type="text"
-                    placeholder="မှတ်ချက်ပေးရန်..."
+                    placeholder="Leave a Comment..."
                     style={{
                       flex: 1,
                       border: "1px solid #e2e8f0",
@@ -1076,8 +1076,8 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
               }}
             >
               {loadingMore
-                ? "ခဏစောင့်ပါ..."
-                : "နောက်ထပ် အမှတ်တရများ ကြည့်ရန် ↓"}
+                ? "Please Wait..."
+                : "View More Memories ↓"}
             </button>
           </div>
         )}

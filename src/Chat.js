@@ -15,12 +15,20 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   Trash2,
+  Smile,
   Edit3,
   Check,
   Send,
   X,
   Image as ImageIcon,
 } from "lucide-react";
+
+const emojiCategories = {
+  "Faces": ['😊', '🥰', '😂', '😘', '😎', '😇', '🥺', '🤩', '🤣', '🤫', '🫠', '🥵'],
+  "Family": ['🫂', '👨‍👩‍👧‍👦', '🏠', '❤️', '💖', '✨', '🙏', '🫡', '🤝', '💍', '👶', '👵'],
+  "Food": ['😋', '🤤', '🥘', '🍲', '☕', '🍦', '🍰', '🍎', '🍓', '🍕', '🍟', '🍺'],
+  "Party": ['🎂', '🎉', '🎊', '🎈', '🎁', '🥂', '🎆', '🎇', '🎵', '🎸', '💃', '🕺']
+};
 
 const Chat = ({ recipient, onClose }) => {
   // Component state
@@ -31,6 +39,9 @@ const Chat = ({ recipient, onClose }) => {
 
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
+
+  const [activeEmojiCat, setActiveEmojiCat] = useState("Faces");
+const [showEmojiPicker, setShowEmojiPicker] = useState(false); // Emoji ပွင့်/ပိတ် သိဖို့
 
   // Message ဖျက်ရန်
   const handleDelete = async (id) => {
@@ -246,25 +257,57 @@ const Chat = ({ recipient, onClose }) => {
       </div>
 
       <form onSubmit={sendMessage} style={inputArea}>
-        <label style={{ cursor: "pointer", color: "#64748b" }}>
-          <ImageIcon size={20} />
-          <input
-            type="file"
-            hidden
-            onChange={(e) => setChatImage(e.target.files[0])}
-          />
-        </label>
-        <input
-          type="text"
-          placeholder="စာရိုက်ပါ..."
-          style={chatInput}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-        <button type="submit" disabled={uploading} style={sendBtn}>
-          <Send size={18} />
-        </button>
-      </form>
+    {/* ၁။ ပုံတင်တဲ့ခလုတ် */}
+    <label style={{ cursor: 'pointer', color: '#64748b' }}>
+        <ImageIcon size={20} />
+        <input type="file" hidden onChange={(e) => setChatImage(e.target.files[0])} />
+    </label>
+
+    {/* ၂။ 🌟 အသစ်ထည့်ရမည့် Emoji ခလုတ် 🌟 */}
+    <button 
+        type="button" 
+        onClick={() => setShowEmojiPicker(!showEmojiPicker)} 
+        style={{ border: 'none', background: 'none', color: '#64748b', cursor: 'pointer', padding: '0 5px' }}
+    >
+        <Smile size={20} />
+    </button>
+
+    <input 
+        type="text" 
+        placeholder="စာရိုက်ပါ..." 
+        style={chatInput} 
+        value={message} 
+        onChange={(e) => setMessage(e.target.value)} 
+    />
+    
+    <button type="submit" disabled={uploading} style={sendBtn}>
+        <Send size={18} />
+    </button>
+</form>
+
+{/* ၃။ Emoji Picker Popup (ဒါက Form ရဲ့အပြင်မှာ ရှိရပါမယ်) */}
+{showEmojiPicker && (
+    <div style={emojiPopupContainer}>
+        <div style={emojiTabRow}>
+            {Object.keys(emojiCategories).map(cat => (
+                <button key={cat} type="button"
+                    onClick={() => setActiveEmojiCat(cat)}
+                    style={{ ...emojiTabBtn, color: activeEmojiCat === cat ? '#3b82f6' : '#64748b' }}>
+                    {cat}
+                </button>
+            ))}
+        </div>
+        <div style={emojiGrid}>
+            {emojiCategories[activeEmojiCat].map(emoji => (
+                <span key={emoji} 
+                    onClick={() => { setMessage(prev => prev + emoji); setShowEmojiPicker(false); }}
+                    style={emojiItemStyle}>
+                    {emoji}
+                </span>
+            ))}
+        </div>
+    </div>
+)}
       {chatImage && (
         <div
           style={{
@@ -360,5 +403,22 @@ const sendBtn = {
   color: "#3b82f6",
   cursor: "pointer",
 };
+
+const emojiPopupContainer = {
+    position: 'absolute',
+    bottom: '70px', // inputArea ရဲ့ အမြင့်ထက် ပိုရပါမယ်
+    right: '10px',
+    backgroundColor: '#fff',
+    borderRadius: '15px',
+    boxShadow: '0 5px 25px rgba(0,0,0,0.15)',
+    width: '250px',
+    zIndex: 100,
+    display: 'flex',
+    flexDirection: 'column'
+};
+const emojiTabRow = { display: 'flex', borderBottom: '1px solid #eee', padding: '5px' };
+const emojiTabBtn = { flex: 1, border: 'none', background: 'none', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' };
+const emojiGrid = { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', padding: '10px', maxHeight: '150px', overflowY: 'auto' };
+const emojiItemStyle = { fontSize: '20px', padding: '5px', cursor: 'pointer', textAlign: 'center' };
 
 export default Chat;

@@ -89,12 +89,12 @@ const Workspace = ({ user, darkMode }) => {
       {/* Private Notes Section */}
       <section style={section}>
         <h3 style={{ color: darkMode ? "#fff" : "#1e293b" }}>
-          <List size={20} /> နေ့စဉ်မှတ်စု (Private)
+          <List size={20} /> Daily Notes (Private)
         </h3>
         <div style={inputGroup}>
           <input
             style={input}
-            placeholder="မှတ်စုအသစ်ရေးရန်..."
+            placeholder="Write a New Note..."
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
           />
@@ -132,7 +132,7 @@ const Workspace = ({ user, darkMode }) => {
         <div style={inputGroup}>
           <input
             style={input}
-            placeholder="အလုပ်အသစ်ထည့်ရန်..."
+            placeholder="Add a New Task..."
             value={taskInput}
             onChange={(e) => setTaskInput(e.target.value)}
           />

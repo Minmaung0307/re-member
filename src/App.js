@@ -36,6 +36,7 @@ import {
   Users,
   Home,
   ShieldCheck,
+  Edit,
   Palette,
   Gift,
   Search,
@@ -45,7 +46,20 @@ import {
 } from "lucide-react";
 
 function App() {
-  const moods = ["😊", "😴", "😋", "😢", "😡", "💪", "🤒"];
+  const moods = [
+    // ပျော်ရွှင်ခြင်း (Happy)
+    '😊', '🥰', '🤩', '🥳', '😎', 
+    // အနားယူခြင်း/ ပျင်းခြင်း (Relax/Bored)
+    '😌', '😴', '☕', '🧘', '😑',
+    // အလုပ်များခြင်း/ ကြိုးစားခြင်း (Productive/Busy)
+    '🏃‍♂️', '👨‍💻', '📚', '💪', '✨',
+    // စားချင်သောက်ချင်ခြင်း (Foodie)
+    '😋', '🤤', '🥘', '🍕', '🍦',
+    // ဝမ်းနည်းခြင်း/ စိတ်ပူခြင်း (Sad/Anxious)
+    '😢', '🥺', '😰', '😱', '😡',
+    // ကျန်းမာရေး/ အားနာခြင်း (Health/Grateful)
+    '🤒', '🤕', '🙏', '🫂'
+];
   const [adminSearch, setAdminSearch] = useState("");
   const [user, setUser] = useState(null);
 
@@ -101,6 +115,9 @@ function App() {
   const [allNotes, setAllNotes] = useState([]);
   const [viewImage, setViewImage] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [showFamily, setShowFamily] = useState(true);
+    const [showFriends, setShowFriends] = useState(true);
+    const [showConnections, setShowConnections] = useState(true);
 
   //   အကောင့်ဝင်ခြင်းနှင့် မိသားစုကုဒ် စစ်ဆေးခြင်း Effect
   useEffect(() => {
@@ -407,7 +424,7 @@ function App() {
         {/* ရိုးရိုးစာသားအစား လှပတဲ့ Spinner လေး သုံးနိုင်ပါတယ် */}
         <div style={spinnerStyle}></div>
         <p style={{ marginTop: "15px", color: "#64748b", fontWeight: "500" }}>
-          အမှတ်တရများအား ပြင်ဆင်နေပါသည်...
+          Preparing your memories...
         </p>
       </div>
     );
@@ -867,85 +884,73 @@ function App() {
               )}
 
               {activeTab === "events" && (
-                <div style={adminCardStyle}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: "20px",
-                    }}
-                  >
-                    <h3>🗓️ Family Events</h3>
-                    <button
-                      onClick={() => setShowEventModal(true)}
-                      style={postBtnMini}
-                    >
-                      + ပွဲသစ်ထည့်ရန်
-                    </button>
-                  </div>
-                  {events.map((ev) => (
-                    <div
-                      key={ev.id}
-                      style={{
-                        padding: "15px",
-                        borderBottom: "1px solid #eee",
-                        position: "relative",
-                      }}
-                    >
-                      <div style={{ fontWeight: "bold", fontSize: "16px" }}>
-                        {ev.title} {ev.isAnnual && "🔁"}
-                      </div>
-                      <div style={{ fontSize: "13px", color: "#3b82f6" }}>
-                        {ev.date} | 📍 {ev.location || "No location"}
-                      </div>
-                      <p
-                        style={{
-                          fontSize: "13px",
-                          color: "#64748b",
-                          margin: "5px 0",
-                        }}
-                      >
-                        {ev.details}
-                      </p>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          marginTop: "10px",
-                        }}
-                      >
-                        <button
-                          onClick={() => deleteDoc(doc(db, "events", ev.id))}
-                          style={{
-                            border: "none",
-                            background: "none",
-                            color: "#ef4444",
-                            fontSize: "12px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          Delete
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditingEvent(ev);
-                            setShowEditModal(true);
-                          }}
-                          style={{
-                            border: "none",
-                            background: "none",
-                            color: "#3b82f6",
-                            fontSize: "12px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+  <div style={adminCardStyle}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: 'center', marginBottom: "20px" }}>
+      <h3 style={{ margin: 0 }}>🗓️ Family Events</h3>
+      <button onClick={() => setShowEventModal(true)} style={postBtnMini}>+ Add Event</button>
+    </div>
+    
+    <div style={eventListGrid}>
+      {events.map((ev) => (
+        <div key={ev.id} style={eventCard}>
+          {/* ၁။ ပုံပြသခြင်း (Field နာမည် ၂ မျိုးလုံးကို စစ်ပေးထားပါတယ်) */}
+          <div style={eventImageWrapper}>
+            { (ev.imageUrl || ev.image) ? (
+        <img 
+            src={ev.imageUrl || ev.image} 
+            style={eventCardImg} 
+            alt="event" 
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+                // ပုံအဟောင်းတွေ လင့်ခ်ပျက်နေရင် Placeholder အစား Gradient ပြောင်းခိုင်းလိုက်တာပါ
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+            }}
+        />
+    ) : null}
+    
+    {/* ပုံမရှိတဲ့အခါ သို့မဟုတ် ပုံပျက်နေတဲ့အခါ ပြမည့် ပုံစံလှလှလေး */}
+    <div style={{
+        ...eventCardImg,
+        display: (ev.imageUrl || ev.image) ? 'none' : 'flex', // ပုံရှိရင် ဖျောက်ထားမယ်
+        background: 'linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: '#818cf8',
+        fontSize: '40px'
+    }}>
+        🗓️
+    </div>
+            {/* ၂။ Edit/Delete Icons (ပုံပေါ်မှာ Floating ပုံစံတင်ထားပါတယ်) */}
+            <div style={eventActionsOverlay}>
+              <button onClick={() => { setEditingEvent(ev); setShowEditModal(true); }} style={iconActionBtn} title="Edit">
+                <Edit size={14} color="#3b82f6" />
+              </button>
+              <button onClick={() => deleteDoc(doc(db, "events", ev.id))} style={iconActionBtn} title="Cancel">
+                <Trash2 size={14} color="#ef4444" />
+              </button>
+            </div>
+          </div>
+          
+          <div style={{ padding: '15px' }}>
+            <div style={{ fontWeight: "bold", fontSize: "17px", color: '#1e293b', marginBottom: '5px' }}>{ev.title}</div>
+            <div style={{ fontSize: "13px", color: "#3b82f6", display: 'flex', alignItems: 'center', gap: '5px' }}>
+              📅 {ev.date}
+            </div>
+            {ev.location && (
+              <div style={{ fontSize: "12px", color: "#64748b", marginTop: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                📍 {ev.location}
+              </div>
+            )}
+            <p style={{ fontSize: "13px", color: "#475569", marginTop: '10px', lineHeight: '1.4', minHeight: '40px' }}>
+              {ev.details}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
               {activeTab === "admin" && (
                 <div
@@ -985,48 +990,48 @@ function App() {
                       </button>
                     </div>
 
-                    <div style={moodCardStyle}>
-                      <h4 style={{ margin: "0 0 10px 0", fontSize: "14px" }}>
-                        💡 How are you feeling today? (Mood Status)
-                      </h4>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          justifyContent: "center",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        {moods.map((m) => (
-                          <span
-                            key={m}
-                            onClick={async () => {
-                              await updateDoc(doc(db, "users", user.uid), {
-                                mood: m,
-                              });
-                              alert(`ဒီနေ့အတွက် ${m} ကို ရွေးချယ်လိုက်ပါပြီ!`);
-                            }}
-                            style={{
-                              fontSize: "24px",
-                              cursor: "pointer",
-                              padding: "8px",
-                              borderRadius: "12px",
-                              backgroundColor: "#fff",
-                              boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
-                              transition: "0.2s",
-                            }}
-                            onMouseOver={(e) =>
-                              (e.target.style.transform = "scale(1.2)")
-                            }
-                            onMouseOut={(e) =>
-                              (e.target.style.transform = "scale(1)")
-                            }
-                          >
-                            {m}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                    {/* Admin/Profile Tab အတွင်း Mood Picker အပိုင်း */}
+<div style={{
+    ...moodCardStyle,
+    // Error တက်နေတဲ့ darkMode ကို ဒီမှာပဲ တိုက်ရိုက်စစ်ပါမယ်
+    backgroundColor: darkMode ? '#1e293b' : '#f8fafc',
+    border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`
+}}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: darkMode ? '#fff' : '#1e293b' }}>💡 How are you feeling today?</h4>
+        <button 
+            onClick={() => updateDoc(doc(db, "users", user.uid), { mood: "" })}
+            style={{ border: 'none', background: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer' }}
+        >
+            Clear
+        </button>
+    </div>
+
+    <div style={moodGridStyle}>
+        {moods.map(m => {
+            // လက်ရှိ Login ဝင်ထားတဲ့ user ရဲ့ data ကို ယူမယ်
+            const me = users.find(obj => obj.id === user.uid);
+            
+            return (
+                <div 
+                    key={m} 
+                    onClick={async () => {
+                        await updateDoc(doc(db, "users", user.uid), { mood: m });
+                    }}
+                    style={{ 
+                        ...moodItemStyle,
+                        // 'u' အစား 'me' ကို သုံးလိုက်ပါပြီ
+                        backgroundColor: me?.mood === m ? '#3b82f6' : (darkMode ? '#334155' : '#fff'),
+                        color: me?.mood === m ? '#fff' : 'inherit',
+                        border: `1px solid ${me?.mood === m ? '#3b82f6' : (darkMode ? '#475569' : '#f1f5f9')}`
+                    }}
+                >
+                    {m}
+                </div>
+            );
+        })}
+    </div>
+</div>
 
                     {/* --- SaaS Plan Info (A30, B20, C40 Concept) --- */}
                     <div
@@ -1094,7 +1099,7 @@ function App() {
                             fontSize: "12px",
                           }}
                         >
-                          🏠 လက်ရှိအုပ်စု: <strong>{userFamilyCode}</strong>
+                          🏠 Current Code: <strong>{userFamilyCode}</strong>
                         </div>
 
                         {/* နာမည်ဖြင့် ရှာဖွေရန် Box */}
@@ -1112,7 +1117,7 @@ function App() {
                         >
                           <Search size={18} color="#64748b" />
                           <input
-                            placeholder="နာမည်ဖြင့် ရှာဖွေပါ..."
+                            placeholder="Search by Name..."
                             style={{
                               border: "none",
                               background: "none",
@@ -1281,7 +1286,7 @@ function App() {
                                       )}
 
                                       <input
-                                        placeholder="ဝါသနာ"
+                                        placeholder="Interest/Hobby"
                                         style={interestInputStyle}
                                         defaultValue={u.interests || ""}
                                         onChange={(e) =>
@@ -1405,7 +1410,7 @@ function App() {
                       </h4>
                       <div style={{ display: "flex", gap: "5px" }}>
                         <input
-                          placeholder="Email ဖြင့် ရှာရန်..."
+                          placeholder="Search by Email ..."
                           value={searchEmail}
                           onChange={(e) => setSearchSearchEmail(e.target.value)}
                           style={modalInputSmall}
@@ -1454,86 +1459,51 @@ function App() {
                     )}
 
                     {/* --- ၃။ External Connections (တခြားအိမ်က ချိတ်ထားသူများ) --- */}
-                    <div style={{ marginBottom: "25px" }}>
-                      <h3 style={sidebarTitle}>
-                        <Users size={16} /> Connections
-                      </h3>
-                      {connections.length > 0 ? (
-                        connections.map((conn) => {
-                          // ကိုယ်မဟုတ်တဲ့ တစ်ဖက်လူရဲ့ ID ကို ယူမယ်
-                          const friendId =
-                            conn.requesterId === user.uid
-                              ? conn.receiverId
-                              : conn.requesterId;
-                          const friend = allUsers.find(
-                            (u) => u.id === friendId,
-                          );
-                          if (!friend) return null;
-
-                          return (
-                            <div
-                              key={conn.id}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                              }}
-                            >
-                              {renderUserItem(friend)}
-                              {/* ပယ်ဖျက်ရန် ခလုတ်လေး */}
-                              <X
-                                size={14}
-                                color="#ef4444"
-                                style={{ cursor: "pointer" }}
-                                onClick={() => removeFriend(conn.id)}
-                              />
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <p style={emptyText}>No connections yet</p>
-                      )}
-                    </div>
+                    <div style={{ marginBottom: '15px' }}>
+        <h3 style={{ ...sidebarTitle, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }} 
+            onClick={() => setShowConnections(!showConnections)}>
+            <span><Users size={16} /> Connections</span>
+            <span>{showConnections ? '−' : '+'}</span>
+        </h3>
+        {showConnections && (
+            <div style={userList}>
+                {/* လက်ရှိရှိနေတဲ့ connections filter code ကို ဒီမှာထည့်ပါ */}
+                {connections.map(conn => {
+                    const friendId = conn.requesterId === user.uid ? conn.receiverId : conn.requesterId;
+                    const friend = allUsers.find(u => u.id === friendId);
+                    return friend ? renderUserItem(friend) : null;
+                })}
+            </div>
+        )}
+    </div>
 
                     {/* Family Group */}
-                    <div style={{ marginBottom: "25px" }}>
-                      <h3 style={sidebarTitle}>
-                        <Users size={16} /> Family
-                      </h3>
-                      <div style={userList}>
-                        {users.filter(
-                          (u) => u.id !== user.uid && u.role === "Family",
-                        ).length > 0 ? (
-                          users
-                            .filter(
-                              (u) => u.id !== user.uid && u.role === "Family",
-                            )
-                            .map((u) => renderUserItem(u))
-                        ) : (
-                          <p style={emptyText}>No family members found</p>
-                        )}
-                      </div>
-                    </div>
+                    <div style={{ marginBottom: '15px' }}>
+        <h3 style={{ ...sidebarTitle, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }} 
+            onClick={() => setShowFamily(!showFamily)}>
+            <span><Users size={16} /> Family</span>
+            <span>{showFamily ? '−' : '+'}</span>
+        </h3>
+        {showFamily && (
+            <div style={userList}>
+                {users.filter(u => u.id !== user.uid && u.role === 'Family').map(u => renderUserItem(u))}
+            </div>
+        )}
+    </div>
 
                     {/* Friends Group */}
-                    <div style={{ marginBottom: "25px" }}>
-                      <h3 style={sidebarTitle}>
-                        <Users size={16} /> Friends
-                      </h3>
-                      <div style={userList}>
-                        {users.filter(
-                          (u) => u.id !== user.uid && u.role === "Friend",
-                        ).length > 0 ? (
-                          users
-                            .filter(
-                              (u) => u.id !== user.uid && u.role === "Friend",
-                            )
-                            .map((u) => renderUserItem(u))
-                        ) : (
-                          <p style={emptyText}>No friends found</p>
-                        )}
-                      </div>
-                    </div>
+                    <div style={{ marginBottom: '15px' }}>
+        <h3 style={{ ...sidebarTitle, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }} 
+            onClick={() => setShowFriends(!showFriends)}>
+            <span><Users size={16} /> Friends</span>
+            <span>{showFriends ? '−' : '+'}</span>
+        </h3>
+        {showFriends && (
+            <div style={userList}>
+                {users.filter(u => u.id !== user.uid && u.role === 'Friend').map(u => renderUserItem(u))}
+            </div>
+        )}
+    </div>
 
                     {/* General Members */}
                     <div>
@@ -1627,7 +1597,7 @@ function App() {
                               color="#ef4444"
                               style={{ cursor: "pointer", opacity: 0.6 }}
                               onClick={async () => {
-                                if (window.confirm("ဖျက်မှာ သေချာပါသလား?"))
+                                if (window.confirm("Are you sure you want to delete this?"))
                                   await deleteDoc(
                                     doc(db, "bucketList", goal.id),
                                   );
@@ -1676,7 +1646,7 @@ function App() {
                         }}
                       >
                         <input
-                          placeholder="စာတိုလေး ချန်ခဲ့ပါ..."
+                          placeholder="Leave a Short Note..."
                           style={modalInputSmall}
                           value={fridgeNote}
                           onChange={(e) => setFridgeNote(e.target.value)}
@@ -1725,7 +1695,7 @@ function App() {
                           ))
                         ) : (
                           <p style={{ fontSize: "11px", color: "#999" }}>
-                            စာတိုများ မရှိသေးပါ
+                            No Short Notes
                           </p>
                         )}
                       </div>
@@ -1746,7 +1716,7 @@ function App() {
                         </h4>
                         <button
                           onClick={() => {
-                            const item = prompt("ဝယ်စရာပစ္စည်းအမည်:");
+                            const item = prompt("Item Name:");
                             if (item)
                               addDoc(collection(db, "shoppingList"), {
                                 text: item,
@@ -1806,7 +1776,7 @@ function App() {
                           ))
                         ) : (
                           <p style={{ fontSize: "11px", color: "#999" }}>
-                            ဈေးဝယ်စာရင်း မရှိသေးပါ
+                            No Item List
                           </p>
                         )}
                       </div>
@@ -1830,7 +1800,7 @@ function App() {
             }}
           >
             <div style={{ marginBottom: "10px" }}>
-              Re-Member - မိသားစုအမှတ်တရများ သိမ်းဆည်းရာ
+              Re-Member - A Place to Preserve Family Memories
             </div>
             <div style={{ fontWeight: "bold" }}>
               @MM {new Date().getFullYear()} • Built with Heart ❤️
@@ -1887,13 +1857,12 @@ function App() {
           {showFamilyModal && (
             <div style={modalOverlay}>
               <div style={modalContentSmall}>
-                <h3>🏠 မိသားစု အသိုင်းအဝိုင်း</h3>
+                <h3>🏠 Family Community</h3>
                 <p style={{ fontSize: "12px", color: "#64748b" }}>
-                  ကိုယ့်မိသားစုရဲ့ သီးသန့်ကုဒ်ကို ရိုက်ထည့်ပါ (သို့မဟုတ်)
-                  ကုဒ်အသစ်တစ်ခု ဖန်တီးပြီး မိသားစုဝင်တွေကို မျှဝေပါ။
+                  Enter your family’s private code, or create a new code and share it with your family members.
                 </p>
                 <input
-                  placeholder="ဥပမာ- CHO-FAMILY-2026"
+                  placeholder="Such As - CHO-FAMILY-2026"
                   style={modalInput}
                   id="familyCodeInput"
                 />
@@ -1917,13 +1886,13 @@ function App() {
                         // ၃။ သိမ်းပြီးရင် Modal ကို ပိတ်လိုက်မယ်
                         setShowFamilyModal(false);
 
-                        alert("မိသားစုဝင်ရောက်မှု အောင်မြင်ပါသည်! ✨");
+                        alert("Successfully joined the family! ✨");
                       } catch (error) {
                         console.error("Error updating family code:", error);
-                        alert("အမှားတစ်ခုရှိနေပါသည်။ ပြန်လည်ကြိုးစားကြည့်ပါ။");
+                        alert("Something went wrong. Please try again.");
                       }
                     } else {
-                      alert("ကျေးဇူးပြု၍ မိသားစုကုဒ် တစ်ခုခု ရိုက်ထည့်ပါ။");
+                      alert("Please enter a family code.");
                     }
                   }}
                   style={postBtnFull}
@@ -1954,7 +1923,7 @@ function App() {
                       color: "#1e293b",
                     }}
                   >
-                    🗓️ ပွဲသစ်ထည့်ရန်
+                    🗓️ Add Event
                   </h3>
                   <X
                     onClick={() => setShowEventModal(false)}
@@ -1963,16 +1932,16 @@ function App() {
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column" }}>
-                  <label style={labelStyle}>ပွဲအမည်</label>
+                  <label style={labelStyle}>Event Name</label>
                   <input
-                    placeholder="ဥပမာ - မိသားစု ဆုံဆည်းပွဲ"
+                    placeholder="Example: Family Reunion"
                     style={modalInputLarge}
                     onChange={(e) =>
                       setNewEvent({ ...newEvent, title: e.target.value })
                     }
                   />
 
-                  <label style={labelStyle}>ရက်စွဲ (MM/DD/YYYY)</label>
+                  <label style={labelStyle}>Date (MM/DD/YYYY)</label>
                   <input
                     placeholder="08/25/2026"
                     style={modalInputLarge}
@@ -1981,18 +1950,18 @@ function App() {
                     }
                   />
 
-                  <label style={labelStyle}>နေရာ (Location)</label>
+                  <label style={labelStyle}>Place (Location)</label>
                   <input
-                    placeholder="နေရာအတိအကျ ရေးပါ..."
+                    placeholder="Enter the exact location...."
                     style={modalInputLarge}
                     onChange={(e) =>
                       setNewEvent({ ...newEvent, location: e.target.value })
                     }
                   />
 
-                  <label style={labelStyle}>အသေးစိတ်အချက်အလက်များ</label>
+                  <label style={labelStyle}>Details</label>
                   <textarea
-                    placeholder="ဒီပွဲမှာ ဘာတွေလုပ်ကြမလဲ..."
+                    placeholder="What will we do at this event?..."
                     style={modalTextArea}
                     onChange={(e) =>
                       setNewEvent({ ...newEvent, details: e.target.value })
@@ -2000,7 +1969,7 @@ function App() {
                   />
 
                   <label style={labelStyle}>
-                    ပွဲလမ်းအမှတ်တရပုံ (ရွေးချယ်နိုင်သည်)
+                    Event Photo (Optional)
                   </label>
                   <input
                     type="file"
@@ -2010,7 +1979,7 @@ function App() {
                   />
                   {eventFile && (
                     <p style={{ fontSize: "12px", color: "#3b82f6" }}>
-                      📍 {eventFile.name} ကို ရွေးထားသည်
+                      📍 {eventFile.name} has been seleted.
                     </p>
                   )}
 
@@ -2053,26 +2022,26 @@ function App() {
                             });
                             setEventFile(null); // ပုံကို Reset လုပ်မည်
                             setUploading(false);
-                            alert("ပွဲသစ်ကို သိမ်းဆည်းပြီးပါပြီ!");
+                            alert("New event saved successfully!");
                           } catch (error) {
                             console.error("Error adding event:", error);
                             setUploading(false);
                           }
                         } else {
                           alert(
-                            "ပွဲအမည်၊ ရက်စွဲ နှင့် မိသားစုကုဒ် လိုအပ်နေပါသည်။",
+                            "Event name, date, and family code are required.",
                           );
                         }
                       }}
                       style={postBtnFull}
                     >
-                      သိမ်းမည်
+                      Save
                     </button>
                     <button
                       onClick={() => setShowEventModal(false)}
                       style={cancelBtn}
                     >
-                      ပယ်ဖျက်
+                      Cancel
                     </button>
                   </div>
                 </div>
@@ -2095,7 +2064,7 @@ function App() {
                   <h3
                     style={{ margin: 0, fontSize: "20px", fontWeight: "700" }}
                   >
-                    🗓️ ပွဲကို ပြင်ဆင်ရန်
+                    🗓️ Edit Event
                   </h3>
                   <X
                     onClick={() => setShowEditModal(false)}
@@ -2104,7 +2073,7 @@ function App() {
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column" }}>
-                  <label style={labelStyle}>ပွဲအမည်</label>
+                  <label style={labelStyle}>Event Name</label>
                   <input
                     defaultValue={editingEvent.title}
                     style={modalInputLarge}
@@ -2116,7 +2085,7 @@ function App() {
                     }
                   />
 
-                  <label style={labelStyle}>ရက်စွဲ (MM/DD/YYYY)</label>
+                  <label style={labelStyle}>Date (MM/DD/YYYY)</label>
                   <input
                     defaultValue={editingEvent.date}
                     style={modalInputLarge}
@@ -2125,7 +2094,7 @@ function App() {
                     }
                   />
 
-                  <label style={labelStyle}>နေရာ (Location)</label>
+                  <label style={labelStyle}>Place (Location)</label>
                   <input
                     defaultValue={editingEvent.location}
                     style={modalInputLarge}
@@ -2137,7 +2106,7 @@ function App() {
                     }
                   />
 
-                  <label style={labelStyle}>အသေးစိတ်အချက်အလက်များ</label>
+                  <label style={labelStyle}>Details</label>
                   <textarea
                     defaultValue={editingEvent.details}
                     style={modalTextArea}
@@ -2149,8 +2118,17 @@ function App() {
                     }
                   />
 
-                  <label style={labelStyle}>
-                    ပွဲလမ်းအမှတ်တရပုံ (ရွေးချယ်နိုင်သည်)
+                  <label style={labelStyle}>Change/Skip the cover image</label>
+<input 
+    type="file" 
+    accept="image/*" 
+    onChange={(e) => setEventFile(e.target.files[0])} 
+    style={modalInputLarge} 
+/>
+{eventFile && <p style={{ fontSize: '11px', color: '#3b82f6' }}>📍 {eventFile.name}</p>}
+
+                  {/* <label style={labelStyle}>
+                    Event memory photo (Optional)
                   </label>
                   <input
                     type="file"
@@ -2160,34 +2138,57 @@ function App() {
                   />
                   {eventFile && (
                     <p style={{ fontSize: "12px", color: "#3b82f6" }}>
-                      📍 {eventFile.name} ကို ရွေးထားသည်
+                      📍 {eventFile.name} selected
                     </p>
-                  )}
+                  )} */}
 
                   <div
                     style={{ display: "flex", gap: "12px", marginTop: "10px" }}
                   >
-                    <button
-                      onClick={async () => {
-                        const eventRef = doc(db, "events", editingEvent.id);
-                        await updateDoc(eventRef, {
-                          title: editingEvent.title,
-                          date: editingEvent.date,
-                          location: editingEvent.location || "",
-                          details: editingEvent.details || "",
-                        });
-                        setShowEditModal(false);
-                        alert("ပြင်ဆင်ပြီးပါပြီ! ✨");
-                      }}
-                      style={postBtnFull}
-                    >
-                      သိမ်းမည်
-                    </button>
+                    <button onClick={async () => {
+    if (!editingEvent.title || !editingEvent.date) {
+        alert("Please enter a title and date");
+        return;
+    }
+
+    try {
+        setUploading(true);
+        let finalImageUrl = editingEvent.imageUrl || editingEvent.image || "";
+
+        // ၁။ ပုံအသစ် ရွေးထားတယ်ဆိုရင် အရင်တင်မယ်
+        if (eventFile) {
+            const storageRef = ref(storage, `events/${Date.now()}_${eventFile.name}`);
+            const snapshot = await uploadBytes(storageRef, eventFile);
+            finalImageUrl = await getDownloadURL(snapshot.ref);
+        }
+
+        // ၂။ Firestore မှာ သွားပြင်မယ်
+        const eventRef = doc(db, "events", editingEvent.id);
+        await updateDoc(eventRef, {
+            title: editingEvent.title,
+            date: editingEvent.date,
+            location: editingEvent.location || "",
+            details: editingEvent.details || "",
+            imageUrl: finalImageUrl // ပုံအသစ်ရှိရင် အသစ်၊ မရှိရင် အဟောင်းအတိုင်း သိမ်းမယ်
+        });
+
+        setShowEditModal(false);
+        setEditingEvent(null);
+        setEventFile(null);
+        setUploading(false);
+        alert("Edited! ✨");
+    } catch (error) {
+        console.error(error);
+        setUploading(false);
+    }
+}} style={postBtnFull}>
+    {uploading ? "Please wait..." : "Saving changes"}
+</button>
                     <button
                       onClick={() => setShowEditModal(false)}
                       style={cancelBtn}
                     >
-                      ပယ်ဖျက်
+                      Cancel
                     </button>
                   </div>
                 </div>
@@ -2208,7 +2209,7 @@ function App() {
                   }}
                 >
                   <h3 style={{ margin: 0, fontSize: "18px" }}>
-                    📝 ရည်မှန်းချက်အသစ်
+                    📝 New Goal
                   </h3>
                   <X
                     onClick={() => setShowBucketModal(false)}
@@ -2223,7 +2224,7 @@ function App() {
                     marginBottom: "15px",
                   }}
                 >
-                  မိသားစုအတွက် အကောင်အထည်ဖော်ချင်တဲ့ ရည်မှန်းချက်ကို ရေးသားပါ။
+                  Describe a goal you want to achieve for your family.
                 </p>
 
                 <input
@@ -2261,19 +2262,19 @@ function App() {
                         }
                       } else {
                         alert(
-                          "ရည်မှန်းချက်စာသား နှင့် မိသားစုကုဒ် လိုအပ်နေပါသည်။",
+                          "Goal description and family code are required.",
                         );
                       }
                     }}
                     style={postBtnFull}
                   >
-                    ထည့်သွင်းမည်
+                    Add
                   </button>
                   <button
                     onClick={() => setShowBucketModal(false)}
                     style={cancelBtn}
                   >
-                    မလုပ်တော့ပါ
+                    Cancel
                   </button>
                 </div>
               </div>
@@ -2283,10 +2284,9 @@ function App() {
           {showBdayModal && (
             <div style={modalOverlay}>
               <div style={modalContentSmall}>
-                <h3>🎂 မွေးနေ့ဖြည့်ပေးပါ</h3>
+                <h3>🎂 Please enter your birthday.</h3>
                 <p style={{ fontSize: "12px", color: "#64748b" }}>
-                  မွေးနေ့ရှင် Alert ပြပေးဖို့အတွက် မွေးနေ့ကို ဖြည့်ပေးဖို့
-                  လိုပါတယ် (MM/DD/YYYY)
+                  Your birthday is needed to show birthday alerts. (MM/DD/YYYY)
                 </p>
                 <input
                   placeholder="08/25/1995"
@@ -2305,13 +2305,13 @@ function App() {
                       setShowBdayModal(false); // သိမ်းပြီးရင် Modal ပိတ်မယ်
                     } else {
                       alert(
-                        "ကျေးဇူးပြု၍ MM/DD/YYYY format အတိုင်း မှန်ကန်အောင် ဖြည့်ပေးပါ (ဥပမာ- 08/25/1995)",
+                        "Please enter a valid date in MM/DD/YYYY format (for example, 08/25/1995).",
                       );
                     }
                   }}
                   style={postBtnFull}
                 >
-                  အတည်ပြုမည်
+                  Comfirm
                 </button>
               </div>
             </div>
@@ -2601,9 +2601,12 @@ const roleSelectStyle = {
 };
 
 const galleryGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-  gap: "15px",
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', // ဖုန်းမှာ ၃ လုံးစီလောက် ပေါ်မယ်
+  gap: '10px',
+  maxHeight: '70vh', // အမြင့်ကို ကန့်သတ်ပြီး scroll ဆွဲခိုင်းမယ်
+  overflowY: 'auto',
+  padding: '10px'
 };
 
 const galleryItem = {
@@ -2908,13 +2911,33 @@ const playIconOverlay = {
   padding: "5px",
 };
 
+const moodGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(45px, 1fr))', // အကွက်လေးတွေကို ညီအောင်စီမယ်
+    gap: '10px',
+    padding: '5px'
+};
+
+const moodItemStyle = {
+    fontSize: '22px',
+    cursor: 'pointer',
+    padding: '8px',
+    borderRadius: '12px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+    transition: '0.2s',
+    border: '1px solid #f1f5f9'
+};
+
 const moodCardStyle = {
-  backgroundColor: "#eff6ff",
-  padding: "20px",
-  borderRadius: "20px",
-  textAlign: "center",
-  marginBottom: "20px",
-  border: "1px solid #dbeafe",
+    
+    padding: '20px',
+    borderRadius: '24px',
+    marginBottom: '20px',
+    
+    boxSizing: 'border-box'
 };
 
 const fridgeCardStyle = {
@@ -2952,6 +2975,24 @@ const lightboxOverlay = {
   justifyContent: "center",
   alignItems: "center",
   zIndex: 5000,
+};
+
+const eventListGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' };
+const eventCard = { backgroundColor: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9', position: 'relative' };
+const eventImageWrapper = { position: 'relative', width: '100%', height: '140px' };
+const eventCardImg = { width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f8fafc', display: 'block' };
+const eventActionsOverlay = { position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' };
+const iconActionBtn = { backgroundColor: 'rgba(255,255,255,0.9)', border: 'none', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' };
+
+const eventDeleteBtn = {
+  marginTop: '15px',
+  padding: '5px 10px',
+  border: '1px solid #fee2e2',
+  backgroundColor: '#fff',
+  color: '#ef4444',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontSize: '12px'
 };
 // Dark Mode အတွက် Card Styles များကိုလည်း variable အနေနဲ့ သုံးနိုင်ပါတယ်
 // const cardBg = darkMode ? '#1e293b' : '#ffffff';
