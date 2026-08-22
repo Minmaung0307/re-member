@@ -661,7 +661,7 @@ function App() {
     }
   };
 
-  // ၁။ မွေးနေ့ရှင်များကို စစ်ထုတ်ခြင်း
+  // --- 🌟 မွေးနေ့ရှင်များကို စစ်ထုတ်ခြင်း မွေးနေ့ Logic အသစ် 🌟 ---
   const todayBDays = [];
   const upcomingBDays = [];
 
@@ -669,18 +669,26 @@ function App() {
     if (!u.birthday || !u.birthday.includes("/")) return;
 
     const [m, d] = u.birthday.split("/");
+
+    // ၁။ ဒီနေ့ရက်စွဲကိုယူပြီး အချိန်ကို ၀ နာရီ (Midnight) သတ်မှတ်မယ်
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // ၂။ ဒီနှစ်ထဲက မွေးနေ့ရက်စွဲကိုတည်ဆောက်ပြီး အချိန်ကို ၀ နာရီ (Midnight) သတ်မှတ်မယ်
     let bdayDate = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
     bdayDate.setHours(0, 0, 0, 0);
 
-    if (bdayDate < today) bdayDate.setFullYear(today.getFullYear() + 1);
+    // ၃။ အကယ်၍ မွေးနေ့ရက်စွဲက 'ယနေ့' ထက် စောနေမှသာ (မွေးနေ့ကျော်သွားမှသာ) နောက်နှစ်ကို ရွှေ့မယ်
+    // (ဒီနေ့က မွေးနေ့ဆိုရင် today နဲ့ bdayDate က တူနေမှာဖြစ်လို့ ဒီအထဲ မဝင်တော့ပါဘူး)
+    if (bdayDate < today) {
+      bdayDate.setFullYear(today.getFullYear() + 1);
+    }
 
+    // ၄။ ရက်ခြားနားချက်ကို တွက်မယ်
     const diffTime = bdayDate.getTime() - today.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) {
+    if (diffDays === 0 || diffDays === 365 || diffDays === 366) {
       todayBDays.push(u);
     } else if (diffDays > 0 && diffDays <= 14) {
       upcomingBDays.push({ ...u, daysLeft: diffDays });
@@ -771,6 +779,78 @@ function App() {
               </div>
             </div>
           </nav>
+
+          {/* 🌟 ဤနေရာတွင် မွေးနေ့ Banner ကုဒ်များကို ပြန်ထည့်ပါ 🌟 */}
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "1200px",
+              margin: "80px auto 0",
+              padding: "0 15px",
+            }}
+          >
+            {/* ဒီနေ့ မွေးနေ့ရှင်များ */}
+            {todayBDays.length > 0 && (
+              <div style={bdayBannerToday}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "15px" }}
+                >
+                  <div style={{ display: "flex" }}>
+                    {todayBDays.map((u, index) => (
+                      <img
+                        key={u.id}
+                        src={u.photoURL}
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "50%",
+                          border: "2px solid #fff",
+                          marginLeft: index === 0 ? 0 : "-15px",
+                        }}
+                        alt="u"
+                      />
+                    ))}
+                  </div>
+                  <div style={{ textAlign: "left" }}>
+                    <strong style={{ color: "#92400e" }}>
+                      🎉 Happy Birthday!
+                    </strong>
+                    <div style={{ fontSize: "13px" }}>
+                      ယနေ့သည် {todayBDays.map((u) => u.displayName).join(", ")}{" "}
+                      တို့၏ မွေးနေ့ဖြစ်ပါသည်။ ဆုတောင်းပေးလိုက်ကြရအောင်။ 🎂
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* မကြာမီ မွေးနေ့ရှိသူများ */}
+            {upcomingBDays.length > 0 && (
+              <div style={bdayBannerUpcoming}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "15px" }}
+                >
+                  <span style={{ fontSize: "24px" }}>🎁</span>
+                  <div style={{ textAlign: "left" }}>
+                    <strong style={{ color: "#065f46" }}>
+                      Upcoming Birthdays
+                    </strong>
+                    <div style={{ fontSize: "13px" }}>
+                      {upcomingBDays.map((u, i) => (
+                        <span key={u.id}>
+                          {u.displayName} (
+                          {u.daysLeft === 1
+                            ? "မနက်ဖြန်"
+                            : `${u.daysLeft} ရက်အလို`}
+                          ){i < upcomingBDays.length - 1 ? "၊ " : ""}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div style={mainLayout}>
             <div
@@ -2689,7 +2769,7 @@ const mainLayout = {
   display: "flex",
   flexDirection: "column", // ဖုန်းမှာ အပေါ်အောက် စီမယ်
   alignItems: "center",
-  paddingTop: "70px",
+  paddingTop: "10px",
   paddingBottom: "100px", // Bottom nav အတွက် နေရာချန်မယ်
   width: "100%",
   maxWidth: "1200px",
@@ -2831,7 +2911,7 @@ const bdayBannerToday = {
   color: "#92400e",
   padding: "15px",
   borderRadius: "16px",
-  marginBottom: "15px",
+  marginBottom: "10px",
   // Header အောက်ကနေ လွတ်သွားအောင် ဒီစာကြောင်းကို ထည့်ပါ
   // marginTop: '80px',
   border: "1px solid #fde68a",
