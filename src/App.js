@@ -574,12 +574,12 @@ function App() {
 
   const updateFamilyCode = async (newCode) => {
     if (newCode.length < 8) {
-      alert("လုံခြုံရေးအတွက် ကုဒ်သည် အနည်းဆုံး ၈ လုံး ရှိရပါမည်။");
+      alert("For security, the code must be at least 8 characters long.");
       return;
     }
 
     if (!userFamilyId) {
-      alert("မိသားစု ID (FID) ရှာမတွေ့ပါ။");
+      alert("Family ID (FID) not found.");
       return;
     }
 
@@ -591,10 +591,10 @@ function App() {
       await updateDoc(doc(db, "users", user.uid), { familyCode: newCode });
 
       setUserFamilyCode(newCode); // UI မှာ ချက်ချင်း ပြောင်းသွားစေရန်
-      alert("မိသားစုကုဒ်ကို အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ။ ✨");
+      alert("Family Code changed successfully. ✨");
     } catch (error) {
       console.error("Update Code Error:", error);
-      alert("ကုဒ်ပြောင်းလို့မရပါ။");
+      alert("Unable to change the code.");
     }
   };
 
@@ -617,7 +617,7 @@ function App() {
       // ၃။ ရှာမတွေ့ရင် (တစ်ခါမှ Login မဝင်ဖူးတဲ့လူဆိုရင် ရှာမတွေ့ပါဘူး)
       if (snap.empty) {
         alert(
-          "ဤ Email နှင့် အသုံးပြုသူ မရှိပါ။ စာလုံးပေါင်း မှန်/မမှန် ပြန်စစ်ပေးပါ။ (မှတ်ချက် - တစ်ဖက်လူသည် အက်ပ်သို့ အနည်းဆုံး တစ်ကြိမ် Login ဝင်ဖူးထားရပါမည်)",
+          "No user was found with this email address. Please check the spelling and try again. The other person must have logged into the app at least once.",
         );
         return;
       }
@@ -626,7 +626,7 @@ function App() {
 
       // ၄။ ကိုယ့် Email ကိုယ် ပြန်ရှာမိတာလား စစ်မယ်
       if (targetUser.id === user.uid) {
-        alert("ကိုယ့်ကိုယ်ကို သူငယ်ချင်းဖွဲ့လို့မရပါဘူးခင်ဗျာ။");
+        alert("You can't add yourself as a friend.");
         return;
       }
 
@@ -640,12 +640,12 @@ function App() {
       });
 
       alert(
-        "Request ပို့လိုက်ပါပြီ! တစ်ဖက်လူက လက်ခံ (Accept) လုပ်မှ Sidebar မှာ ပေါ်လာမှာပါ။",
+        "Request sent! The person will appear in the Sidebar once they accept the request.",
       );
       setSearchSearchEmail(""); // ရိုက်ထားတဲ့ Email အကွက်ကို ပြန်ရှင်းမယ်
     } catch (error) {
       console.error("Error in handleAddFriend:", error);
-      alert("အမှားတစ်ခု ရှိနေပါတယ်။ နောက်မှ ပြန်ကြိုးစားကြည့်ပါ။");
+      alert("Something went wrong. Please try again later.");
     }
   };
 
@@ -656,7 +656,7 @@ function App() {
 
   // ၃။ Connection ကို ပယ်ဖျက်မယ် (Unfriend)
   const removeFriend = async (connectionId) => {
-    if (window.confirm("ဤသူနှင့် ချိတ်ဆက်မှုကို ပယ်ဖျက်မှာ သေချာပါသလား?")) {
+    if (window.confirm("Are you sure you want to disconnect from this person?")) {
       await deleteDoc(doc(db, "connections", connectionId));
     }
   };
@@ -724,8 +724,7 @@ function App() {
               marginBottom: "20px",
             }}
           >
-            ငွေပေးချေမှုအတွက် ကျေးဇူးတင်ပါသည်။ သင်၏အကောင့်အား Admin မှ
-            အတည်ပြုပေးရန် စောင့်ဆိုင်းနေပါသည်။ ၁၂ နာရီအတွင်း အဆင်ပြေသွားပါမည်။
+            Thank you for your payment. Your account is awaiting approval from the Admin. It will be approved within 12 hours.
           </p>
           <a
             href="https://buy.stripe.com/dRmeVd9vS0z4493ebU1B60g"
@@ -733,10 +732,10 @@ function App() {
             rel="noreferrer"
             style={buyBtnMini}
           >
-            ငွေမပေးရသေးပါက ဤနေရာတွင် ပေးချေပါ
+            If you haven't made the payment yet, please pay here.
           </a>
           <button onClick={() => signOut(auth)} style={logoutBtnSimple}>
-            နောက်သို့ ပြန်ထွက်မည်
+            Go Back
           </button>
         </div>
       ) : (
@@ -816,8 +815,8 @@ function App() {
                       🎉 Happy Birthday!
                     </strong>
                     <div style={{ fontSize: "13px" }}>
-                      ယနေ့သည် {todayBDays.map((u) => u.displayName).join(", ")}{" "}
-                      တို့၏ မွေးနေ့ဖြစ်ပါသည်။ ဆုတောင်းပေးလိုက်ကြရအောင်။ 🎂
+                      Today is {todayBDays.map((u) => u.displayName).join(", ")}{" "}
+                      birthday! Let's send our best wishes! 🎂
                     </div>
                   </div>
                 </div>
@@ -2157,11 +2156,10 @@ function App() {
                     marginBottom: "15px",
                   }}
                 >
-                  မိသားစုထဲဝင်ရန် ကုဒ်ကိုရိုက်ထည့်ပါ။ ကုဒ်မရှိသေးပါက
-                  ကုဒ်အသစ်တစ်ခု (အနည်းဆုံး ၈ လုံး) ဖန်တီးပါ။
+                  Enter the code to join the family. If you don't have a code yet,create a new code (at least 8 characters).
                 </p>
                 <input
-                  placeholder="အနည်းဆုံး ၈ လုံး (ဥပမာ- MYFAMILY2026)"
+                  placeholder="At least 8 characters (e.g., MyFamily2026)"
                   style={modalInput}
                   id="familyCodeInput"
                 />
@@ -2174,7 +2172,7 @@ function App() {
 
                     if (code.length < 8) {
                       alert(
-                        "လုံခြုံရေးအတွက် ကုဒ်သည် အနည်းဆုံး ၈ လုံး ရှိရပါမည်။",
+                        "For security, the code must be at least 8 characters long.",
                       );
                       return;
                     }
@@ -2227,12 +2225,12 @@ function App() {
 
                       alert(
                         isOwner
-                          ? "မိသားစုအသိုင်းအဝိုင်းအသစ် ဖန်တီးပြီးပါပြီ! 🏠"
-                          : "မိသားစုထဲသို့ ဝင်ရောက်ပြီးပါပြီ! ✨",
+                          ? "New family community created successfully! 🏠"
+                          : "You have joined the family community! ✨",
                       );
                     } catch (error) {
                       console.error(error);
-                      alert("မှားယွင်းနေပါသည်။ ပြန်ကြိုးစားကြည့်ပါ။");
+                      alert("Something went wrong. Please try again.");
                     }
                   }}
                   style={postBtnFull}
@@ -2469,21 +2467,6 @@ function App() {
                     </p>
                   )}
 
-                  {/* <label style={labelStyle}>
-                    Event memory photo (Optional)
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setEventFile(e.target.files[0])}
-                    style={modalInputLarge}
-                  />
-                  {eventFile && (
-                    <p style={{ fontSize: "12px", color: "#3b82f6" }}>
-                      📍 {eventFile.name} selected
-                    </p>
-                  )} */}
-
                   <div
                     style={{ display: "flex", gap: "12px", marginTop: "10px" }}
                   >
@@ -2578,7 +2561,7 @@ function App() {
                 </p>
 
                 <input
-                  placeholder="ဥပမာ - ပုဂံသို့ မိသားစုခရီးထွက်ရန်..."
+                  placeholder="Example: A family trip to Bagan..."
                   style={modalInput}
                   value={bucketInput}
                   onChange={(e) => setBucketInput(e.target.value)}
@@ -2750,9 +2733,9 @@ const navContent = {
   padding: "0 10px",
   alignItems: "center",
 };
+
 const logoText = { fontSize: "20px", fontWeight: "800" };
-const userProfileArea = { display: "flex", alignItems: "center", gap: "10px" };
-const avatarStyle = { width: "30px", height: "30px", borderRadius: "50%" };
+
 const logoutBtn = {
   padding: "6px 12px",
   fontSize: "12px", // 👈 စာလုံးနည်းနည်း သေးလိုက်ပါ
@@ -2812,43 +2795,6 @@ const userItem = {
   backgroundColor: "#f8fafc",
 };
 const smallAvatar = { width: "35px", height: "35px", borderRadius: "50%" };
-const loginPageStyle = {
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  height: "100vh",
-  background: "#3b82f6",
-};
-const loginCard = {
-  backgroundColor: "#fff",
-  padding: "40px",
-  borderRadius: "24px",
-  textAlign: "center",
-  width: "300px",
-};
-const googleLoginBtn = {
-  width: "100%",
-  padding: "12px",
-  backgroundColor: "#1e293b",
-  color: "#fff",
-  border: "none",
-  borderRadius: "12px",
-  cursor: "pointer",
-  marginTop: "20px",
-};
-
-const bdayBanner = {
-  backgroundColor: "#dbeafe",
-  color: "#1e40af",
-  padding: "12px",
-  borderRadius: "12px",
-  textAlign: "center",
-  marginBottom: "20px",
-  fontWeight: "600",
-  border: "1px solid #bfdbfe",
-  fontSize: "14px",
-  boxShadow: "0 2px 10px rgba(59, 130, 246, 0.1)",
-};
 
 const tabBtn = {
   background: "none",
@@ -3095,90 +3041,6 @@ const labelStyle = {
   color: "#64748b",
   marginBottom: "6px",
   marginLeft: "4px",
-};
-
-const scrollTopBtn = {
-  position: "fixed",
-  bottom: "30px",
-  left: "30px", // right: '30px' အစား left: '30px' လို့ ပြောင်းလိုက်ပါ
-  width: "45px",
-  height: "45px",
-  borderRadius: "50%",
-  backgroundColor: "#3b82f6",
-  color: "#fff",
-  border: "none",
-  boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
-  cursor: "pointer",
-  fontSize: "20px",
-  fontWeight: "bold",
-  zIndex: 2000,
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-};
-
-const searchContainerStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  backgroundColor: "#f1f5f9",
-  padding: "8px 15px",
-  borderRadius: "12px",
-  width: "250px",
-};
-
-const adminSearchInput = {
-  border: "none",
-  background: "none",
-  outline: "none",
-  fontSize: "14px",
-  width: "100%",
-};
-
-const statsContainer = {
-  display: "flex",
-  gap: "15px",
-  marginBottom: "25px",
-  flexWrap: "wrap",
-};
-
-const statBox = {
-  backgroundColor: "#fff",
-  padding: "10px 20px",
-  borderRadius: "12px",
-  fontSize: "13px",
-  fontWeight: "600",
-  color: "#3b82f6",
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
-};
-
-const groupHeaderStyle = {
-  marginBottom: "15px",
-  color: "#64748b",
-  fontSize: "16px",
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  borderBottom: "1px solid #f1f5f9",
-  paddingBottom: "8px",
-};
-
-const countBadge = {
-  backgroundColor: "#e2e8f0",
-  color: "#475569",
-  padding: "2px 8px",
-  borderRadius: "10px",
-  fontSize: "11px",
-  fontWeight: "700",
-};
-
-const roleBadge = {
-  fontSize: "12px",
-  padding: "5px 12px",
-  backgroundColor: "#e2e8f0",
-  borderRadius: "10px",
-  color: "#475569",
 };
 
 const spinnerStyle = {

@@ -255,9 +255,6 @@ const kanbanGrid = {
   gap: "20px",
   width: "100%",
   paddingBottom: "20px",
-  // overflowX: "auto",
-  // paddingBottom: "20px",
-  // minHeight: "500px",
 };
 const kanbanCol = {
   flex: "1 1 300px", // အနည်းဆုံး 300px ယူမယ်၊ နေရာရှိရင် ချဲ့မယ်
