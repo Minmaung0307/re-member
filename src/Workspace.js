@@ -149,12 +149,21 @@ const Workspace = ({ user, darkMode }) => {
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
-                    style={kanbanCol}
+                    style={{
+                      ...kanbanCol,
+                      backgroundColor: darkMode
+                        ? "#1e293b"
+                        : "rgba(255,255,255,0.5)",
+                      // 🌟 Done column ဖြစ်ရင် 100% width ယူစေမည့် logic 🌟
+                      flex: id === "done" ? "1 1 100%" : "1 1 300px",
+                    }}
                   >
                     <h4
                       style={{
                         color: column.color,
                         borderBottom: `2px solid ${column.color}`,
+                        marginBottom: "15px",
+                        paddingBottom: "5px",
                       }}
                     >
                       {column.name}
@@ -174,16 +183,18 @@ const Workspace = ({ user, darkMode }) => {
                               {...provided.dragHandleProps}
                               style={{
                                 ...taskCard,
+                                backgroundColor: darkMode ? "#334155" : "#fff",
+                                color: darkMode ? "#fff" : "#1e293b",
                                 ...provided.draggableProps.style,
                               }}
                             >
-                              {task.title}
+                              <span style={{ flex: 1 }}>{task.title}</span>
                               <Trash2
-                                size={12}
+                                size={14}
                                 onClick={() =>
                                   deleteDoc(doc(db, "tasks", task.id))
                                 }
-                                style={{ cursor: "pointer" }}
+                                style={{ cursor: "pointer", opacity: 0.7 }}
                               />
                             </div>
                           )}
@@ -240,18 +251,22 @@ const noteCard = {
 };
 const kanbanGrid = {
   display: "flex",
+  flexWrap: "wrap",
   gap: "20px",
-  overflowX: "auto",
+  width: "100%",
   paddingBottom: "20px",
-  minHeight: "500px",
+  // overflowX: "auto",
+  // paddingBottom: "20px",
+  // minHeight: "500px",
 };
 const kanbanCol = {
-  flex: 1,
-  minWidth: "300px",
+  flex: "1 1 300px", // အနည်းဆုံး 300px ယူမယ်၊ နေရာရှိရင် ချဲ့မယ်
+  minHeight: "400px",
   backgroundColor: "rgba(255,255,255,0.5)",
   padding: "20px",
   borderRadius: "24px",
-  minHeight: "400px",
+  display: "flex",
+  flexDirection: "column",
 };
 const taskCard = {
   backgroundColor: "#fff",

@@ -56,6 +56,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
 
   const [lastVisible, setLastVisible] = useState(null);
   const [loadingMore, setLoading] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   const cardStyles = [
     "linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%)",
@@ -123,14 +124,6 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
       url: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800",
     },
   ];
-
-  // useEffect(() => {
-  //     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-  //     const unsubscribe = onSnapshot(q, (snapshot) => {
-  //         setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  //     });
-  //     return () => unsubscribe();
-  // }, []);
 
   // ၁။ ပထမဆုံးအကြိမ် Post ၁၀ ခုပဲ ဆွဲမယ်
   useEffect(() => {
@@ -284,7 +277,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
         reactions: {},
         comments: [],
         createdAt: serverTimestamp(),
-        familyCode: auth.currentUser.familyCode,
+        // familyCode: auth.currentUser.familyCode,
         familyCode: userFamilyCode,
       });
 
@@ -294,10 +287,10 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
       setPostcardAudio(null);
       setShowPostcardEditor(false);
       setUploading(false);
-      alert("မွေးနေ့ Postcard ကို အောင်မြင်စွာ တင်ပြီးပါပြီ! ✨");
+      alert("Birthday postcard uploaded successfully! ✨");
     } catch (error) {
       console.error(error);
-      alert("Error: တင်လို့မရပါ။ ပြန်ကြိုးစားကြည့်ပါ။");
+      alert("Error: Unable to upload. Please try again.");
       setUploading(false);
     }
   };
@@ -374,31 +367,20 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
 
   return (
     // <div style={feedWrapper}>
-    <div style={{ maxWidth: "650px", margin: "0 auto" }}>
-      {/* Search Bar */}
-      {/* <div style={{display: 'flex', gap: '10px', marginBottom: '20px', backgroundColor: '#fff', padding: '10px 20px', borderRadius: '15px', border: '1px solid #eee', alignItems: 'center'}}>
-                <Search size={20} color="#64748b" />
-                <input 
-                    type="text" 
-                    placeholder="ရှာဖွေပါ (ဥပမာ - နာမည် သို့မဟုတ် စာသား)..." 
-                    style={{border: 'none', outline: 'none', width: '100%', fontSize: '14px'}}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)} 
-                />
-            </div> */}
-
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          marginBottom: "20px",
-          backgroundColor: "#fff",
-          padding: "10px 20px",
-          borderRadius: "15px",
-          border: "1px solid #eee",
-        }}
-      >
-        <Search size={20} color="#64748b" />
+    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px 15px" }}>
+      {/* --- ၁။ Search Bar (သီးသန့်ခွဲထုတ်ထားသည်) --- */}
+      <div style={{ marginBottom: "25px" }}>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        backgroundColor: "#fff",
+        padding: "12px 20px",
+        borderRadius: "30px", // ပိုပြီး Apple Style ဆန်အောင် ဝိုင်းလိုက်သည်
+        boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+        border: "1px solid #f1f5f9",
+      }}>
+        <Search size={18} color="#64748b" />
         <input
           type="text"
           placeholder="Search memories (e.g., by name or text)..."
@@ -406,735 +388,477 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
             border: "none",
             outline: "none",
             width: "100%",
-            fontSize: "14px",
+            fontSize: "15px", 
+            background: "transparent"
           }}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
+    </div>
 
-      {/* Input Card */}
-      <div style={inputCardStyle}>
-        {/* အပိုင်း (၁) - Avatar နှင့် စာသားရိုက်ရန်နေရာ */}
-        <div style={inputHeader}>
-          <img src={auth.currentUser?.photoURL} style={smallAvatar} alt="me" />
-          <input
-            type="text"
-            placeholder="What would you like to share?..."
-            style={textInput}
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-          />
-          {previewUrls.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                overflowX: "auto",
-                padding: "10px",
-              }}
-            >
-              {previewUrls.map((url, i) => (
-                <div key={i} style={{ position: "relative" }}>
-                  <img
-                    src={url}
-                    style={{
-                      width: "60px",
-                      height: "60px",
-                      borderRadius: "10px",
-                      objectFit: "cover",
-                    }}
-                  />
-                  <X
-                    size={14}
-                    style={{
-                      position: "absolute",
-                      top: -5,
-                      right: -5,
-                      background: "red",
-                      color: "#fff",
-                      borderRadius: "50%",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      const newFiles = [...selectedFiles];
-                      newFiles.splice(i, 1);
-                      setSelectedFiles(newFiles);
-                      const newUrls = [...previewUrls];
-                      newUrls.splice(i, 1);
-                      setPreviewUrls(newUrls);
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* အပိုင်း (၂) - Online Link ထည့်ရန်နေရာ (Margin နည်းနည်းထည့်ထားပေးသည်) */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            background: "#f1f5f9",
-            padding: "8px 12px",
-            borderRadius: "15px",
-            marginBottom: "10px",
-          }}
-        >
-          <LinkIcon size={16} color="#64748b" />
-          <input
-            style={{
-              border: "none",
-              background: "none",
-              outline: "none",
-              fontSize: "13px",
-              width: "100%",
-            }}
-            placeholder="Or add an online link (URL)..."
-            value={externalUrl}
-            onChange={(e) => setExternalUrl(e.target.value)}
-          />
-        </div>
-
-        {/* အပိုင်း (၃) - နောက်ခံအရောင်ရွေးရန် (Style Picker) */}
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            margin: "10px 0",
-            alignItems: "center",
-          }}
-        >
-          <span style={{ fontSize: "12px", color: "#64748b" }}>
-            Choose a Background:
-          </span>
-          {cardStyles.map((s) => (
-            <div
-              key={s}
-              onClick={() => setSelectedStyle(s)}
-              style={{
-                width: "25px",
-                height: "25px",
-                borderRadius: "50%",
-                background: s,
-                cursor: "pointer",
-                border:
-                  selectedStyle === s ? "2px solid #3b82f6" : "1px solid #ddd",
-              }}
-            />
-          ))}
-        </div>
-
-        {/* အပိုင်း (၄) - ခလုတ်များ */}
-        <div style={inputActions}>
-          <div style={{ display: "flex", gap: "15px" }}>
-            <label style={uploadLabel}>
-              <Image size={20} />
-              <span style={{ marginLeft: "5px" }}>File</span>
-              <input
-                type="file"
-                hidden
-                multiple
-                accept="image/*,video/*,audio/*"
-                // onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
-                onChange={onFileChange}
-              />
-            </label>
-            <button
-              onClick={() => setShowPostcardEditor(true)}
-              style={postcardBtn}
-            >
-              🎨 Write a Postcard
-            </button>
-          </div>
-
-          <button
-            onClick={handleUpload}
-            /* file မရှိရင်တောင် link ဒါမှမဟုတ် စာသားရှိရင် နှိပ်လို့ရအောင် ပြင်လိုက်တာပါ */
-            disabled={(!file && !externalUrl && !caption) || uploading}
-            style={postBtn}
-          >
-            {uploading ? "တင်နေသည်..." : "တင်မည်"}
-          </button>
-        </div>
+      {/* --- File / Postcard တင်မည် (Collapsed Input) --- */}
+      {/* --- Post Creator Section --- */}
+<div style={{ marginBottom: "30px" }}>
+  {!isCreating ? (
+    /* (က) ချုံ့ထားသည့်ပုံစံ - Minimized State */
+    <div 
+      onClick={() => setIsCreating(true)}
+      style={{
+        display: "flex", alignItems: "center", gap: "15px", backgroundColor: "#fff",
+        padding: "12px 20px", borderRadius: "30px", cursor: "pointer",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9"
+      }}
+    >
+      <img src={auth.currentUser?.photoURL} style={{ width: "35px", height: "35px", borderRadius: "50%" }} alt="me" />
+      <div style={{ flex: 1, color: "#94a3b8", fontSize: "15px" }}>
+        ဘာတွေမျှဝေချင်လဲ၊ {auth.currentUser?.displayName.split(" ")[0]}...
+      </div>
+      <Image color="#10b981" size={22} />
+    </div>
+  ) : (
+    /* (ခ) ပွင့်လာသည့်ပုံစံ - Expanded Input Card */
+    <div style={{ ...inputCardStyle, position: "relative", animation: "fadeIn 0.3s ease", backgroundColor: "#fff", padding: "20px", borderRadius: "20px", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px", alignItems: "center" }}>
+        <h4 style={{ margin: 0, color: "#1e293b" }}>အမှတ်တရအသစ် ဖန်တီးပါ</h4>
+        <X onClick={() => setIsCreating(false)} style={{ cursor: "pointer", color: "#64748b" }} size={20} />
       </div>
 
-      {/* Postcard Editor Modal */}
-      {showPostcardEditor && (
-        <div style={modalOverlay}>
-          <div style={modalContent}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "15px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "18px" }}>
-                မွေးနေ့ဆုတောင်းကတ် ဖန်တီးပါ
-              </h3>
+      {/* အပိုင်း (၁) - Avatar နှင့် စာသားရိုက်ရန်နေရာ */}
+      <div style={{ ...inputHeader, display: "flex", gap: "10px", alignItems: "flex-start", marginBottom: "15px" }}>
+        <img src={auth.currentUser?.photoURL} style={{ ...smallAvatar, width: "40px", height: "40px", borderRadius: "50%" }} alt="me" />
+        <textarea
+          placeholder="ဒီနေ့အတွက် ဘာတွေထူးခြားလဲ..."
+          style={{ 
+            width: "100%", minHeight: "100px", border: "none", outline: "none", 
+            fontSize: "16px", fontFamily: "inherit", resize: "none", padding: "5px" 
+          }}
+          value={caption}
+          onChange={(e) => setCaption(e.target.value)}
+        />
+      </div>
+
+      {/* Preview Images */}
+      {previewUrls.length > 0 && (
+        <div style={{ display: "flex", gap: "10px", overflowX: "auto", padding: "10px", backgroundColor: "#f8fafc", borderRadius: "10px", marginBottom: "15px" }}>
+          {previewUrls.map((url, i) => (
+            <div key={i} style={{ position: "relative", flexShrink: 0 }}>
+              <img src={url} style={{ width: "80px", height: "80px", borderRadius: "10px", objectFit: "cover" }} alt="preview" />
               <X
+                size={16}
+                style={{ position: "absolute", top: -5, right: -5, background: "#ef4444", color: "#fff", borderRadius: "50%", cursor: "pointer", padding: "2px" }}
                 onClick={() => {
-                  setShowPostcardEditor(false);
-                  setPostcardImage(null);
-                  setPostcardAudio(null);
+                  const newFiles = [...selectedFiles]; newFiles.splice(i, 1); setSelectedFiles(newFiles);
+                  const newUrls = [...previewUrls]; newUrls.splice(i, 1); setPreviewUrls(newUrls);
                 }}
-                style={{ cursor: "pointer" }}
               />
             </div>
-
-            {/* Preview Box */}
-            <div
-              style={{
-                ...previewBox,
-                backgroundColor: selectedColor,
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              {/* ပုံရွေးထားရင် အနောက်မှာ မှိန်မှိန်လေးပြမယ် */}
-              {postcardImage && (
-                <img
-                  src={URL.createObjectURL(postcardImage)}
-                  style={{
-                    position: "absolute",
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    opacity: 0.4,
-                    zIndex: 0,
-                  }}
-                  alt="preview"
-                />
-              )}
-              <textarea
-                placeholder="Write a Message of Blessing..."
-                style={{ ...postcardTextArea, zIndex: 1 }}
-                value={postcardMessage}
-                onChange={(e) => setPostcardMessage(e.target.value)}
-              />
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                overflowX: "auto",
-                marginBottom: "15px",
-              }}
-            >
-              {postcardTemplates.map((t) => (
-                <img
-                  key={t.url}
-                  src={t.url}
-                  onClick={() => setPostcardImage(t.url)}
-                  style={{
-                    width: "70px",
-                    height: "45px",
-                    borderRadius: "8px",
-                    cursor: "pointer",
-                    border:
-                      postcardImage === t.url
-                        ? "3px solid #3b82f6"
-                        : "1px solid #ddd",
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Font Selection */}
-            <div
-              style={{
-                display: "flex",
-                gap: "8px",
-                overflowX: "auto",
-                marginBottom: "15px",
-                padding: "5px",
-              }}
-            >
-              {fonts.map((f) => (
-                <button
-                  key={f.name}
-                  onClick={() => setSelectedFont(f.family)}
-                  style={{
-                    ...fontBtnStyle,
-                    border:
-                      selectedFont === f.family
-                        ? "2px solid #3b82f6"
-                        : "1px solid #ddd",
-                    fontFamily: f.family,
-                  }}
-                >
-                  {f.name}
-                </button>
-              ))}
-            </div>
-
-            {/* ပုံနဲ့ အသံ ထည့်ရန် ခလုတ်အသစ်များ */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "20px",
-                marginBottom: "15px",
-              }}
-            >
-              <label style={iconBtnStyle}>
-                <Image size={20} /> ဓာတ်ပုံထည့်မည်
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={(e) => setPostcardImage(e.target.files[0])}
-                />
-              </label>
-              <label style={iconBtnStyle}>
-                <Music size={20} /> သီချင်း/အသံထည့်မည်
-                <input
-                  type="file"
-                  hidden
-                  accept="audio/*"
-                  onChange={(e) => setPostcardAudio(e.target.files[0])}
-                />
-              </label>
-            </div>
-
-            {/* ရွေးထားတဲ့ File နာမည်လေးတွေပြဖို့ */}
-            <div
-              style={{
-                textAlign: "center",
-                fontSize: "12px",
-                color: "#3b82f6",
-                marginBottom: "10px",
-              }}
-            >
-              {postcardImage && <span>🖼️ {postcardImage.name} | </span>}
-              {postcardAudio && <span>🎵 {postcardAudio.name}</span>}
-            </div>
-
-            {/* Color Grid */}
-            <div style={colorGrid}>
-              {colors.map((c) => (
-                <div
-                  key={c}
-                  onClick={() => setSelectedColor(c)}
-                  style={{
-                    ...colorCircle,
-                    backgroundColor: c,
-                    border: selectedColor === c ? "3px solid #3b82f6" : "none",
-                  }}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={handlePostcardUpload}
-              style={postBtnFull}
-              disabled={uploading}
-            >
-              {uploading ? "တင်နေသည် (ခဏစောင့်ပါ)..." : "Postcard တင်မည်"}
-            </button>
-          </div>
+          ))}
         </div>
       )}
 
-      {/* Posts List */}
-      <div style={postsGrid}>
-        {posts
-          .filter(
-            (p) =>
-              p.caption?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              p.userName?.toLowerCase().includes(searchQuery.toLowerCase()),
-          )
-          .map((post) => (
-            <div
-              key={post.id}
-              style={{
-                ...postCardStyle,
-                background: post.layoutStyle || "#fff",
-                marginBottom: "20px",
-                borderRadius: "20px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                overflow: "hidden",
-              }}
-            >
-              {/* User Bar */}
-              <div
-                style={{
-                  ...postUserBar,
-                  padding: "15px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
-                >
-                  <img
-                    src={post.userImage}
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "50%",
-                    }}
-                    alt="u"
-                  />
-                  <div>
-                    <h4
-                      style={{
-                        margin: 0,
-                        fontSize: "15px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {post.userName}
-                    </h4>
-                    <span style={{ fontSize: "11px", color: "#64748b" }}>
-                      {post.createdAt
-                        ? post.createdAt.toDate().toLocaleString()
-                        : "တင်နေသည်..."}
-                    </span>
-                  </div>
-                </div>
-                <Trash2
-                  size={18}
-                  color={
-                    post.uid === auth.currentUser.uid ||
-                    post.userName === auth.currentUser.displayName
-                      ? "#ef4444"
-                      : "#ccc"
-                  }
-                  style={{ cursor: "pointer" }}
-                  onClick={() => handleDelete(post.id, post.uid, post.userName)}
-                />
-              </div>
+      {/* အပိုင်း (၂) - Online Link ထည့်ရန်နေရာ */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#f1f5f9", padding: "10px 15px", borderRadius: "12px", marginBottom: "15px" }}>
+        <LinkIcon size={16} color="#64748b" />
+        <input
+          style={{ border: "none", background: "none", outline: "none", fontSize: "13px", width: "100%" }}
+          placeholder="လင့်ခ် (URL) ထည့်သွင်းရန်..."
+          value={externalUrl}
+          onChange={(e) => setExternalUrl(e.target.value)}
+        />
+      </div>
 
-              {/* Content Logic */}
-              {post.fileType === "postcard" ? (
-                <div
-                  style={{
-                    ...postcardDisplay,
-                    backgroundColor: post.fileUrl,
-                    fontFamily: post.postcardFont || "cursive",
-                    margin: "0 15px 15px",
-                    borderRadius: "15px",
-                    position: "relative",
-                    overflow: "hidden",
-                    height: "300px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  {post.postcardImg && (
-                    <img
-                      src={post.postcardImg}
-                      style={{
-                        position: "absolute",
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        zIndex: 0,
-                      }}
-                      alt="bg"
-                    />
-                  )}
-                  <div
-                    style={{
-                      ...postcardContentOverlay,
-                      zIndex: 1,
-                      backgroundColor: "rgba(0,0,0,0.2)",
-                      padding: "20px",
-                      borderRadius: "15px",
-                      width: "80%",
-                      textAlign: "center",
-                    }}
-                  >
-                    <h2
-                      style={{
-                        color: "#fff",
-                        fontSize: "24px",
-                        textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
-                        margin: "0 0 15px 0",
-                      }}
-                    >
-                      {post.caption}
-                    </h2>
-                    {post.postcardAud && (
-                      <audio
-                        src={post.postcardAud}
-                        controls
-                        style={{ height: "35px", maxWidth: "100%" }}
-                      />
-                    )}
-                  </div>
-                </div>
-              ) : (
-                /* PostItem (Grid & Read More စနစ်သစ်) */
-                <PostItem
-                  post={post}
-                  setViewImage={setViewImage}
-                  LinkIcon={LinkIcon}
-                  mainMedia={mainMedia}
-                  postCaption={postCaption}
-                  linkBtnStyle={linkBtnStyle}
-                />
-              )}
+      {/* အပိုင်း (၃) - နောက်ခံအရောင်ရွေးရန် */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignItems: "center", flexWrap: "wrap" }}>
+        <span style={{ fontSize: "12px", color: "#64748b", fontWeight: "600" }}>Choose Style:</span>
+        {cardStyles.map((s) => (
+          <div
+            key={s}
+            onClick={() => setSelectedStyle(s)}
+            style={{
+              width: "22px", height: "22px", borderRadius: "50%", background: s, cursor: "pointer",
+              border: selectedStyle === s ? "2px solid #3b82f6" : "1px solid #ddd",
+              boxShadow: selectedStyle === s ? "0 0 5px rgba(59,130,246,0.5)" : "none"
+            }}
+          />
+        ))}
+      </div>
 
-              {/* ActionBar (Reaction & Comment Buttons) */}
-              <div
-                style={{
-                  ...postActionBar,
-                  padding: "10px 15px",
-                  borderTop: "1px solid #f1f5f9",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "15px",
-                }}
-              >
-                <div style={{ position: "relative" }}>
-                  <button
-                    style={{
-                      ...actionBtn,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "5px",
-                      border: "none",
-                      background: "none",
-                      cursor: "pointer",
-                      color: "#64748b",
-                      fontWeight: "600",
-                    }}
-                    onMouseEnter={() => setShowEmojiPicker(post.id)}
-                    onClick={() => setShowEmojiPicker(post.id)}
-                  >
-                    <span style={{ fontSize: "20px" }}>
-                      {post.reactions?.[auth.currentUser.uid] || "❤️"}
-                    </span>
-                    <span>React</span>
-                  </button>
+      {/* အပိုင်း (၄) - ခလုတ်များ */}
+      <div style={{ ...inputActions, display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #f1f5f9", paddingTop: "15px" }}>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "5px", cursor: "pointer", padding: "8px 12px", borderRadius: "8px", backgroundColor: "#f1f5f9", fontSize: "14px" }}>
+            <Image size={20} color="#10b981" />
+            <span>ပုံ/ဗီဒီယို</span>
+            <input type="file" hidden multiple accept="image/*,video/*,audio/*" onChange={onFileChange} />
+          </label>
+          <button onClick={() => setShowPostcardEditor(true)} style={{ ...postcardBtn, display: "flex", alignItems: "center", gap: "5px", border: "none", background: "#fef2f2", color: "#ef4444", padding: "8px 12px", borderRadius: "8px", cursor: "pointer", fontSize: "14px" }}>
+            🎨 Postcard
+          </button>
+        </div>
 
-                  {showEmojiPicker === post.id && (
-                    <div
-                      style={emojiPopupStyle}
-                      onMouseLeave={() => setShowEmojiPicker(null)}
-                    >
-                      <div style={emojiGroup}>
-                        {[
-                          "❤️",
-                          "💖",
-                          "🥰",
-                          "🙏",
-                          "👏",
-                          "😂",
-                          "🥳",
-                          "🤣",
-                          "🎂",
-                          "🎉",
-                          "🔥",
-                          "✨",
-                          "🫂",
-                          "😮",
-                          "👍",
-                          "👌",
-                        ].map((emoji) => (
-                          <span
-                            key={emoji}
-                            onClick={() => {
-                              handleReaction(post.id, emoji);
-                              setShowEmojiPicker(null);
-                            }}
-                            style={emojiIconStyle}
-                          >
-                            {emoji}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+        <button
+          onClick={() => { handleUpload(); setIsCreating(false); }}
+          disabled={(!selectedFiles.length && !externalUrl && !caption) || uploading}
+          style={{ 
+            backgroundColor: (selectedFiles.length || externalUrl || caption) ? "#3b82f6" : "#e2e8f0",
+            color: "#fff", border: "none", padding: "10px 25px", borderRadius: "10px", fontWeight: "bold", cursor: "pointer"
+          }}
+        >
+          {uploading ? "Uploading..." : "Upload"}
+        </button>
+      </div>
+    </div>
+  )}
+</div>
 
-                <button
-                  style={{
-                    ...actionBtn,
-                    border: "none",
-                    background: "none",
-                    cursor: "pointer",
-                    color: "#64748b",
-                    fontWeight: "600",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "5px",
-                  }}
-                >
-                  <MessageCircle size={20} />
-                  <span>{post.comments?.length || 0} Comments</span>
-                </button>
+{/* --- Postcard Editor Modal --- */}
+{showPostcardEditor && (
+  <div style={{ ...modalOverlay, display: "flex", justifyContent: "center", alignItems: "center", position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.5)", zIndex: 3000 }}>
+    <div style={{ ...modalContent, backgroundColor: "#fff", padding: "25px", borderRadius: "24px", width: "90%", maxWidth: "500px", maxHeight: "90vh", overflowY: "auto" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", alignItems: "center" }}>
+        <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>မွေးနေ့ဆုတောင်းကတ် ဖန်တီးပါ</h3>
+        <X onClick={() => { setShowPostcardEditor(false); setPostcardImage(null); setPostcardAudio(null); }} style={{ cursor: "pointer", color: "#64748b" }} />
+      </div>
 
-                {/* Reaction Summary */}
-                <div
-                  style={{
-                    marginLeft: "auto",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "3px",
-                  }}
-                >
-                  {post.reactions &&
-                    Object.values(post.reactions)
-                      .slice(0, 3)
-                      .map((r, i) => (
-                        <span key={i} style={{ fontSize: "14px" }}>
-                          {r}
-                        </span>
-                      ))}
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      color: "#64748b",
-                      marginLeft: "5px",
-                    }}
-                  >
-                    {post.reactions ? Object.keys(post.reactions).length : 0}
-                  </span>
-                </div>
-              </div>
+      {/* Preview Box */}
+      <div style={{ ...previewBox, backgroundColor: selectedColor, position: "relative", overflow: "hidden", height: "250px", borderRadius: "18px", marginBottom: "20px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        {postcardImage && (
+          <img
+            src={typeof postcardImage === 'string' ? postcardImage : URL.createObjectURL(postcardImage)}
+            style={{ position: "absolute", width: "100%", height: "100%", objectFit: "cover", opacity: 0.5, zIndex: 0 }}
+            alt="preview"
+          />
+        )}
+        <textarea
+          placeholder="ဆုတောင်းစကား ရေးသားပါ..."
+          style={{ ...postcardTextArea, zIndex: 1, width: "80%", background: "none", border: "none", outline: "none", color: "#fff", fontSize: "20px", textAlign: "center", fontWeight: "bold", textShadow: "1px 1px 4px rgba(0,0,0,0.5)" }}
+          value={postcardMessage}
+          onChange={(e) => setPostcardMessage(e.target.value)}
+        />
+      </div>
 
-              {/* Comments Section */}
-              <div style={{ ...commentSection, padding: "0 15px 15px" }}>
-                {post.comments?.map((c, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex",
-                      gap: "8px",
-                      marginBottom: "8px",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <img
-                      src={c.userImage}
-                      style={{
-                        width: "28px",
-                        height: "28px",
-                        borderRadius: "50%",
-                      }}
-                      alt="u"
-                    />
-                    <div
-                      style={{
-                        backgroundColor: "#f1f5f9",
-                        padding: "8px 12px",
-                        borderRadius: "15px",
-                        fontSize: "13px",
-                      }}
-                    >
-                      <strong>{c.userName}</strong>{" "}
-                      <span style={{ marginLeft: "5px" }}>{c.text}</span>
-                    </div>
-                  </div>
-                ))}
-                <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
-                  <input
-                    type="text"
-                    placeholder="Leave a Comment..."
-                    style={{
-                      flex: 1,
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "20px",
-                      padding: "8px 15px",
-                      outline: "none",
-                      fontSize: "13px",
-                    }}
-                    value={commentText[post.id] || ""}
-                    onChange={(e) =>
-                      setCommentText({
-                        ...commentText,
-                        [post.id]: e.target.value,
-                      })
-                    }
-                  />
-                  <button
-                    onClick={() => handleComment(post.id)}
-                    style={{
-                      border: "none",
-                      background: "none",
-                      color: "#3b82f6",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Send size={18} />
-                  </button>
-                </div>
-              </div>
-            </div>
+      {/* Template Selection */}
+      <div style={{ marginBottom: "20px" }}>
+        <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "600", display: "block", marginBottom: "10px" }}>Templates:</span>
+        <div style={{ display: "flex", gap: "10px", overflowX: "auto", paddingBottom: "5px" }}>
+          {postcardTemplates.map((t) => (
+            <img
+              key={t.url}
+              src={t.url}
+              onClick={() => setPostcardImage(t.url)}
+              style={{ width: "80px", height: "50px", borderRadius: "10px", cursor: "pointer", objectFit: "cover", border: postcardImage === t.url ? "3px solid #3b82f6" : "2px solid #f1f5f9" }}
+              alt="template"
+            />
           ))}
+        </div>
+      </div>
 
-        {/* Load More Button */}
-        {lastVisible && (
-          <div style={{ textAlign: "center", margin: "30px 0" }}>
-            <button
-              onClick={fetchMorePosts}
-              disabled={loadingMore}
-              style={{
-                padding: "10px 25px",
-                borderRadius: "25px",
-                border: "1px solid #ddd",
-                backgroundColor: "#fff",
-                cursor: "pointer",
-                fontWeight: "bold",
-                color: "#64748b",
-              }}
-            >
-              {loadingMore
-                ? "Please Wait..."
-                : "View More Memories ↓"}
-            </button>
+      {/* Font & Style Controls */}
+      <div style={{ display: "flex", gap: "8px", overflowX: "auto", marginBottom: "20px" }}>
+        {fonts.map((f) => (
+          <button
+            key={f.name}
+            onClick={() => setSelectedFont(f.family)}
+            style={{
+              padding: "6px 15px", borderRadius: "20px", border: selectedFont === f.family ? "2px solid #3b82f6" : "1px solid #e2e8f0",
+              backgroundColor: selectedFont === f.family ? "#eff6ff" : "#fff", color: selectedFont === f.family ? "#3b82f6" : "#64748b",
+              fontFamily: f.family, cursor: "pointer", whiteSpace: "nowrap"
+            }}
+          >
+            {f.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Media Upload Buttons */}
+      <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginBottom: "20px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", borderRadius: "12px", backgroundColor: "#f8fafc", cursor: "pointer", border: "1px solid #e2e8f0", fontSize: "14px" }}>
+          <Image size={20} color="#3b82f6" /> 
+          <span>ပုံထည့်မည်</span>
+          <input type="file" hidden accept="image/*" onChange={(e) => setPostcardImage(e.target.files[0])} />
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", borderRadius: "12px", backgroundColor: "#f8fafc", cursor: "pointer", border: "1px solid #e2e8f0", fontSize: "14px" }}>
+          <Music size={20} color="#8b5cf6" /> 
+          <span>သီချင်းထည့်မည်</span>
+          <input type="file" hidden accept="audio/*" onChange={(e) => setPostcardAudio(e.target.files[0])} />
+        </label>
+      </div>
+
+      {/* Selected File Names */}
+      {(postcardImage || postcardAudio) && (
+        <div style={{ textAlign: "center", fontSize: "12px", color: "#3b82f6", marginBottom: "15px", padding: "10px", backgroundColor: "#f0f7ff", borderRadius: "10px" }}>
+          {postcardImage && typeof postcardImage !== 'string' && <div>🖼️ {postcardImage.name}</div>}
+          {postcardAudio && <div>🎵 {postcardAudio.name}</div>}
+        </div>
+      )}
+
+      {/* Background Colors */}
+      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "25px", flexWrap: "wrap" }}>
+        {colors.map((c) => (
+          <div
+            key={c}
+            onClick={() => setSelectedColor(c)}
+            style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: c, border: selectedColor === c ? "3px solid #3b82f6" : "2px solid #fff", cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
+          />
+        ))}
+      </div>
+
+      <button
+        onClick={handlePostcardUpload}
+        style={{ width: "100%", padding: "14px", borderRadius: "15px", border: "none", backgroundColor: "#3b82f6", color: "#fff", fontWeight: "bold", fontSize: "16px", cursor: "pointer" }}
+        disabled={uploading}
+      >
+        {uploading ? "Uploading, wait..." : "Postcard Upload"}
+      </button>
+    </div>
+  </div>
+)}
+
+      {/* --- Posts Feed Grid System --- */}
+<div style={postGridContainer}>
+  {posts
+    .filter(
+      (p) =>
+        p.caption?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.userName?.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+    .map((post) => (
+      <div
+        key={post.id}
+        style={modernPostCard}
+      >
+        {/* ၁။ Header အပိုင်း (User Info + Trash Icon) */}
+      <div style={postHeader}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <img src={post.userImage} style={avatarStyle} alt="u" />
+          <div>
+            <h4 style={userNameStyle}>{post.userName}</h4>
+            <span style={dateStyle}>
+              {post.createdAt ? post.createdAt.toDate().toLocaleString() : "Now"}
+            </span>
+          </div>
+        </div>
+
+        {/* အမှိုက်ပုံးကို ညာဘက်အစွန်မှာ သပ်သပ်ရပ်ရပ် ထားမယ် */}
+        {(post.uid === auth.currentUser.uid) && (
+          <div onClick={() => handleDelete(post.id, post.uid, post.userName)} style={deleteBtnBox}>
+            <Trash2 size={18} color="#ef4444" />
           </div>
         )}
       </div>
 
-      {/* Lightbox Overlay */}
-      {viewImage && (
+        {/* --- Content Area --- */}
+        <div style={{ padding: "0 0 15px 0" }}>
+        <PostItem post={post} setViewImage={setViewImage} LinkIcon={LinkIcon} />
+      </div>
+
+        {/* --- Interaction Bar (Reactions & Comments) --- */}
         <div
           style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.9)",
-            zIndex: 5000,
+            padding: "12px 20px",
+            borderTop: "1px solid #f1f5f9",
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "space-between",
             alignItems: "center",
+            backgroundColor: "#fff"
           }}
-          onClick={() => setViewImage(null)}
         >
-          <img
-            src={viewImage}
-            style={{
-              maxWidth: "95%",
-              maxHeight: "90%",
-              borderRadius: "10px",
-              boxShadow: "0 0 20px rgba(0,0,0,0.5)",
-            }}
-            alt="full"
-          />
-          <X
-            style={{
-              position: "absolute",
-              top: 20,
-              right: 20,
-              color: "#fff",
-              cursor: "pointer",
-            }}
-            size={30}
-          />
+          <div style={{ display: "flex", gap: "20px" }}>
+            {/* Reaction Button */}
+            <div style={{ position: "relative" }}>
+              <button
+                style={{ display: "flex", alignItems: "center", gap: "6px", border: "none", background: "none", cursor: "pointer", color: "#64748b", fontWeight: "700", fontSize: "14px" }}
+                onClick={() => setShowEmojiPicker(post.id)}
+              >
+                <span style={{ fontSize: "20px" }}>
+                  {post.reactions?.[auth.currentUser.uid] || "❤️"}
+                </span>
+                <span>React</span>
+              </button>
+
+              {showEmojiPicker === post.id && (
+                <div style={{ ...emojiPopupStyle, bottom: "45px", left: "0" }} onMouseLeave={() => setShowEmojiPicker(null)}>
+                  <div style={emojiGroup}>
+                    {["❤️", "💖", "🥰", "🙏", "👏", "😂", "🥳", "🤣", "🎂", "🎉", "🔥", "✨", "🫂", "😮", "👍", "👌"].map((emoji) => (
+                      <span
+                        key={emoji}
+                        onClick={() => { handleReaction(post.id, emoji); setShowEmojiPicker(null); }}
+                        style={emojiIconStyle}
+                      >
+                        {emoji}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Comment Count Display */}
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#64748b", fontWeight: "700", fontSize: "14px" }}>
+              <MessageCircle size={20} />
+              <span>{post.comments?.length || 0}</span>
+            </div>
+          </div>
+
+          {/* Reaction Summary (Right side) */}
+          <div style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: "#f8fafc", padding: "4px 10px", borderRadius: "20px" }}>
+              {post.reactions && Object.values(post.reactions).slice(0, 3).map((r, i) => (
+                <span key={i} style={{ fontSize: "12px" }}>{r}</span>
+              ))}
+              <span style={{ fontSize: "12px", color: "#64748b", fontWeight: "600" }}>
+                {post.reactions ? Object.keys(post.reactions).length : 0}
+              </span>
+          </div>
         </div>
-      )}
+
+        {/* --- Comments Section --- */}
+        <div style={{ padding: "15px 20px", backgroundColor: "#fcfdfe" }}>
+          {post.comments?.slice(0, 3).map((c, i) => (
+            <div key={i} style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "flex-start" }}>
+              <img src={c.userImage} style={{ width: "30px", height: "30px", borderRadius: "50%" }} alt="u" />
+              <div style={{ backgroundColor: "#f1f5f9", padding: "8px 12px", borderRadius: "18px", fontSize: "13px", maxWidth: "85%" }}>
+                <strong style={{ color: "#1e293b" }}>{c.userName}</strong>
+                <span style={{ marginLeft: "6px", color: "#475569" }}>{c.text}</span>
+              </div>
+            </div>
+          ))}
+          
+          {/* Comment Input */}
+          <div style={{ display: "flex", gap: "10px", marginTop: "15px", alignItems: "center" }}>
+            <input
+              type="text"
+              placeholder="Comment..."
+              style={{ flex: 1, border: "1px solid #e2e8f0", borderRadius: "20px", padding: "10px 15px", outline: "none", fontSize: "13px", backgroundColor: "#fff" }}
+              value={commentText[post.id] || ""}
+              onChange={(e) => setCommentText({ ...commentText, [post.id]: e.target.value })}
+            />
+            <div 
+              onClick={() => handleComment(post.id)}
+              style={{ cursor: "pointer", color: "#3b82f6", display: "flex", alignItems: "center" }}
+            >
+              <Send size={20} />
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+</div>
+
+{/* --- Load More Button (Grid ရဲ့ အောက်မှာ သီးသန့်ထားပါသည်) --- */}
+{lastVisible && (
+  <div style={{ textAlign: "center", padding: "40px 0" }}>
+    <button
+      onClick={fetchMorePosts}
+      disabled={loadingMore}
+      style={{
+        padding: "12px 35px",
+        borderRadius: "30px",
+        border: "1px solid #e2e8f0",
+        backgroundColor: "#fff",
+        cursor: "pointer",
+        fontWeight: "700",
+        color: "#3b82f6",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+        transition: "0.2s"
+      }}
+    >
+      {loadingMore ? "ခေတ္တစောင့်ပါ..." : "နောက်ထပ် အမှတ်တရများ ကြည့်ရန် ↓"}
+    </button>
+  </div>
+)}
+
+      {/* --- Professional Lightbox Overlay --- */}
+{viewImage && (
+  <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      backgroundColor: "rgba(0, 0, 0, 0.95)", // ပိုမှောင်လိုက်ခြင်းဖြင့် ပုံကို ပိုပေါ်လွင်စေသည်
+      backdropFilter: "blur(8px)", // အနောက်က Background ကို ဝါးပေးသော Apple Style effect
+      zIndex: 5000,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      cursor: "zoom-out",
+      animation: "fadeIn 0.3s ease", // ပွင့်လာလျှင် ညင်သာစေရန်
+    }}
+    onClick={() => setViewImage(null)}
+  >
+    {/* ပုံထည့်သည့် Container */}
+    <div 
+      style={{ 
+        position: "relative", 
+        maxWidth: "95%", 
+        maxHeight: "95%", 
+        display: "flex", 
+        flexDirection: "column",
+        alignItems: "center"
+      }}
+      onClick={(e) => e.stopPropagation()} // ပုံကိုနှိပ်လျှင် ပိတ်မသွားစေရန်
+    >
+      <img
+        src={viewImage}
+        style={{
+          maxWidth: "100%",
+          maxHeight: "90vh",
+          borderRadius: "12px",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+          objectFit: "contain",
+          border: "1px solid rgba(255,255,255,0.1)"
+        }}
+        alt="full screen view"
+      />
+      
+      {/* ပုံအောက်ခြေတွင် ပြပေးမည့် ခလုတ်ငယ်များ (Optional) */}
+      <div style={{ 
+        marginTop: "15px", 
+        display: "flex", 
+        gap: "20px", 
+        color: "rgba(255,255,255,0.7)",
+        fontSize: "14px",
+        fontWeight: "500"
+      }}>
+        <span onClick={() => setViewImage(null)} style={{ cursor: "pointer" }}>Close</span>
+        <a 
+          href={viewImage} 
+          download 
+          target="_blank" 
+          rel="noreferrer" 
+          style={{ color: "inherit", textDecoration: "none" }}
+        >
+          Download
+        </a>
+      </div>
+    </div>
+
+    {/* Close Button (ညာဘက်အပေါ်ထောင့်) */}
+    <div
+      style={{
+        position: "absolute",
+        top: 30,
+        right: 30,
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
+        borderRadius: "50%",
+        width: "45px",
+        height: "45px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        cursor: "pointer",
+        transition: "0.2s",
+        border: "1px solid rgba(255,255,255,0.2)"
+      }}
+      onClick={() => setViewImage(null)}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.2)"}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)"}
+    >
+      <X size={24} color="#fff" />
+    </div>
+  </div>
+)}
     </div>
   );
 };
@@ -1436,12 +1160,6 @@ const postUserBar = {
   justifyContent: "space-between",
   alignItems: "center",
 };
-const avatarStyle = {
-  width: "40px",
-  height: "40px",
-  borderRadius: "50%",
-  objectFit: "cover",
-};
 const postName = { margin: 0, fontSize: "15px", fontWeight: "600" };
 const postTime = { fontSize: "11px", color: "#94a3b8" };
 const postCaption = { padding: "0 15px 15px", margin: 0, fontSize: "15px" };
@@ -1647,17 +1365,246 @@ const loadMoreBtnStyle = {
   transition: "0.3s",
   boxShadow: "0 4px 10px rgba(59, 130, 246, 0.1)",
 };
+// const lightboxOverlay = {
+//   position: "fixed",
+//   top: 0,
+//   left: 0,
+//   width: "100%",
+//   height: "100%",
+//   background: "rgba(0,0,0,0.9)",
+//   zIndex: 5000,
+//   display: "flex",
+//   justifyContent: "center",
+//   alignItems: "center",
+// };
+
+// --- Modern Dashboard Styles ---
+
+const dashboardContainer = {
+  maxWidth: "1100px", // ၂-ကော်လံအတွက် ပိုကျယ်လိုက်ပါပြီ
+  margin: "0 auto",
+  padding: "20px 15px",
+};
+
+// ၁။ Search Section Style
+const searchWrapper = {
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  backgroundColor: "#fff",
+  padding: "12px 24px",
+  borderRadius: "30px", // Apple-style round bar
+  boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+  border: "1px solid #f1f5f9",
+  marginBottom: "30px",
+};
+
+const searchInputStyle = {
+  border: "none",
+  outline: "none",
+  width: "100%",
+  fontSize: "15px",
+  backgroundColor: "transparent",
+  color: "#1e293b",
+};
+
+// ၂။ Post Creator (Minimized/ချုံ့ထားသည့်ပုံစံ)
+const minimizedCreator = {
+  display: "flex",
+  alignItems: "center",
+  gap: "15px",
+  backgroundColor: "#fff",
+  padding: "12px 20px",
+  borderRadius: "16px",
+  cursor: "pointer",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+  border: "1px solid #f1f5f9",
+  marginBottom: "30px",
+  transition: "0.2s ease",
+};
+
+const placeholderText = {
+  flex: 1,
+  color: "#94a3b8",
+  fontSize: "15px",
+  fontWeight: "500",
+};
+
+// ၃။ Post Creator (Expanded/ပွင့်လာသည့်ပုံစံ)
+const expandedCreatorCard = {
+  backgroundColor: "#fff",
+  padding: "25px",
+  borderRadius: "24px",
+  boxShadow: "0 15px 35px rgba(0,0,0,0.1)",
+  border: "1px solid #f1f5f9",
+  marginBottom: "30px",
+};
+
+const creatorTextarea = {
+  width: "100%",
+  minHeight: "100px",
+  border: "none",
+  outline: "none",
+  fontSize: "16px",
+  fontFamily: "inherit",
+  resize: "none",
+  padding: "10px 0",
+  color: "#1e293b",
+};
+
+// ၄။ ၂-ကော်လံ Grid စနစ် (Masonry-like Grid)
+const postGridSystem = {
+  display: "grid",
+  // Desktop မှာ ၄၅၀px အနည်းဆုံးထားပြီး ၂ ကော်လံခွဲမယ်၊ ဖုန်းမှာ ၁ ကော်လံပဲပြမယ်
+  gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 450px), 1fr))",
+  gap: "25px",
+  alignItems: "start", // ပိုစ့်တွေက အမြင့်မတူရင်လည်း သူ့အလိုလို စီသွားမယ်
+  marginTop: "20px",
+};
+
+// ၅။ ခေတ်မီသော Post Card Style
+// const modernPostCard = {
+//   backgroundColor: "#fff",
+//   borderRadius: "24px",
+//   boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+//   border: "1px solid #f1f5f9",
+//   overflow: "hidden",
+//   transition: "transform 0.2s ease",
+// };
+
+// const postHeader = {
+//   padding: "15px 20px",
+//   display: "flex",
+//   justifyContent: "space-between",
+//   alignItems: "center",
+// };
+
+// const avatarStyle = {
+//   width: "42px",
+//   height: "42px",
+//   borderRadius: "50%",
+//   objectFit: "cover",
+//   border: "2px solid #f8fafc",
+// };
+
+// ၆။ Lightbox (Professional Zoom-out)
 const lightboxOverlay = {
   position: "fixed",
   top: 0,
   left: 0,
   width: "100%",
   height: "100%",
-  background: "rgba(0,0,0,0.9)",
+  backgroundColor: "rgba(0, 0, 0, 0.95)",
+  backdropFilter: "blur(10px)", // Apple Glass effect
   zIndex: 5000,
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
+  cursor: "zoom-out",
+};
+
+const lightboxImage = {
+  maxWidth: "95%",
+  maxHeight: "90vh",
+  borderRadius: "12px",
+  boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
+  objectFit: "contain",
+  border: "1px solid rgba(255,255,255,0.1)",
+};
+
+// ၇။ Action Buttons & Badges
+const reactionBadge = {
+  display: "flex",
+  alignItems: "center",
+  gap: "4px",
+  backgroundColor: "#f8fafc",
+  padding: "5px 12px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  color: "#64748b",
+  fontWeight: "600",
+};
+
+const deleteBtnBox = {
+  cursor: "pointer",
+  padding: "8px",
+  borderRadius: "50%",
+  backgroundColor: "#fef2f2",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+// ၁။ ၂-ကော်လံ ဖြစ်စေမည့် Grid
+const postGridContainer = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 350px), 1fr))",
+  gap: "20px",
+  width: "100%",
+  padding: "20px 0",
+  alignItems: "start",
+};
+
+const mainLayout = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  width: "100%", // 👈 100% ဖြစ်ရပါမယ်
+  maxWidth: "1200px", // 👈 1200px အထိ ချဲ့ပေးပါ
+  margin: "0 auto",
+  paddingTop: "70px",
+  paddingBottom: "100px",
+};
+
+// ၂။ Post Card တစ်ခုလုံး (ဘဲဥပုံမဖြစ်စေရန် border-radius ကို 15px ပဲထားပါ)
+const modernPostCard = {
+  backgroundColor: "#fff",
+  borderRadius: "20px",
+  boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+  border: "1px solid #f1f5f9",
+  overflow: "hidden",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+// ၃။ Header (User Info နှင့် Delete Button ကို ဘေးတိုက်ခွဲရန်)
+const postHeader = {
+  padding: "15px 20px",
+  display: "flex",
+  justifyContent: "space-between", // ဒါက အမှိုက်ပုံးကို ညာဘက်အစွန် တွန်းပို့ပေးတာပါ
+  alignItems: "center",
+  background: "#fff", // နောက်ခံအပြာရောင်/ဘဲဥပုံများကို ဖယ်ရှားလိုက်ပါပြီ
+};
+
+const avatarStyle = {
+  width: "42px",
+  height: "42px",
+  borderRadius: "50%", // User ပုံကိုပဲ အဝိုင်းလုပ်ပါ
+  objectFit: "cover",
+};
+
+const userNameStyle = {
+  margin: 0,
+  fontSize: "15px",
+  fontWeight: "700",
+  color: "#1e293b",
+};
+
+const dateStyle = {
+  fontSize: "11px",
+  color: "#94a3b8",
+};
+
+const deleteBtnStyle = {
+  cursor: "pointer",
+  padding: "8px",
+  borderRadius: "50%",
+  backgroundColor: "#fef2f2", // အနီနုရောင်နောက်ခံ
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  transition: "0.2s",
 };
 
 export default MainDashboard;

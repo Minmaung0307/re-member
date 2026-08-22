@@ -690,14 +690,7 @@ users.forEach((u) => {
             }}
           >
             <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-                maxWidth: "1200px",
-                margin: "0 auto",
-              }}
+              style={navContent}
             >
               <h2 style={{ ...logoText, fontSize: "18px" }}>
                 <span style={{ color: "#c86202" }}>Re</span>
@@ -705,7 +698,7 @@ users.forEach((u) => {
                 <span style={{ color: "#3b82f6" }}>Member</span>
               </h2>
               <div
-                style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                style={{ display: "flex", alignItems: "center", gap: "12px", paddingRight: "25px" }}
               >
                 <img
                   src={user.photoURL}
@@ -782,7 +775,12 @@ users.forEach((u) => {
     </div>
   )}
 </div>
-
+<div style={{
+          width: '100%',
+          maxWidth: activeTab === 'workspace' ? '100%' : '1100px', // ၂ ကော်လံအတွက် အကျယ်ချန်ထားသည်
+          padding: '0 10px',
+          boxSizing: 'border-box'
+      }}>
               {activeTab === "feed" && (
                 <MainDashboard
                   posts={posts}
@@ -1792,6 +1790,7 @@ users.forEach((u) => {
               )}
             </div>
           </div>
+        </div>
 
           {/* Footer */}
           <footer
@@ -2405,19 +2404,23 @@ const navContent = {
   margin: "0 auto",
   display: "flex",
   justifyContent: "space-between",
-  padding: "0 20px",
+  padding: "0 10px",
   alignItems: "center",
 };
 const logoText = { fontSize: "20px", fontWeight: "800" };
 const userProfileArea = { display: "flex", alignItems: "center", gap: "10px" };
 const avatarStyle = { width: "30px", height: "30px", borderRadius: "50%" };
 const logoutBtn = {
-  border: "none",
-  background: "#fee2e2",
+  padding: "6px 12px",
+  fontSize: "12px", // 👈 စာလုံးနည်းနည်း သေးလိုက်ပါ
+  backgroundColor: "#fee2e2",
   color: "#ef4444",
-  padding: "8px",
-  borderRadius: "10px",
+  border: "none",
+  borderRadius: "8px",
   cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  gap: "5px",
 };
 const mainLayout = {
   display: "flex",
@@ -2426,6 +2429,8 @@ const mainLayout = {
   paddingTop: "70px",
   paddingBottom: "100px", // Bottom nav အတွက် နေရာချန်မယ်
   width: "100%",
+  maxWidth: "1200px",
+  margin: "0 auto",
   boxSizing: "border-box",
 };
 const contentBody = {
