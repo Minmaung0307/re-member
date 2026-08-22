@@ -48,18 +48,41 @@ import {
 function App() {
   const moods = [
     // ပျော်ရွှင်ခြင်း (Happy)
-    '😊', '🥰', '🤩', '🥳', '😎', 
+    "😊",
+    "🥰",
+    "🤩",
+    "🥳",
+    "😎",
     // အနားယူခြင်း/ ပျင်းခြင်း (Relax/Bored)
-    '😌', '😴', '☕', '🧘', '😑',
+    "😌",
+    "😴",
+    "☕",
+    "🧘",
+    "😑",
     // အလုပ်များခြင်း/ ကြိုးစားခြင်း (Productive/Busy)
-    '🏃‍♂️', '👨‍💻', '📚', '💪', '✨',
+    "🏃‍♂️",
+    "👨‍💻",
+    "📚",
+    "💪",
+    "✨",
     // စားချင်သောက်ချင်ခြင်း (Foodie)
-    '😋', '🤤', '🥘', '🍕', '🍦',
+    "😋",
+    "🤤",
+    "🥘",
+    "🍕",
+    "🍦",
     // ဝမ်းနည်းခြင်း/ စိတ်ပူခြင်း (Sad/Anxious)
-    '😢', '🥺', '😰', '😱', '😡',
+    "😢",
+    "🥺",
+    "😰",
+    "😱",
+    "😡",
     // ကျန်းမာရေး/ အားနာခြင်း (Health/Grateful)
-    '🤒', '🤕', '🙏', '🫂'
-];
+    "🤒",
+    "🤕",
+    "🙏",
+    "🫂",
+  ];
   const [adminSearch, setAdminSearch] = useState("");
   const [user, setUser] = useState(null);
 
@@ -116,8 +139,11 @@ function App() {
   const [viewImage, setViewImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [showFamily, setShowFamily] = useState(true);
-    const [showFriends, setShowFriends] = useState(true);
-    const [showConnections, setShowConnections] = useState(true);
+  const [showFriends, setShowFriends] = useState(true);
+  const [showConnections, setShowConnections] = useState(true);
+
+  const [userFamilyId, setUserFamilyId] = useState(null);
+  const [isFamilyOwner, setIsFamilyOwner] = useState(false);
 
   //   အကောင့်ဝင်ခြင်းနှင့် မိသားစုကုဒ် စစ်ဆေးခြင်း Effect
   useEffect(() => {
@@ -134,7 +160,9 @@ function App() {
         if (docSnap.exists()) {
           // --- (၁) လူဟောင်းဖြစ်ပါက ---
           const data = docSnap.data();
-          finalFamilyCode = data.familyCode;
+          setUserFamilyId(data.familyId || null);
+          setUserFamilyCode(data.familyCode || "");
+          setIsFamilyOwner(data.isFamilyOwner === true);
 
           // isPaid status ကို db အတိုင်းယူမယ် (မရှိသေးရင် false လို့ ယူဆမယ်)
           const paidStatus = data.isPaid || false;
@@ -544,6 +572,32 @@ function App() {
     }
   };
 
+  const updateFamilyCode = async (newCode) => {
+    if (newCode.length < 8) {
+      alert("လုံခြုံရေးအတွက် ကုဒ်သည် အနည်းဆုံး ၈ လုံး ရှိရပါမည်။");
+      return;
+    }
+
+    if (!userFamilyId) {
+      alert("မိသားစု ID (FID) ရှာမတွေ့ပါ။");
+      return;
+    }
+
+    try {
+      // ၁။ Families collection ထဲက code ကို အရင်ပြင်မယ်
+      await updateDoc(doc(db, "families", userFamilyId), { code: newCode });
+
+      // ၂။ ကိုယ့်ရဲ့ User Profile ထဲက familyCode ကိုပါ ပြင်မယ်
+      await updateDoc(doc(db, "users", user.uid), { familyCode: newCode });
+
+      setUserFamilyCode(newCode); // UI မှာ ချက်ချင်း ပြောင်းသွားစေရန်
+      alert("မိသားစုကုဒ်ကို အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ။ ✨");
+    } catch (error) {
+      console.error("Update Code Error:", error);
+      alert("ကုဒ်ပြောင်းလို့မရပါ။");
+    }
+  };
+
   // ၁။ သူငယ်ချင်းအသစ် ရှာပြီး Request ပို့မယ်
   const handleAddFriend = async () => {
     // ၁။ ရိုက်လိုက်တဲ့ Email ကို နေရာလွတ်တွေဖြတ်ပြီး စာလုံးအသေး (lowercase) ပြောင်းမယ်
@@ -608,30 +662,30 @@ function App() {
   };
 
   // ၁။ မွေးနေ့ရှင်များကို စစ်ထုတ်ခြင်း
-const todayBDays = [];
-const upcomingBDays = [];
+  const todayBDays = [];
+  const upcomingBDays = [];
 
-users.forEach((u) => {
-  if (!u.birthday || !u.birthday.includes("/")) return;
+  users.forEach((u) => {
+    if (!u.birthday || !u.birthday.includes("/")) return;
 
-  const [m, d] = u.birthday.split("/");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    const [m, d] = u.birthday.split("/");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  let bdayDate = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
-  bdayDate.setHours(0, 0, 0, 0);
+    let bdayDate = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
+    bdayDate.setHours(0, 0, 0, 0);
 
-  if (bdayDate < today) bdayDate.setFullYear(today.getFullYear() + 1);
+    if (bdayDate < today) bdayDate.setFullYear(today.getFullYear() + 1);
 
-  const diffTime = bdayDate.getTime() - today.getTime();
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    const diffTime = bdayDate.getTime() - today.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) {
-    todayBDays.push(u);
-  } else if (diffDays > 0 && diffDays <= 14) {
-    upcomingBDays.push({ ...u, daysLeft: diffDays });
-  }
-});
+    if (diffDays === 0) {
+      todayBDays.push(u);
+    } else if (diffDays > 0 && diffDays <= 14) {
+      upcomingBDays.push({ ...u, daysLeft: diffDays });
+    }
+  });
 
   const isAdmin = user?.email === "minmaung0307@gmail.com";
 
@@ -689,16 +743,19 @@ users.forEach((u) => {
               borderBottom: `1px solid ${darkMode ? "#334155" : "#eee"}`,
             }}
           >
-            <div
-              style={navContent}
-            >
+            <div style={navContent}>
               <h2 style={{ ...logoText, fontSize: "18px" }}>
                 <span style={{ color: "#c86202" }}>Re</span>
                 <span style={{ color: "#06b715" }}>@</span>
                 <span style={{ color: "#3b82f6" }}>Member</span>
               </h2>
               <div
-                style={{ display: "flex", alignItems: "center", gap: "12px", paddingRight: "25px" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  paddingRight: "25px",
+                }}
               >
                 <img
                   src={user.photoURL}
@@ -716,7 +773,6 @@ users.forEach((u) => {
           </nav>
 
           <div style={mainLayout}>
-
             <div
               style={{
                 ...contentBody,
@@ -724,68 +780,12 @@ users.forEach((u) => {
                 maxWidth: activeTab === "workspace" ? "100%" : "850px",
               }}
             >
-                {/* Birthday Banners */}
-          <div style={{ padding: '0 15px' }}> {/* ဘေးဘောင်လွတ်အောင် */}
-  
-  {/* --- ဒီနေ့ မွေးနေ့ရှင်များ (Today) --- */}
-  {todayBDays.length > 0 && (
-    <div style={bdayBannerToday}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <div style={{ display: 'flex', position: 'relative' }}>
-          {/* မွေးနေ့ရှင်အားလုံးရဲ့ Avatar တွေကို စုပြမယ် */}
-          {todayBDays.map((u, index) => (
-            <img 
-              key={u.id} 
-              src={u.photoURL} 
-              style={{ 
-                width: '40px', height: '40px', borderRadius: '50%', border: '2px solid #fff',
-                marginLeft: index === 0 ? 0 : '-15px' // ပုံလေးတွေ တစ်ခုနဲ့တစ်ခု ထပ်နေအောင်
-              }} 
-              alt="u" 
-            />
-          ))}
-        </div>
-        <div style={{ textAlign: 'left' }}>
-          <strong>🎉 Happy Birthday!</strong>
-          <div style={{ fontSize: '13px' }}>
-            ယနေ့သည် {todayBDays.map(u => u.displayName).join(", ")} တို့၏ မွေးနေ့ဖြစ်ပါသည်။ 🎂
-          </div>
-        </div>
-      </div>
-    </div>
-  )}
-
-  {/* --- မကြာမီ မွေးနေ့ရှိသူများ (Upcoming) --- */}
-  {upcomingBDays.length > 0 && (
-    <div style={bdayBannerUpcoming}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <span style={{ fontSize: '24px' }}>🎁</span>
-        <div style={{ textAlign: 'left' }}>
-          <strong>Upcoming Birthdays</strong>
-          <div style={{ fontSize: '13px' }}>
-            {upcomingBDays.map((u, i) => (
-              <span key={u.id}>
-                {u.displayName} ({u.daysLeft === 1 ? "မနက်ဖြန်" : `${u.daysLeft} ရက်အလို`})
-                {i < upcomingBDays.length - 1 ? "၊ " : ""}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )}
-</div>
-<div style={{
-          width: '100%',
-          maxWidth: activeTab === 'workspace' ? '100%' : '1100px', // ၂ ကော်လံအတွက် အကျယ်ချန်ထားသည်
-          padding: '0 10px',
-          boxSizing: 'border-box'
-      }}>
               {activeTab === "feed" && (
                 <MainDashboard
                   posts={posts}
                   setPosts={setPosts}
                   userFamilyCode={userFamilyCode}
+                  darkMode={darkMode}
                 />
               )}
               {activeTab === "workspace" && (
@@ -888,73 +888,136 @@ users.forEach((u) => {
               )}
 
               {activeTab === "events" && (
-  <div style={adminCardStyle}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: 'center', marginBottom: "20px" }}>
-      <h3 style={{ margin: 0 }}>🗓️ Family Events</h3>
-      <button onClick={() => setShowEventModal(true)} style={postBtnMini}>+ Add Event</button>
-    </div>
-    
-    <div style={eventListGrid}>
-      {events.map((ev) => (
-        <div key={ev.id} style={eventCard}>
-          {/* ၁။ ပုံပြသခြင်း (Field နာမည် ၂ မျိုးလုံးကို စစ်ပေးထားပါတယ်) */}
-          <div style={eventImageWrapper}>
-            { (ev.imageUrl || ev.image) ? (
-        <img 
-            src={ev.imageUrl || ev.image} 
-            style={eventCardImg} 
-            alt="event" 
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-                // ပုံအဟောင်းတွေ လင့်ခ်ပျက်နေရင် Placeholder အစား Gradient ပြောင်းခိုင်းလိုက်တာပါ
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-            }}
-        />
-    ) : null}
-    
-    {/* ပုံမရှိတဲ့အခါ သို့မဟုတ် ပုံပျက်နေတဲ့အခါ ပြမည့် ပုံစံလှလှလေး */}
-    <div style={{
-        ...eventCardImg,
-        display: (ev.imageUrl || ev.image) ? 'none' : 'flex', // ပုံရှိရင် ဖျောက်ထားမယ်
-        background: 'linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        color: '#818cf8',
-        fontSize: '40px'
-    }}>
-        🗓️
-    </div>
-            {/* ၂။ Edit/Delete Icons (ပုံပေါ်မှာ Floating ပုံစံတင်ထားပါတယ်) */}
-            <div style={eventActionsOverlay}>
-              <button onClick={() => { setEditingEvent(ev); setShowEditModal(true); }} style={iconActionBtn} title="Edit">
-                <Edit size={14} color="#3b82f6" />
-              </button>
-              <button onClick={() => deleteDoc(doc(db, "events", ev.id))} style={iconActionBtn} title="Cancel">
-                <Trash2 size={14} color="#ef4444" />
-              </button>
-            </div>
-          </div>
-          
-          <div style={{ padding: '15px' }}>
-            <div style={{ fontWeight: "bold", fontSize: "17px", color: '#1e293b', marginBottom: '5px' }}>{ev.title}</div>
-            <div style={{ fontSize: "13px", color: "#3b82f6", display: 'flex', alignItems: 'center', gap: '5px' }}>
-              📅 {ev.date}
-            </div>
-            {ev.location && (
-              <div style={{ fontSize: "12px", color: "#64748b", marginTop: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                📍 {ev.location}
-              </div>
-            )}
-            <p style={{ fontSize: "13px", color: "#475569", marginTop: '10px', lineHeight: '1.4', minHeight: '40px' }}>
-              {ev.details}
-            </p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+                <div style={adminCardStyle}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    <h3 style={{ margin: 0 }}>🗓️ Family Events</h3>
+                    <button
+                      onClick={() => setShowEventModal(true)}
+                      style={postBtnMini}
+                    >
+                      + Add Event
+                    </button>
+                  </div>
+
+                  <div style={eventListGrid}>
+                    {events.map((ev) => (
+                      <div key={ev.id} style={eventCard}>
+                        {/* ၁။ ပုံပြသခြင်း (Field နာမည် ၂ မျိုးလုံးကို စစ်ပေးထားပါတယ်) */}
+                        <div style={eventImageWrapper}>
+                          {ev.imageUrl || ev.image ? (
+                            <img
+                              src={ev.imageUrl || ev.image}
+                              style={eventCardImg}
+                              alt="event"
+                              referrerPolicy="no-referrer"
+                              onError={(e) => {
+                                // ပုံအဟောင်းတွေ လင့်ခ်ပျက်နေရင် Placeholder အစား Gradient ပြောင်းခိုင်းလိုက်တာပါ
+                                e.target.style.display = "none";
+                                e.target.nextSibling.style.display = "flex";
+                              }}
+                            />
+                          ) : null}
+
+                          {/* ပုံမရှိတဲ့အခါ သို့မဟုတ် ပုံပျက်နေတဲ့အခါ ပြမည့် ပုံစံလှလှလေး */}
+                          <div
+                            style={{
+                              ...eventCardImg,
+                              display:
+                                ev.imageUrl || ev.image ? "none" : "flex", // ပုံရှိရင် ဖျောက်ထားမယ်
+                              background:
+                                "linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%)",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              color: "#818cf8",
+                              fontSize: "40px",
+                            }}
+                          >
+                            🗓️
+                          </div>
+                          {/* ၂။ Edit/Delete Icons (ပုံပေါ်မှာ Floating ပုံစံတင်ထားပါတယ်) */}
+                          <div style={eventActionsOverlay}>
+                            <button
+                              onClick={() => {
+                                setEditingEvent(ev);
+                                setShowEditModal(true);
+                              }}
+                              style={iconActionBtn}
+                              title="Edit"
+                            >
+                              <Edit size={14} color="#3b82f6" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                deleteDoc(doc(db, "events", ev.id))
+                              }
+                              style={iconActionBtn}
+                              title="Cancel"
+                            >
+                              <Trash2 size={14} color="#ef4444" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div style={{ padding: "15px" }}>
+                          <div
+                            style={{
+                              fontWeight: "bold",
+                              fontSize: "17px",
+                              color: "#1e293b",
+                              marginBottom: "5px",
+                            }}
+                          >
+                            {ev.title}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "13px",
+                              color: "#3b82f6",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "5px",
+                            }}
+                          >
+                            📅 {ev.date}
+                          </div>
+                          {ev.location && (
+                            <div
+                              style={{
+                                fontSize: "12px",
+                                color: "#64748b",
+                                marginTop: "4px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "5px",
+                              }}
+                            >
+                              📍 {ev.location}
+                            </div>
+                          )}
+                          <p
+                            style={{
+                              fontSize: "13px",
+                              color: "#475569",
+                              marginTop: "10px",
+                              lineHeight: "1.4",
+                              minHeight: "40px",
+                            }}
+                          >
+                            {ev.details}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {activeTab === "admin" && (
                 <div
@@ -995,47 +1058,148 @@ users.forEach((u) => {
                     </div>
 
                     {/* Admin/Profile Tab အတွင်း Mood Picker အပိုင်း */}
-<div style={{
-    ...moodCardStyle,
-    // Error တက်နေတဲ့ darkMode ကို ဒီမှာပဲ တိုက်ရိုက်စစ်ပါမယ်
-    backgroundColor: darkMode ? '#1e293b' : '#f8fafc',
-    border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`
-}}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: darkMode ? '#fff' : '#1e293b' }}>💡 How are you feeling today?</h4>
-        <button 
-            onClick={() => updateDoc(doc(db, "users", user.uid), { mood: "" })}
-            style={{ border: 'none', background: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer' }}
-        >
-            Clear
-        </button>
-    </div>
+                    <div
+                      style={{
+                        ...moodCardStyle,
+                        // Error တက်နေတဲ့ darkMode ကို ဒီမှာပဲ တိုက်ရိုက်စစ်ပါမယ်
+                        backgroundColor: darkMode ? "#1e293b" : "#f8fafc",
+                        border: `1px solid ${darkMode ? "#334155" : "#e2e8f0"}`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: "15px",
+                        }}
+                      >
+                        <h4
+                          style={{
+                            margin: 0,
+                            fontSize: "15px",
+                            fontWeight: "700",
+                            color: darkMode ? "#fff" : "#1e293b",
+                          }}
+                        >
+                          💡 How are you feeling today?
+                        </h4>
+                        <button
+                          onClick={() =>
+                            updateDoc(doc(db, "users", user.uid), {
+                              mood: "",
+                            })
+                          }
+                          style={{
+                            border: "none",
+                            background: "none",
+                            color: "#64748b",
+                            fontSize: "12px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Clear
+                        </button>
+                      </div>
 
-    <div style={moodGridStyle}>
-        {moods.map(m => {
-            // လက်ရှိ Login ဝင်ထားတဲ့ user ရဲ့ data ကို ယူမယ်
-            const me = users.find(obj => obj.id === user.uid);
-            
-            return (
-                <div 
-                    key={m} 
-                    onClick={async () => {
-                        await updateDoc(doc(db, "users", user.uid), { mood: m });
-                    }}
-                    style={{ 
-                        ...moodItemStyle,
-                        // 'u' အစား 'me' ကို သုံးလိုက်ပါပြီ
-                        backgroundColor: me?.mood === m ? '#3b82f6' : (darkMode ? '#334155' : '#fff'),
-                        color: me?.mood === m ? '#fff' : 'inherit',
-                        border: `1px solid ${me?.mood === m ? '#3b82f6' : (darkMode ? '#475569' : '#f1f5f9')}`
-                    }}
-                >
-                    {m}
-                </div>
-            );
-        })}
-    </div>
-</div>
+                      <div style={moodGridStyle}>
+                        {moods.map((m) => {
+                          // လက်ရှိ Login ဝင်ထားတဲ့ user ရဲ့ data ကို ယူမယ်
+                          const me = users.find((obj) => obj.id === user.uid);
+
+                          return (
+                            <div
+                              key={m}
+                              onClick={async () => {
+                                await updateDoc(doc(db, "users", user.uid), {
+                                  mood: m,
+                                });
+                              }}
+                              style={{
+                                ...moodItemStyle,
+                                // 'u' အစား 'me' ကို သုံးလိုက်ပါပြီ
+                                backgroundColor:
+                                  me?.mood === m
+                                    ? "#3b82f6"
+                                    : darkMode
+                                      ? "#334155"
+                                      : "#fff",
+                                color: me?.mood === m ? "#fff" : "inherit",
+                                border: `1px solid ${me?.mood === m ? "#3b82f6" : darkMode ? "#475569" : "#f1f5f9"}`,
+                              }}
+                            >
+                              {m}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* 🌟 ဤနေရာတွင် မိသားစုကုဒ် ပြောင်းလဲရန် Box 🌟 */}
+                    {isFamilyOwner && (
+                      <div
+                        style={{
+                          ...ownerSettingCard,
+                          backgroundColor: darkMode ? "#1e293b" : "#f0fdf4",
+                          border: `1px solid ${darkMode ? "#334155" : "#bbf7d0"}`,
+                          padding: "20px",
+                          borderRadius: "20px",
+                          marginBottom: "20px",
+                        }}
+                      >
+                        <h4
+                          style={{
+                            margin: "0 0 10px 0",
+                            color: darkMode ? "#fff" : "#166534",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          🔐 Change Family Code (Owner Only)
+                        </h4>
+                        <p
+                          style={{
+                            fontSize: "11px",
+                            color: darkMode ? "#94a3b8" : "#64748b",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          လက်ရှိကုဒ် -{" "}
+                          <strong style={{ color: darkMode ? "#fff" : "#000" }}>
+                            {userFamilyCode}
+                          </strong>
+                        </p>
+
+                        <div style={{ display: "flex", gap: "10px" }}>
+                          <input
+                            id="newFamilyCodeInput"
+                            placeholder="ကုဒ်အသစ် (၈ လုံး)"
+                            style={{
+                              ...modalInputSmall,
+                              flex: 1,
+                              backgroundColor: darkMode ? "#334155" : "#fff",
+                              color: darkMode ? "#fff" : "#000",
+                              border: `1px solid ${darkMode ? "#475569" : "#e2e8f0"}`,
+                            }}
+                          />
+                          <button
+                            onClick={() => {
+                              const inputEl =
+                                document.getElementById("newFamilyCodeInput");
+                              const newCode = inputEl.value
+                                .trim()
+                                .toUpperCase();
+                              updateFamilyCode(newCode);
+                              inputEl.value = "";
+                            }}
+                            style={saveBtnSmall}
+                          >
+                            ပြောင်းမည်
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {/* --- SaaS Plan Info (A30, B20, C40 Concept) --- */}
                     <div
@@ -1463,51 +1627,91 @@ users.forEach((u) => {
                     )}
 
                     {/* --- ၃။ External Connections (တခြားအိမ်က ချိတ်ထားသူများ) --- */}
-                    <div style={{ marginBottom: '15px' }}>
-        <h3 style={{ ...sidebarTitle, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }} 
-            onClick={() => setShowConnections(!showConnections)}>
-            <span><Users size={16} /> Connections</span>
-            <span>{showConnections ? '−' : '+'}</span>
-        </h3>
-        {showConnections && (
-            <div style={userList}>
-                {/* လက်ရှိရှိနေတဲ့ connections filter code ကို ဒီမှာထည့်ပါ */}
-                {connections.map(conn => {
-                    const friendId = conn.requesterId === user.uid ? conn.receiverId : conn.requesterId;
-                    const friend = allUsers.find(u => u.id === friendId);
-                    return friend ? renderUserItem(friend) : null;
-                })}
-            </div>
-        )}
-    </div>
+                    <div style={{ marginBottom: "15px" }}>
+                      <h3
+                        style={{
+                          ...sidebarTitle,
+                          cursor: "pointer",
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                        onClick={() => setShowConnections(!showConnections)}
+                      >
+                        <span>
+                          <Users size={16} /> Connections
+                        </span>
+                        <span>{showConnections ? "−" : "+"}</span>
+                      </h3>
+                      {showConnections && (
+                        <div style={userList}>
+                          {/* လက်ရှိရှိနေတဲ့ connections filter code ကို ဒီမှာထည့်ပါ */}
+                          {connections.map((conn) => {
+                            const friendId =
+                              conn.requesterId === user.uid
+                                ? conn.receiverId
+                                : conn.requesterId;
+                            const friend = allUsers.find(
+                              (u) => u.id === friendId,
+                            );
+                            return friend ? renderUserItem(friend) : null;
+                          })}
+                        </div>
+                      )}
+                    </div>
 
                     {/* Family Group */}
-                    <div style={{ marginBottom: '15px' }}>
-        <h3 style={{ ...sidebarTitle, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }} 
-            onClick={() => setShowFamily(!showFamily)}>
-            <span><Users size={16} /> Family</span>
-            <span>{showFamily ? '−' : '+'}</span>
-        </h3>
-        {showFamily && (
-            <div style={userList}>
-                {users.filter(u => u.id !== user.uid && u.role === 'Family').map(u => renderUserItem(u))}
-            </div>
-        )}
-    </div>
+                    <div style={{ marginBottom: "15px" }}>
+                      <h3
+                        style={{
+                          ...sidebarTitle,
+                          cursor: "pointer",
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                        onClick={() => setShowFamily(!showFamily)}
+                      >
+                        <span>
+                          <Users size={16} /> Family
+                        </span>
+                        <span>{showFamily ? "−" : "+"}</span>
+                      </h3>
+                      {showFamily && (
+                        <div style={userList}>
+                          {users
+                            .filter(
+                              (u) => u.id !== user.uid && u.role === "Family",
+                            )
+                            .map((u) => renderUserItem(u))}
+                        </div>
+                      )}
+                    </div>
 
                     {/* Friends Group */}
-                    <div style={{ marginBottom: '15px' }}>
-        <h3 style={{ ...sidebarTitle, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }} 
-            onClick={() => setShowFriends(!showFriends)}>
-            <span><Users size={16} /> Friends</span>
-            <span>{showFriends ? '−' : '+'}</span>
-        </h3>
-        {showFriends && (
-            <div style={userList}>
-                {users.filter(u => u.id !== user.uid && u.role === 'Friend').map(u => renderUserItem(u))}
-            </div>
-        )}
-    </div>
+                    <div style={{ marginBottom: "15px" }}>
+                      <h3
+                        style={{
+                          ...sidebarTitle,
+                          cursor: "pointer",
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                        onClick={() => setShowFriends(!showFriends)}
+                      >
+                        <span>
+                          <Users size={16} /> Friends
+                        </span>
+                        <span>{showFriends ? "−" : "+"}</span>
+                      </h3>
+                      {showFriends && (
+                        <div style={userList}>
+                          {users
+                            .filter(
+                              (u) => u.id !== user.uid && u.role === "Friend",
+                            )
+                            .map((u) => renderUserItem(u))}
+                        </div>
+                      )}
+                    </div>
 
                     {/* General Members */}
                     <div>
@@ -1601,7 +1805,11 @@ users.forEach((u) => {
                               color="#ef4444"
                               style={{ cursor: "pointer", opacity: 0.6 }}
                               onClick={async () => {
-                                if (window.confirm("Are you sure you want to delete this?"))
+                                if (
+                                  window.confirm(
+                                    "Are you sure you want to delete this?",
+                                  )
+                                )
                                   await deleteDoc(
                                     doc(db, "bucketList", goal.id),
                                   );
@@ -1790,7 +1998,6 @@ users.forEach((u) => {
               )}
             </div>
           </div>
-        </div>
 
           {/* Footer */}
           <footer
@@ -1863,11 +2070,18 @@ users.forEach((u) => {
             <div style={modalOverlay}>
               <div style={modalContentSmall}>
                 <h3>🏠 Family Community</h3>
-                <p style={{ fontSize: "12px", color: "#64748b" }}>
-                  Enter your family’s private code, or create a new code and share it with your family members.
+                <p
+                  style={{
+                    fontSize: "12px",
+                    color: "#64748b",
+                    marginBottom: "15px",
+                  }}
+                >
+                  မိသားစုထဲဝင်ရန် ကုဒ်ကိုရိုက်ထည့်ပါ။ ကုဒ်မရှိသေးပါက
+                  ကုဒ်အသစ်တစ်ခု (အနည်းဆုံး ၈ လုံး) ဖန်တီးပါ။
                 </p>
                 <input
-                  placeholder="Such As - CHO-FAMILY-2026"
+                  placeholder="အနည်းဆုံး ၈ လုံး (ဥပမာ- MYFAMILY2026)"
                   style={modalInput}
                   id="familyCodeInput"
                 />
@@ -1878,26 +2092,67 @@ users.forEach((u) => {
                       .value.trim()
                       .toUpperCase();
 
-                    if (code) {
-                      try {
-                        // ၁။ Database မှာ ကုဒ်ကို သိမ်းမယ်
-                        await updateDoc(doc(db, "users", user.uid), {
-                          familyCode: code,
+                    if (code.length < 8) {
+                      alert(
+                        "လုံခြုံရေးအတွက် ကုဒ်သည် အနည်းဆုံး ၈ လုံး ရှိရပါမည်။",
+                      );
+                      return;
+                    }
+
+                    try {
+                      const {
+                        getDocs,
+                        query,
+                        where,
+                        collection,
+                        serverTimestamp,
+                        setDoc,
+                      } = await import("firebase/firestore");
+
+                      // ၁။ Database မှာ ဒီကုဒ် ရှိပြီးသားလား အရင်စစ်မယ်
+                      const familiesRef = collection(db, "families");
+                      const q = query(familiesRef, where("code", "==", code));
+                      const querySnapshot = await getDocs(q);
+
+                      let familyId;
+                      let isOwner = false;
+
+                      if (!querySnapshot.empty) {
+                        // (က) ကုဒ် ရှိပြီးသားဆိုရင် - Join လုပ်ရုံပဲ (Owner မဟုတ်ဘူး)
+                        familyId = querySnapshot.docs[0].id;
+                        isOwner = false;
+                      } else {
+                        // (ခ) ကုဒ် မရှိသေးရင် - အိမ်အသစ်ဆောက်မယ် (ပထမဆုံးလူမို့လို့ Owner ဖြစ်မယ်)
+                        familyId = `FID_${Date.now()}`;
+                        isOwner = true;
+                        await setDoc(doc(db, "families", familyId), {
+                          code: code,
+                          ownerId: user.uid,
+                          createdAt: serverTimestamp(),
                         });
-
-                        // ၂။ Local State ကို ချက်ချင်း Update လုပ်မယ် (existingData အစား code ကို သုံးပါ)
-                        setUserFamilyCode(code);
-
-                        // ၃။ သိမ်းပြီးရင် Modal ကို ပိတ်လိုက်မယ်
-                        setShowFamilyModal(false);
-
-                        alert("Successfully joined the family! ✨");
-                      } catch (error) {
-                        console.error("Error updating family code:", error);
-                        alert("Something went wrong. Please try again.");
                       }
-                    } else {
-                      alert("Please enter a family code.");
+
+                      // ၂။ User Profile မှာ အချက်အလက်တွေကို "အလိုလို" သိမ်းမယ်
+                      await updateDoc(doc(db, "users", user.uid), {
+                        familyId: familyId,
+                        familyCode: code,
+                        isFamilyOwner: isOwner, // 🌟 ဒီစာကြောင်းက ဝယ်သူကို Owner အလိုလို ဖြစ်စေတာပါ
+                      });
+
+                      // ၃။ UI ကို Update လုပ်မယ်
+                      setUserFamilyId(familyId);
+                      setUserFamilyCode(code);
+                      setIsFamilyOwner(isOwner);
+                      setShowFamilyModal(false);
+
+                      alert(
+                        isOwner
+                          ? "မိသားစုအသိုင်းအဝိုင်းအသစ် ဖန်တီးပြီးပါပြီ! 🏠"
+                          : "မိသားစုထဲသို့ ဝင်ရောက်ပြီးပါပြီ! ✨",
+                      );
+                    } catch (error) {
+                      console.error(error);
+                      alert("မှားယွင်းနေပါသည်။ ပြန်ကြိုးစားကြည့်ပါ။");
                     }
                   }}
                   style={postBtnFull}
@@ -1973,9 +2228,7 @@ users.forEach((u) => {
                     }
                   />
 
-                  <label style={labelStyle}>
-                    Event Photo (Optional)
-                  </label>
+                  <label style={labelStyle}>Event Photo (Optional)</label>
                   <input
                     type="file"
                     accept="image/*"
@@ -2124,13 +2377,17 @@ users.forEach((u) => {
                   />
 
                   <label style={labelStyle}>Change/Skip the cover image</label>
-<input 
-    type="file" 
-    accept="image/*" 
-    onChange={(e) => setEventFile(e.target.files[0])} 
-    style={modalInputLarge} 
-/>
-{eventFile && <p style={{ fontSize: '11px', color: '#3b82f6' }}>📍 {eventFile.name}</p>}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEventFile(e.target.files[0])}
+                    style={modalInputLarge}
+                  />
+                  {eventFile && (
+                    <p style={{ fontSize: "11px", color: "#3b82f6" }}>
+                      📍 {eventFile.name}
+                    </p>
+                  )}
 
                   {/* <label style={labelStyle}>
                     Event memory photo (Optional)
@@ -2150,45 +2407,55 @@ users.forEach((u) => {
                   <div
                     style={{ display: "flex", gap: "12px", marginTop: "10px" }}
                   >
-                    <button onClick={async () => {
-    if (!editingEvent.title || !editingEvent.date) {
-        alert("Please enter a title and date");
-        return;
-    }
+                    <button
+                      onClick={async () => {
+                        if (!editingEvent.title || !editingEvent.date) {
+                          alert("Please enter a title and date");
+                          return;
+                        }
 
-    try {
-        setUploading(true);
-        let finalImageUrl = editingEvent.imageUrl || editingEvent.image || "";
+                        try {
+                          setUploading(true);
+                          let finalImageUrl =
+                            editingEvent.imageUrl || editingEvent.image || "";
 
-        // ၁။ ပုံအသစ် ရွေးထားတယ်ဆိုရင် အရင်တင်မယ်
-        if (eventFile) {
-            const storageRef = ref(storage, `events/${Date.now()}_${eventFile.name}`);
-            const snapshot = await uploadBytes(storageRef, eventFile);
-            finalImageUrl = await getDownloadURL(snapshot.ref);
-        }
+                          // ၁။ ပုံအသစ် ရွေးထားတယ်ဆိုရင် အရင်တင်မယ်
+                          if (eventFile) {
+                            const storageRef = ref(
+                              storage,
+                              `events/${Date.now()}_${eventFile.name}`,
+                            );
+                            const snapshot = await uploadBytes(
+                              storageRef,
+                              eventFile,
+                            );
+                            finalImageUrl = await getDownloadURL(snapshot.ref);
+                          }
 
-        // ၂။ Firestore မှာ သွားပြင်မယ်
-        const eventRef = doc(db, "events", editingEvent.id);
-        await updateDoc(eventRef, {
-            title: editingEvent.title,
-            date: editingEvent.date,
-            location: editingEvent.location || "",
-            details: editingEvent.details || "",
-            imageUrl: finalImageUrl // ပုံအသစ်ရှိရင် အသစ်၊ မရှိရင် အဟောင်းအတိုင်း သိမ်းမယ်
-        });
+                          // ၂။ Firestore မှာ သွားပြင်မယ်
+                          const eventRef = doc(db, "events", editingEvent.id);
+                          await updateDoc(eventRef, {
+                            title: editingEvent.title,
+                            date: editingEvent.date,
+                            location: editingEvent.location || "",
+                            details: editingEvent.details || "",
+                            imageUrl: finalImageUrl, // ပုံအသစ်ရှိရင် အသစ်၊ မရှိရင် အဟောင်းအတိုင်း သိမ်းမယ်
+                          });
 
-        setShowEditModal(false);
-        setEditingEvent(null);
-        setEventFile(null);
-        setUploading(false);
-        alert("Edited! ✨");
-    } catch (error) {
-        console.error(error);
-        setUploading(false);
-    }
-}} style={postBtnFull}>
-    {uploading ? "Please wait..." : "Saving changes"}
-</button>
+                          setShowEditModal(false);
+                          setEditingEvent(null);
+                          setEventFile(null);
+                          setUploading(false);
+                          alert("Edited! ✨");
+                        } catch (error) {
+                          console.error(error);
+                          setUploading(false);
+                        }
+                      }}
+                      style={postBtnFull}
+                    >
+                      {uploading ? "Please wait..." : "Saving changes"}
+                    </button>
                     <button
                       onClick={() => setShowEditModal(false)}
                       style={cancelBtn}
@@ -2213,9 +2480,7 @@ users.forEach((u) => {
                     marginBottom: "15px",
                   }}
                 >
-                  <h3 style={{ margin: 0, fontSize: "18px" }}>
-                    📝 New Goal
-                  </h3>
+                  <h3 style={{ margin: 0, fontSize: "18px" }}>📝 New Goal</h3>
                   <X
                     onClick={() => setShowBucketModal(false)}
                     style={{ cursor: "pointer", color: "#64748b" }}
@@ -2266,9 +2531,7 @@ users.forEach((u) => {
                           console.error("Error adding goal:", error);
                         }
                       } else {
-                        alert(
-                          "Goal description and family code are required.",
-                        );
+                        alert("Goal description and family code are required.");
                       }
                     }}
                     style={postBtnFull}
@@ -2564,35 +2827,35 @@ const emptyText = {
 };
 
 const bdayBannerToday = {
-    backgroundColor: '#fef3c7',
-    color: '#92400e',
-    padding: '15px',
-    borderRadius: '16px',
-    marginBottom: '15px',
-    // Header အောက်ကနေ လွတ်သွားအောင် ဒီစာကြောင်းကို ထည့်ပါ
-    // marginTop: '80px', 
-    border: '1px solid #fde68a',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-    width: '90%', // ဖုန်းမှာ ဘေးဘောင်တွေနဲ့ လှအောင်
-    maxWidth: '600px',
-    marginLeft: 'auto',
-    marginRight: 'auto'
+  backgroundColor: "#fef3c7",
+  color: "#92400e",
+  padding: "15px",
+  borderRadius: "16px",
+  marginBottom: "15px",
+  // Header အောက်ကနေ လွတ်သွားအောင် ဒီစာကြောင်းကို ထည့်ပါ
+  // marginTop: '80px',
+  border: "1px solid #fde68a",
+  boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+  width: "90%", // ဖုန်းမှာ ဘေးဘောင်တွေနဲ့ လှအောင်
+  maxWidth: "600px",
+  marginLeft: "auto",
+  marginRight: "auto",
 };
 
 const bdayBannerUpcoming = {
-    backgroundColor: '#ecfdf5',
-    color: '#065f46',
-    padding: '15px',
-    borderRadius: '16px',
-    marginBottom: '15px',
-    // Header အောက်ကနေ လွတ်သွားအောင် ဒီစာကြောင်းကို ထည့်ပါ
-    // marginTop: '80px', 
-    border: '1px solid #a7f3d0',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-    width: '90%',
-    maxWidth: '600px',
-    marginLeft: 'auto',
-    marginRight: 'auto'
+  backgroundColor: "#ecfdf5",
+  color: "#065f46",
+  padding: "15px",
+  borderRadius: "16px",
+  marginBottom: "15px",
+  // Header အောက်ကနေ လွတ်သွားအောင် ဒီစာကြောင်းကို ထည့်ပါ
+  // marginTop: '80px',
+  border: "1px solid #a7f3d0",
+  boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+  width: "90%",
+  maxWidth: "600px",
+  marginLeft: "auto",
+  marginRight: "auto",
 };
 
 const adminCardStyle = {
@@ -2624,12 +2887,12 @@ const roleSelectStyle = {
 };
 
 const galleryGrid = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', // ဖုန်းမှာ ၃ လုံးစီလောက် ပေါ်မယ်
-  gap: '10px',
-  maxHeight: '70vh', // အမြင့်ကို ကန့်သတ်ပြီး scroll ဆွဲခိုင်းမယ်
-  overflowY: 'auto',
-  padding: '10px'
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", // ဖုန်းမှာ ၃ လုံးစီလောက် ပေါ်မယ်
+  gap: "10px",
+  maxHeight: "70vh", // အမြင့်ကို ကန့်သတ်ပြီး scroll ဆွဲခိုင်းမယ်
+  overflowY: "auto",
+  padding: "10px",
 };
 
 const galleryItem = {
@@ -2935,32 +3198,31 @@ const playIconOverlay = {
 };
 
 const moodGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(45px, 1fr))', // အကွက်လေးတွေကို ညီအောင်စီမယ်
-    gap: '10px',
-    padding: '5px'
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(45px, 1fr))", // အကွက်လေးတွေကို ညီအောင်စီမယ်
+  gap: "10px",
+  padding: "5px",
 };
 
 const moodItemStyle = {
-    fontSize: '22px',
-    cursor: 'pointer',
-    padding: '8px',
-    borderRadius: '12px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-    transition: '0.2s',
-    border: '1px solid #f1f5f9'
+  fontSize: "22px",
+  cursor: "pointer",
+  padding: "8px",
+  borderRadius: "12px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
+  transition: "0.2s",
+  border: "1px solid #f1f5f9",
 };
 
 const moodCardStyle = {
-    
-    padding: '20px',
-    borderRadius: '24px',
-    marginBottom: '20px',
-    
-    boxSizing: 'border-box'
+  padding: "20px",
+  borderRadius: "24px",
+  marginBottom: "20px",
+
+  boxSizing: "border-box",
 };
 
 const fridgeCardStyle = {
@@ -3000,25 +3262,68 @@ const lightboxOverlay = {
   zIndex: 5000,
 };
 
-const eventListGrid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' };
-const eventCard = { backgroundColor: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9', position: 'relative' };
-const eventImageWrapper = { position: 'relative', width: '100%', height: '140px' };
-const eventCardImg = { width: '100%', height: '180px', objectFit: 'contain', backgroundColor: '#f8fafc', display: 'block' };
-const eventActionsOverlay = { position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' };
-const iconActionBtn = { backgroundColor: 'rgba(255,255,255,0.9)', border: 'none', width: '28px', height: '28px', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' };
+const eventListGrid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+  gap: "20px",
+};
+const eventCard = {
+  backgroundColor: "#fff",
+  borderRadius: "16px",
+  overflow: "hidden",
+  boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+  border: "1px solid #f1f5f9",
+  position: "relative",
+};
+const eventImageWrapper = {
+  position: "relative",
+  width: "100%",
+  height: "140px",
+};
+const eventCardImg = {
+  width: "100%",
+  height: "180px",
+  objectFit: "contain",
+  backgroundColor: "#f8fafc",
+  display: "block",
+};
+const eventActionsOverlay = {
+  position: "absolute",
+  top: "10px",
+  right: "10px",
+  display: "flex",
+  gap: "8px",
+};
+const iconActionBtn = {
+  backgroundColor: "rgba(255,255,255,0.9)",
+  border: "none",
+  width: "28px",
+  height: "28px",
+  borderRadius: "8px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  cursor: "pointer",
+  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+};
 
 const eventDeleteBtn = {
-  marginTop: '15px',
-  padding: '5px 10px',
-  border: '1px solid #fee2e2',
-  backgroundColor: '#fff',
-  color: '#ef4444',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  fontSize: '12px'
+  marginTop: "15px",
+  padding: "5px 10px",
+  border: "1px solid #fee2e2",
+  backgroundColor: "#fff",
+  color: "#ef4444",
+  borderRadius: "8px",
+  cursor: "pointer",
+  fontSize: "12px",
 };
-// Dark Mode အတွက် Card Styles များကိုလည်း variable အနေနဲ့ သုံးနိုင်ပါတယ်
-// const cardBg = darkMode ? '#1e293b' : '#ffffff';
-// const textColor = darkMode ? '#f8fafc' : '#1e293b';
+
+const ownerSettingCard = {
+  padding: "20px",
+  borderRadius: "24px",
+  marginBottom: "20px",
+  boxSizing: "border-box",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.02)",
+};
 
 export default App;
