@@ -214,6 +214,8 @@ const Workspace = ({ user, darkMode }) => {
 
 // Styles
 const container = {
+  width: "90%",
+  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
   gap: "30px",

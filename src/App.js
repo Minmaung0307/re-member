@@ -897,9 +897,15 @@ function App() {
                               {
                                 url: post.fileUrl || post.imageUrl,
                                 type: "image",
-                              },
+                              }
                             ]
                           : []);
+
+
+                          // အကယ်၍ Postcard ပုံရှိရင် allMedia ထဲကို ပေါင်းထည့်မယ်
+                          if (post.postcardImg) {
+                            allMedia.push({ url: post.postcardImg, type: 'image' });
+                          }
 
                       return allMedia.map((item, index) => (
                         <div
@@ -2931,7 +2937,8 @@ const galleryItem = {
 const galleryImg = {
   width: "100%",
   height: "100%",
-  objectFit: "cover",
+  objectFit: "contain",
+  backgroundColor: "#f8fafc"
 };
 
 const interestInputStyle = {

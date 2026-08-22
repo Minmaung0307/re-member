@@ -32,183 +32,116 @@ import {
 } from "lucide-react";
 
 // 🌟 Post တစ်ခုချင်းစီအတွက် သီးသန့် Component
-const PostCard = ({
-  post,
-  auth,
-  db,
-  handleDelete,
-  handleReaction,
-  setActiveCommentPost,
-  setViewImage,
-  setShowEmojiPicker,
-  showEmojiPicker,
-  darkMode,
-}) => {
+const PostCard = ({ post, auth, db, handleDelete, handleReaction, setActiveCommentPost, setViewImage, setShowEmojiPicker, showEmojiPicker, darkMode }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  // 🌟 ပုံဟောင်း/ပုံသစ် အကုန်ပေါ်စေမည့် Logic
-  const allMedia =
-    post.media ||
-    (post.fileUrl || post.imageUrl
-      ? [{ url: post.fileUrl || post.imageUrl, type: "image" }]
-      : []);
-
-  const charLimit = 80; // စာသားကို အတိုပဲပြမယ် (ကတ်ညီစေရန်)
-  const isLongText = post.caption?.length > charLimit;
-  const displayText = isExpanded
-    ? post.caption
-    : post.caption?.substring(0, charLimit);
+  const isPostcard = post.fileType === 'postcard';
+  const allMedia = post.media || (post.fileUrl || post.imageUrl ? [{ url: post.fileUrl || post.imageUrl, type: 'image' }] : []);
 
   return (
-    <div
-      style={{
-        ...modernPostCard,
-        backgroundColor: darkMode ? "#1e293b" : "#fff",
-        color: darkMode ? "#f1f5f9" : "#1e293b",
-        border: darkMode ? "1px solid #334155" : "1px solid #f1f5f9",
-      }}
-    >
+    <div style={{
+      ...modernPostCard,
+      border: isPostcard ? '2.5px solid #FFD700' : (darkMode ? '1px solid #334155' : '1px solid #f1f5f9'),
+      boxShadow: isPostcard ? '0 8px 25px rgba(255, 215, 0, 0.2)' : '0 4px 15px rgba(0,0,0,0.05)',
+      height: '580px',
+      overflow: 'visible' // Ribbon လေး ပေါ်လာစေရန်
+    }}>
+      
       {/* ၁။ Header */}
       <div style={postHeader}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <img src={post.userImage} style={avatarStyle} alt="u" />
           <div style={{ overflow: "hidden" }}>
-            <h4
-              style={{ ...userNameStyle, color: darkMode ? "#fff" : "#1e293b" }}
-            >
-              {post.userName}
-            </h4>
-            <span style={postTime}>
-              {post.createdAt
-                ? post.createdAt.toDate().toLocaleString()
-                : "Now"}
-            </span>
+            <h4 style={{ ...userNameStyle, color: darkMode ? '#fff' : '#1e293b' }}>{post.userName}</h4>
+            <span style={postTime}>{post.createdAt ? post.createdAt.toDate().toLocaleString() : "Now"}</span>
           </div>
         </div>
-        {(post.uid === auth.currentUser.uid ||
-          auth.currentUser.email === "koalankar@gmail.com") && (
-          <div
-            onClick={() => handleDelete(post.id, post.uid, post.userName)}
-            style={deleteBtnBox}
-          >
+        {(post.uid === auth.currentUser.uid || auth.currentUser.email === "minmaung0307@gmail.com") && (
+          <div onClick={() => handleDelete(post.id, post.uid, post.userName)} style={deleteBtnBox}>
             <Trash2 size={16} color="#ef4444" />
           </div>
         )}
       </div>
 
-      {/* ၂။ စာသားအပိုင်း (အမြင့်ကို ပုံသေထိန်းထားသည်) */}
-      <div style={postCaption}>
-        {displayText}
-        {isLongText && (
-          <span
-            onClick={() => setIsExpanded(!isExpanded)}
-            style={{ color: "#3b82f6", cursor: "pointer", fontWeight: "bold" }}
-          >
-            {isExpanded ? " လျှော့ဖတ်ရန်" : "... ပိုဖတ်ရန်"}
-          </span>
-        )}
+      {/* ၂။ စာသားအပိုင်း (Caption) */}
+      <div style={{
+        ...postCaption,
+        height: 'auto',
+        minHeight: isPostcard ? '80px' : '40px',
+        maxHeight: '130px',
+        backgroundColor: isPostcard ? (darkMode ? '#2d3748' : '#fffdf0') : 'transparent',
+        padding: '10px 20px',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
+      }}>
+        {/* အနီရောင် Ribbon ကို မြုတ်မသွားအောင် နေရာပြန်ညှိထားပါသည် */}
+        {isPostcard && <div style={birthdayRibbon}>🎂 Birthday Message</div>}
+        
+        <div style={{ 
+          fontSize: isPostcard ? '16px' : '14px', 
+          fontWeight: isPostcard ? '600' : 'normal',
+          color: isPostcard ? '#b45309' : (darkMode ? '#f1f5f9' : '#334155'),
+          fontFamily: isPostcard ? (post.postcardFont || "'Dancing Script', cursive") : 'inherit',
+          lineHeight: '1.5',
+          marginTop: isPostcard ? '25px' : '0'
+        }}>
+          {post.caption}
+        </div>
       </div>
 
-      {/* ၃။ ဓာတ်ပုံ/ဗီဒီယို အပိုင်း (အခု ပြန်ပေါ်လာပါပြီ) */}
-      <div style={imageContainer}>
-        {allMedia.length > 0 ? (
-          allMedia[0].type === "video" ? (
-            <video src={allMedia[0].url} controls style={mainMedia} />
-          ) : (
-            <img
-              src={allMedia[0].url}
-              style={mainMedia}
-              alt="post"
-              referrerPolicy="no-referrer"
-              onClick={() => setViewImage(allMedia[0].url)}
+      {/* ၃။ ပုံအပိုင်း (Image Area) */}
+      <div style={{...imageContainer, height: '330px', backgroundColor: isPostcard ? '#fefce8' : '#f8fafc'}}>
+        {isPostcard ? (
+          // 🌟 ဤနေရာတွင် contain ကိုသုံးထားသဖြင့် ပုံတစ်ပုံလုံး မြင်ရပါမည် 🌟
+          <img 
+            src={post.postcardImg} 
+            style={{...mainMedia, objectFit: 'contain', padding: '5px'}} 
+            alt="birthday-celebration" 
+            onClick={() => setViewImage(post.postcardImg)} 
+          />
+        ) : (
+          allMedia.length > 0 && (
+            <img 
+              src={allMedia[0].url} 
+              style={mainMedia} 
+              alt="post" 
+              onClick={() => setViewImage(allMedia[0].url)} 
             />
           )
-        ) : (
-          <div style={{ color: "#94a3b8", fontSize: "12px" }}>No Image</div>
+        )}
+
+        {isPostcard && post.postcardAud && (
+          <div style={audioOverlay}>
+            <audio src={post.postcardAud} controls style={{ height: '28px', width: '180px' }} />
+          </div>
         )}
       </div>
 
       {/* ၄။ Interaction Bar */}
-      <div
-        style={{
-          ...interactionBar,
-          backgroundColor: darkMode ? "#1e293b" : "#fff",
-          borderTop: darkMode ? "1px solid #334155" : "1px solid #f1f5f9",
-        }}
-      >
+      <div style={interactionBar}>
         <div style={{ display: "flex", gap: "15px" }}>
-          <div
-            onMouseEnter={() => setShowEmojiPicker(post.id)}
-            onMouseLeave={() => setShowEmojiPicker(null)}
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <button
-              style={{
-                ...actionBtnBase,
-                color: darkMode ? "#94a3b8" : "#64748b",
-              }}
-            >
-              <span style={{ fontSize: "18px" }}>
-                {post.reactions?.[auth.currentUser.uid] || "🙏"}
-              </span>
-              <span>React</span>
+          <div onMouseEnter={() => setShowEmojiPicker(post.id)} onMouseLeave={() => setShowEmojiPicker(null)} style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            <button style={actionBtnBase}>
+              <span style={{ fontSize: "20px" }}>{post.reactions?.[auth.currentUser.uid] || (isPostcard ? "🎉" : "🙏")}</span>
+              <span style={{ fontWeight: 'bold' }}>React</span>
             </button>
-
             {showEmojiPicker === post.id && (
               <div style={hoverReactionBox}>
-                {[
-                  "❤️",
-                  "💖",
-                  "🥰",
-                  "🙏",
-                  "👏",
-                  "😂",
-                  "🥳",
-                  "🤣",
-                  "🎂",
-                  "🎉",
-                  "🔥",
-                  "✨",
-                  "🫂",
-                  "😮",
-                  "👍",
-                  "👌",
-                ].map((e) => (
-                  <span
-                    key={e}
-                    onClick={() => handleReaction(post.id, e)}
-                    style={emojiHoverItem}
-                  >
-                    {e}
-                  </span>
+                {["❤️", "🎂", "🎉", "🎁", "🔥", "✨", "🙏", "👏", "🥰", "🥳"].map((e) => (
+                  <span key={e} onClick={() => handleReaction(post.id, e)} style={emojiHoverItem}>{e}</span>
                 ))}
               </div>
             )}
           </div>
-
-          <button
-            style={{
-              ...actionBtnBase,
-              color: darkMode ? "#94a3b8" : "#64748b",
-            }}
-            onClick={() => setActiveCommentPost(post)}
-          >
+          <button style={actionBtnBase} onClick={() => setActiveCommentPost(post)}>
             <MessageCircle size={18} />
-            <span>{post.comments?.length || 0}</span>
+            <span style={{ fontWeight: 'bold' }}>{post.comments?.length || 0}</span>
           </button>
         </div>
-
         <div style={reactionPreview}>
-          <span style={{ fontSize: "12px" }}>
-            {post.reactions ? Object.values(post.reactions)[0] : "🙏"}
-          </span>
-          <span style={{ fontSize: "12px", fontWeight: "600" }}>
-            {post.reactions ? Object.keys(post.reactions).length : 0}
-          </span>
+          <span style={{ fontSize: "14px" }}>{post.reactions ? Object.values(post.reactions)[0] : (isPostcard ? "🎈" : "🙏")}</span>
+          <span style={{ fontSize: "14px", fontWeight: "800" }}>{post.reactions ? Object.keys(post.reactions).length : 0}</span>
         </div>
       </div>
     </div>
@@ -249,13 +182,17 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
     "#ffffff",
   ];
 
-  const [selectedFont, setSelectedFont] = useState("cursive"); // Font ရွေးဖို့
+  const [selectedFont, setSelectedFont] = useState("'Dancing Script', cursive"); // Font ရွေးဖို့
   const fonts = [
     { name: "Cursive", family: "cursive" },
+    { name: "လှပသော လက်ရေး", family: "'Dancing Script', cursive" },
     { name: "Modern", family: "sans-serif" },
     { name: "Classic", family: "serif" },
     { name: "Elegant", family: "Georgia" },
     { name: "Bold", family: "Impact" },
+    { name: "ခေတ်မီ စာလုံး", family: "'Inter', sans-serif" },
+      { name: "ဂန္ထဝင် စတိုင်", family: "'Playfair Display', serif" },
+      { name: "ရိုးရိုးရှင်းရှင်း", family: "system-ui" }
   ];
 
   const colors = [
@@ -1034,7 +971,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                 display: "flex",
                 gap: "8px",
                 overflowX: "auto",
-                marginBottom: "20px",
+                paddingBottom: '5px'
               }}
             >
               {fonts.map((f) => (
@@ -1052,6 +989,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                       selectedFont === f.family ? "#eff6ff" : "#fff",
                     color: selectedFont === f.family ? "#3b82f6" : "#64748b",
                     fontFamily: f.family,
+                    fontSize: '12px',
                     cursor: "pointer",
                     whiteSpace: "nowrap",
                   }}
@@ -1745,311 +1683,8 @@ const actionBtn = {
   fontSize: "14px",
   fontWeight: "600",
 };
-const postcardDisplay = {
-  height: "350px", // ပိုရှည်လိုက်ရင် ပိုလှပါတယ်
-  margin: "10px",
-  borderRadius: "25px",
-  position: "relative",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  overflow: "hidden",
-  boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
-};
-const postcardBgImgStyle = {
-  position: "absolute",
-  width: "100%",
-  height: "100%",
-  objectFit: "cover", // ပုံမပြဲသွားအောင် cover ထားပါ
-  zIndex: 0,
-  borderRadius: "25px",
-};
-const postcardContentOverlay = {
-  zIndex: 1,
-  // backgroundColor: 'rgba(255, 255, 255, 0.15)', // Glassmorphism
-  backgroundColor: "rgba(0,0,0,0.2)",
-  // backdropFilter: 'blur(5px)',
-  padding: "20px",
-  borderRadius: "15px",
-  width: "85%",
-  textAlign: "center",
-  // border: '1px solid rgba(255,255,255,0.3)',
-};
-const postcardTextDisplay = {
-  color: "#fff",
-  fontSize: "28px",
-  fontWeight: "bold",
-  /* စာလုံးကို ပုံပေါ်မှာ ထင်းနေအောင် အရိပ် (Shadow) ပိုထည့်ခြင်း */
-  textShadow: "2px 2px 10px rgba(0,0,0,0.8), -1px -1px 0 rgba(0,0,0,0.5)",
-  margin: "0 0 15px 0",
-  wordWrap: "break-word",
-  lineHeight: "1.4",
-};
-const audioPlayerWrapper = {
-  backgroundColor: "rgba(255,255,255,0.8)",
-  borderRadius: "30px",
-  padding: "5px",
-  display: "inline-block",
-};
-const miniAudioStyle = {
-  height: "35px",
-  maxWidth: "200px",
-};
 
-const fontBtnStyle = {
-  padding: "5px 12px",
-  borderRadius: "10px",
-  backgroundColor: "#fff",
-  cursor: "pointer",
-  fontSize: "12px",
-  whiteSpace: "nowrap",
-};
-
-const commentSection = { padding: "15px", backgroundColor: "#f8fafc" };
-const commentItem = { display: "flex", gap: "10px", marginBottom: "10px" };
 const commentAvatar = { width: "25px", height: "25px", borderRadius: "50%" };
-const commentBubble = {
-  backgroundColor: "#fff",
-  padding: "8px 12px",
-  borderRadius: "15px",
-  fontSize: "13px",
-  boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-};
-const commentInputArea = { display: "flex", gap: "10px", marginTop: "10px" };
-const commentInput = {
-  flex: 1,
-  border: "1px solid #e2e8f0",
-  borderRadius: "15px",
-  padding: "8px 15px",
-  fontSize: "13px",
-  outline: "none",
-};
-
-const emojiPopup = {
-  position: "absolute",
-  bottom: "40px",
-  left: 0,
-  backgroundColor: "#fff",
-  padding: "10px",
-  borderRadius: "20px",
-  boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
-  display: "flex",
-  gap: "10px",
-  zIndex: 100,
-};
-
-const emojiPopupStyle = {
-  position: "absolute",
-  bottom: "50px",
-  left: "0",
-  backgroundColor: "#fff",
-  display: "flex",
-  flexDirection: "column", // အောက်ကို ဆင်းသွားအောင် (Line ခွဲဖို့)
-  gap: "8px",
-  padding: "12px",
-  borderRadius: "20px",
-  boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
-  zIndex: 100,
-  border: "1px solid #f1f5f9",
-  width: "max-content",
-};
-const emojiGroup = {
-  display: "flex",
-  gap: "12px",
-  justifyContent: "center",
-};
-
-const emojiIconStyle = {
-  fontSize: "22px",
-  cursor: "pointer",
-  transition: "transform 0.2s",
-  display: "inline-block",
-  // Hover လုပ်ရင် ပိုကြီးလာအောင်
-  ":hover": {
-    transform: "scale(1.3)",
-  },
-};
-
-const reactionSummary = {
-  display: "flex",
-  alignItems: "center",
-  padding: "0 10px",
-  backgroundColor: "#f8fafc",
-  borderRadius: "15px",
-  marginLeft: "10px",
-};
-
-const postcardActionRow = {
-  display: "flex",
-  justifyContent: "center",
-  gap: "20px",
-  marginTop: "15px",
-};
-
-const iconBtnStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  backgroundColor: "#f1f5f9",
-  padding: "8px 12px",
-  borderRadius: "12px",
-  fontSize: "13px",
-  cursor: "pointer",
-  color: "#475569",
-  fontWeight: "600",
-  border: "1px solid #e2e8f0",
-};
-
-const linkBtnStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: "10px",
-  padding: "15px",
-  backgroundColor: "#f1f5f9",
-  color: "#3b82f6",
-  textDecoration: "none",
-  borderRadius: "15px",
-  fontWeight: "600",
-  fontSize: "14px",
-  border: "1px dashed #3b82f6",
-  margin: "10px 0",
-};
-
-const loadMoreBtnStyle = {
-  padding: "12px 24px",
-  backgroundColor: "#fff",
-  border: "1px solid #3b82f6",
-  color: "#3b82f6",
-  borderRadius: "30px",
-  fontWeight: "bold",
-  cursor: "pointer",
-  fontSize: "14px",
-  transition: "0.3s",
-  boxShadow: "0 4px 10px rgba(59, 130, 246, 0.1)",
-};
-
-// --- Modern Dashboard Styles ---
-
-const dashboardContainer = {
-  maxWidth: "1100px", // ၂-ကော်လံအတွက် ပိုကျယ်လိုက်ပါပြီ
-  margin: "0 auto",
-  padding: "20px 15px",
-};
-
-// ၁။ Search Section Style
-const searchWrapper = {
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-  backgroundColor: "#fff",
-  padding: "12px 24px",
-  borderRadius: "30px", // Apple-style round bar
-  boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-  border: "1px solid #f1f5f9",
-  marginBottom: "30px",
-};
-
-const searchInputStyle = {
-  border: "none",
-  outline: "none",
-  width: "100%",
-  fontSize: "15px",
-  backgroundColor: "transparent",
-  color: "#1e293b",
-};
-
-// ၂။ Post Creator (Minimized/ချုံ့ထားသည့်ပုံစံ)
-const minimizedCreator = {
-  display: "flex",
-  alignItems: "center",
-  gap: "15px",
-  backgroundColor: "#fff",
-  padding: "12px 20px",
-  borderRadius: "16px",
-  cursor: "pointer",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-  border: "1px solid #f1f5f9",
-  marginBottom: "30px",
-  transition: "0.2s ease",
-};
-
-const placeholderText = {
-  flex: 1,
-  color: "#94a3b8",
-  fontSize: "15px",
-  fontWeight: "500",
-};
-
-// ၃။ Post Creator (Expanded/ပွင့်လာသည့်ပုံစံ)
-const expandedCreatorCard = {
-  backgroundColor: "#fff",
-  padding: "25px",
-  borderRadius: "24px",
-  boxShadow: "0 15px 35px rgba(0,0,0,0.1)",
-  border: "1px solid #f1f5f9",
-  marginBottom: "30px",
-};
-
-const creatorTextarea = {
-  width: "100%",
-  minHeight: "100px",
-  border: "none",
-  outline: "none",
-  fontSize: "16px",
-  fontFamily: "inherit",
-  resize: "none",
-  padding: "10px 0",
-  color: "#1e293b",
-};
-
-// ၄။ ၂-ကော်လံ Grid စနစ် (Masonry-like Grid)
-const postGridSystem = {
-  display: "grid",
-  // Desktop မှာ ၄၅၀px အနည်းဆုံးထားပြီး ၂ ကော်လံခွဲမယ်၊ ဖုန်းမှာ ၁ ကော်လံပဲပြမယ်
-  gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 450px), 1fr))",
-  gap: "25px",
-  alignItems: "start", // ပိုစ့်တွေက အမြင့်မတူရင်လည်း သူ့အလိုလို စီသွားမယ်
-  marginTop: "20px",
-};
-
-// ၆။ Lightbox (Professional Zoom-out)
-const lightboxOverlay = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100%",
-  height: "100%",
-  backgroundColor: "rgba(0, 0, 0, 0.95)",
-  backdropFilter: "blur(10px)", // Apple Glass effect
-  zIndex: 5000,
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  cursor: "zoom-out",
-};
-
-const lightboxImage = {
-  maxWidth: "95%",
-  maxHeight: "90vh",
-  borderRadius: "12px",
-  boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
-  objectFit: "contain",
-  border: "1px solid rgba(255,255,255,0.1)",
-};
-
-// ၇။ Action Buttons & Badges
-const reactionBadge = {
-  display: "flex",
-  alignItems: "center",
-  gap: "4px",
-  backgroundColor: "#f8fafc",
-  padding: "5px 12px",
-  borderRadius: "20px",
-  fontSize: "12px",
-  color: "#64748b",
-  fontWeight: "600",
-};
 
 const deleteBtnBox = {
   cursor: "pointer",
@@ -2235,12 +1870,11 @@ const postCaption = {
 
 const imageContainer = {
   width: "100%",
-  height: "340px", // 🌟 ပုံအမြင့်ကို ပုံသေထားသည်
-  backgroundColor: "#f8fafc",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
   overflow: "hidden",
+  position: 'relative'
 };
 
 const mainMedia = {
@@ -2282,4 +1916,98 @@ const interactionBar = {
   alignItems: "center",
   marginTop: "auto", // 🌟 အောက်ခြေမှာ အမြဲကပ်နေစေရန်
 };
+
+const postcardDisplay = {
+  height: '340px',
+  margin: '0 10px 10px',
+  borderRadius: '20px',
+  position: 'relative',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  overflow: 'hidden'
+};
+
+const premiumBgImg = {
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  zIndex: 0,
+  filter: 'brightness(0.8)' // စာသားကြည်လင်အောင် ပုံကို နည်းနည်းမှောင်မယ်
+};
+
+const glassCardOverlay = {
+  zIndex: 1,
+  background: 'rgba(255, 255, 255, 0.15)', // မှန်ကြည်ရောင်
+  backdropFilter: 'blur(10px)', // Blur effect
+  borderRadius: '25px',
+  padding: '25px',
+  width: '85%',
+  height: '75%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.2)',
+  textAlign: 'center'
+};
+
+const premiumPostcardText = {
+  color: '#ffffff',
+  fontSize: '24px',
+  fontWeight: '900',
+  fontFamily: "'Playfair Display', serif", // အဆင့်မြင့် Font
+  textShadow: '0 4px 15px rgba(0,0,0,0.5)',
+  lineHeight: '1.4',
+  margin: '15px 0'
+};
+
+const badgeBday = {
+  background: 'linear-gradient(45deg, #FFD700, #FFA500)', // ရွှေရောင် Gradient
+  color: '#000',
+  padding: '4px 15px',
+  borderRadius: '20px',
+  fontSize: '10px',
+  fontWeight: 'bold',
+  letterSpacing: '2px',
+  marginBottom: '10px'
+};
+
+const audioBoxPremium = {
+  width: '100%',
+  background: 'rgba(255, 255, 255, 0.2)',
+  padding: '8px',
+  borderRadius: '50px',
+  border: '1px solid rgba(255,255,255,0.4)'
+};
+
+const birthdayRibbon = {
+  position: 'absolute',
+  top: '5px',
+  left: '20px',
+  background: '#ef4444',
+  color: '#fff',
+  padding: '2px 10px',
+  borderRadius: '4px',
+  fontSize: '9px',
+  fontWeight: 'bold',
+  textTransform: 'uppercase',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  zIndex: 10
+};
+
+const audioOverlay = {
+  position: 'absolute',
+  bottom: '10px',
+  right: '10px',
+  background: 'rgba(255, 255, 255, 0.7)',
+  backdropFilter: 'blur(5px)',
+  padding: '5px 10px',
+  borderRadius: '30px',
+  display: 'flex',
+  alignItems: 'center'
+};
+
 export default MainDashboard;
