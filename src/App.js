@@ -666,7 +666,7 @@ users.forEach((u) => {
             အတည်ပြုပေးရန် စောင့်ဆိုင်းနေပါသည်။ ၁၂ နာရီအတွင်း အဆင်ပြေသွားပါမည်။
           </p>
           <a
-            href="https://buy.stripe.com/eVq8wP5fC4PkgVPd7Q1B60f"
+            href="https://buy.stripe.com/dRmeVd9vS0z4493ebU1B60g"
             target="_blank"
             rel="noreferrer"
             style={buyBtnMini}
