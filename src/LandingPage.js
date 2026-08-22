@@ -1,6 +1,8 @@
 import React from "react";
 
 const LandingPage = ({ onLogin }) => {
+  const [showTOS, setShowTOS] = React.useState(false);
+
   return (
     <div style={container}>
       {/* နောက်ခံ ဒီဇိုင်းအလှများ (Blobs) */}
@@ -92,9 +94,29 @@ const LandingPage = ({ onLogin }) => {
         </div>
 
         <footer style={footer}>
-          @2026 ReMember App — Privacy First. Built with Heart ❤️
-        </footer>
+    <div style={{ marginBottom: '10px' }}>
+        <span onClick={() => setShowTOS(true)} style={{ cursor: 'pointer', textDecoration: 'underline', color: '#64748b' }}>
+            Terms of Service
+        </span>
+    </div>
+    @{new Date().getFullYear()} ReMember App — Privacy First. Built with Heart ❤️
+</footer>
       </div>
+
+      {showTOS && (
+    <div style={tosOverlay}>
+        <div style={tosModal}>
+            <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px' }}>📜 Terms of Service</h3>
+            <div style={tosContent}>
+                <p><strong>1. Service Usage:</strong> This App is intended for privately storing and sharing memories among family members and friends.</p>
+<p><strong>2. File Size Limit:</strong> To ensure system stability, each individual file is limited to a maximum size of 5 megabytes (5MB).</p>
+<p><strong>3. Data Retention Policy:</strong> If a user fails to pay the monthly service fee or does not use the service for six (6) consecutive months, the system reserves the right to permanently delete the stored data, including photos, videos, and audio files.</p>
+<p><strong>4. Privacy and Security:</strong> Your information will only be accessible to users who share the same Family Code. We, as the administrator, are committed to protecting your privacy and maintaining the security of your data.</p>
+            </div>
+            <button onClick={() => setShowTOS(false)} style={closeTOSBtn}>Understand.</button>
+        </div>
+    </div>
+)}
     </div>
   );
 };
@@ -308,5 +330,10 @@ const footer = {
   fontSize: "13px",
   fontWeight: "500",
 };
+
+const tosOverlay = { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' };
+const tosModal = { backgroundColor: '#fff', padding: '30px', borderRadius: '24px', maxWidth: '500px', width: '100%', boxShadow: '0 20px 25px rgba(0,0,0,0.1)', textAlign: 'left' };
+const tosContent = { maxHeight: '300px', overflowY: 'auto', fontSize: '14px', lineHeight: '1.6', color: '#475569', marginBottom: '20px' };
+const closeTOSBtn = { width: '100%', padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: '#3b82f6', color: '#fff', fontWeight: 'bold', cursor: 'pointer' };
 
 export default LandingPage;

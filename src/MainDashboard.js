@@ -18,23 +18,17 @@ import {
 } from "firebase/firestore";
 import {
   ref,
-  uploadBytesResumable,
   getDownloadURL,
   uploadBytes,
 } from "firebase/storage";
 import {
-  Home,
-  Gift,
-  ShieldCheck,
   Link as LinkIcon,
-  Palette,
   Image,
   Music,
   Send,
   Heart,
   MessageCircle,
   Share2,
-  MoreHorizontal,
   Trash2,
   X,
   Search,
@@ -224,10 +218,28 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
 
   const onFileChange = (e) => {
     const files = Array.from(e.target.files);
-    setSelectedFiles([...selectedFiles, ...files]);
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setPreviewUrls([...previewUrls, ...previews]);
-  };
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB ကို Byte အဖြစ် ပြောင်းလဲခြင်း
+    
+    // 5MB ထက် ကျော်တဲ့ ဖိုင်ရှိမရှိ စစ်မယ်
+    const oversizedFiles = files.filter(f => f.size > MAX_SIZE);
+
+    if (oversizedFiles.length > 0) {
+        alert(
+            `⚠️ ဖိုင်အရွယ်အစား ကန့်သတ်ချက် ကျော်လွန်နေပါသည်။\n\n` +
+            `ဖိုင်တစ်ခုချင်းစီကို 5MB ထက်မကျော်ရပါ။\n` +
+            `ကျော်လွန်နေသောဖိုင်များ- ${oversizedFiles.map(f => f.name).join(", ")}`
+        );
+        e.target.value = null; // Input ကို ပြန်ရှင်းပစ်မယ်
+        setSelectedFiles([]);
+        setPreviewUrls([]);
+        return;
+    }
+
+    // 5MB ထက် မကျော်မှသာ ရှေ့ဆက်မယ်
+    setSelectedFiles(files);
+    const previews = files.map(file => URL.createObjectURL(file));
+    setPreviewUrls(previews);
+};
 
   // ၄။ Postcard တင်ခြင်း
   const handlePostcardUpload = async () => {
@@ -525,7 +537,8 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode }) => {
                 hidden
                 multiple
                 accept="image/*,video/*,audio/*"
-                onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
+                // onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
+                onChange={onFileChange}
               />
             </label>
             <button
