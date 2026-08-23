@@ -128,7 +128,7 @@ const PostCard = ({ post, auth, db, handleDelete, handleReaction, setActiveComme
             </button>
             {showEmojiPicker === post.id && (
               <div style={hoverReactionBox}>
-                {["❤️", "🎂", "🎉", "🎁", "🔥", "✨", "🙏", "👏", "🥰", "🥳"].map((e) => (
+                {["❤️", "🎂", "🎉", "🎁", "🔥", "🙏", "👏", '👨‍👩‍👧‍👦', '🏠', '💍', '❤️', '💖', "🥰", "🥳", '😊', '🤩', '🥳', '😎', '😌', '😴', '😑', '😋', '🤤', '😢', '🥺', '😰', '😱', '😡', '🤒', '🤕', '☕', '🧘', '🏃‍♂️', '👨‍💻', '📚', '💪', '✨', '🥘', '🍕', '🍦', '🍺', '🙏', '🫂', '🎊', '🎈', '🎁', '🥂',].map((e) => (
                   <span key={e} onClick={() => handleReaction(post.id, e)} style={emojiHoverItem}>{e}</span>
                 ))}
               </div>
@@ -185,14 +185,14 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
   const [selectedFont, setSelectedFont] = useState("'Dancing Script', cursive"); // Font ရွေးဖို့
   const fonts = [
     { name: "Cursive", family: "cursive" },
-    { name: "လှပသော လက်ရေး", family: "'Dancing Script', cursive" },
+    { name: "Handwriting", family: "'Dancing Script', cursive" },
     { name: "Modern", family: "sans-serif" },
     { name: "Classic", family: "serif" },
     { name: "Elegant", family: "Georgia" },
     { name: "Bold", family: "Impact" },
-    { name: "ခေတ်မီ စာလုံး", family: "'Inter', sans-serif" },
-      { name: "ဂန္ထဝင် စတိုင်", family: "'Playfair Display', serif" },
-      { name: "ရိုးရိုးရှင်းရှင်း", family: "system-ui" }
+    { name: "Modern", family: "'Inter', sans-serif" },
+      { name: "Classic", family: "'Playfair Display', serif" },
+      { name: "Simple", family: "system-ui" }
   ];
 
   const colors = [
@@ -227,10 +227,6 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
     {
       name: "Birthday",
       url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500",
-    },
-    {
-      name: "New Year",
-      url: "https://plus.unsplash.com/premium_photo-1661962358117-9154f2482329?w=500",
     },
     {
       name: "Event",
