@@ -32,116 +32,194 @@ import {
 } from "lucide-react";
 
 // 🌟 Post တစ်ခုချင်းစီအတွက် သီးသန့် Component
-const PostCard = ({ post, auth, db, handleDelete, handleReaction, setActiveCommentPost, setViewImage, setShowEmojiPicker, showEmojiPicker, darkMode }) => {
+const PostCard = ({
+  post,
+  auth,
+  db,
+  handleDelete,
+  handleReaction,
+  setActiveCommentPost,
+  setViewImage,
+  setShowEmojiPicker,
+  showEmojiPicker,
+  darkMode,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const isPostcard = post.fileType === 'postcard';
-  const allMedia = post.media || (post.fileUrl || post.imageUrl ? [{ url: post.fileUrl || post.imageUrl, type: 'image' }] : []);
+
+  // 🌟 ပုံဟောင်း/ပုံသစ် အကုန်ပေါ်စေမည့် Logic
+  const allMedia = post.media || 
+    (post.fileUrl || post.imageUrl || post.postcardImg
+      ? [{ url: post.fileUrl || post.imageUrl || post.postcardImg, type: "image" }]
+      : []);
+
+  const charLimit = 80; // စာသားကို အတိုပဲပြမယ် (ကတ်ညီစေရန်)
+  const isLongText = post.caption?.length > charLimit;
+  const displayText = isExpanded
+    ? post.caption
+    : post.caption?.substring(0, charLimit);
 
   return (
-    <div style={{
-      ...modernPostCard,
-      border: isPostcard ? '2.5px solid #FFD700' : (darkMode ? '1px solid #334155' : '1px solid #f1f5f9'),
-      boxShadow: isPostcard ? '0 8px 25px rgba(255, 215, 0, 0.2)' : '0 4px 15px rgba(0,0,0,0.05)',
-      height: '580px',
-      overflow: 'visible' // Ribbon လေး ပေါ်လာစေရန်
-    }}>
-      
+    <div
+      style={{
+        ...modernPostCard,
+        backgroundColor: darkMode ? "#1e293b" : "#fff",
+        color: darkMode ? "#f1f5f9" : "#1e293b",
+        border: darkMode ? "1px solid #334155" : "1px solid #f1f5f9",
+      }}
+    >
       {/* ၁။ Header */}
       <div style={postHeader}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <img src={post.userImage} style={avatarStyle} alt="u" />
           <div style={{ overflow: "hidden" }}>
-            <h4 style={{ ...userNameStyle, color: darkMode ? '#fff' : '#1e293b' }}>{post.userName}</h4>
-            <span style={postTime}>{post.createdAt ? post.createdAt.toDate().toLocaleString() : "Now"}</span>
+            <h4
+              style={{ ...userNameStyle, color: darkMode ? "#fff" : "#1e293b" }}
+            >
+              {post.userName}
+            </h4>
+            <span style={postTime}>
+              {post.createdAt
+                ? post.createdAt.toDate().toLocaleString()
+                : "Now"}
+            </span>
           </div>
         </div>
-        {(post.uid === auth.currentUser.uid || auth.currentUser.email === "minmaung0307@gmail.com") && (
-          <div onClick={() => handleDelete(post.id, post.uid, post.userName)} style={deleteBtnBox}>
+        {(post.uid === auth.currentUser.uid ||
+          auth.currentUser.email === "koalankar@gmail.com") && (
+          <div
+            onClick={() => handleDelete(post.id, post.uid, post.userName)}
+            style={deleteBtnBox}
+          >
             <Trash2 size={16} color="#ef4444" />
           </div>
         )}
       </div>
 
-      {/* ၂။ စာသားအပိုင်း (Caption) */}
-      <div style={{
-        ...postCaption,
-        height: 'auto',
-        minHeight: isPostcard ? '80px' : '40px',
-        maxHeight: '130px',
-        backgroundColor: isPostcard ? (darkMode ? '#2d3748' : '#fffdf0') : 'transparent',
-        padding: '10px 20px',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center'
-      }}>
-        {/* အနီရောင် Ribbon ကို မြုတ်မသွားအောင် နေရာပြန်ညှိထားပါသည် */}
-        {isPostcard && <div style={birthdayRibbon}>🎂 Birthday Message</div>}
-        
-        <div style={{ 
-          fontSize: isPostcard ? '16px' : '14px', 
-          fontWeight: isPostcard ? '600' : 'normal',
-          color: isPostcard ? '#b45309' : (darkMode ? '#f1f5f9' : '#334155'),
-          fontFamily: isPostcard ? (post.postcardFont || "'Dancing Script', cursive") : 'inherit',
-          lineHeight: '1.5',
-          marginTop: isPostcard ? '25px' : '0'
-        }}>
-          {post.caption}
-        </div>
+      {/* ၂။ စာသားအပိုင်း (အမြင့်ကို ပုံသေထိန်းထားသည်) */}
+      <div style={postCaption}>
+        {displayText}
+        {isLongText && (
+          <span
+            onClick={() => setIsExpanded(!isExpanded)}
+            style={{ color: "#3b82f6", cursor: "pointer", fontWeight: "bold" }}
+          >
+            {isExpanded ? " လျှော့ဖတ်ရန်" : "... ပိုဖတ်ရန်"}
+          </span>
+        )}
       </div>
 
-      {/* ၃။ ပုံအပိုင်း (Image Area) */}
-      <div style={{...imageContainer, height: '330px', backgroundColor: isPostcard ? '#fefce8' : '#f8fafc'}}>
-        {isPostcard ? (
-          // 🌟 ဤနေရာတွင် contain ကိုသုံးထားသဖြင့် ပုံတစ်ပုံလုံး မြင်ရပါမည် 🌟
-          <img 
-            src={post.postcardImg} 
-            style={{...mainMedia, objectFit: 'contain', padding: '5px'}} 
-            alt="birthday-celebration" 
-            onClick={() => setViewImage(post.postcardImg)} 
-          />
-        ) : (
-          allMedia.length > 0 && (
-            <img 
-              src={allMedia[0].url} 
-              style={mainMedia} 
-              alt="post" 
-              onClick={() => setViewImage(allMedia[0].url)} 
+      {/* ၃။ ဓာတ်ပုံ/ဗီဒီယို အပိုင်း (အခု ပြန်ပေါ်လာပါပြီ) */}
+      <div style={imageContainer}>
+        {post.fileType === "postcard" ? (
+          /* --- Postcard Display --- */
+          <div style={{...postcardDisplay, backgroundColor: post.fileUrl, width: '100%', height: '100%', margin: 0, borderRadius: 0}}>
+            {post.postcardImg && (
+              <img src={post.postcardImg} style={postcardBgImgStyle} alt="bg" />
+            )}
+            <div style={postcardContentOverlay}>
+              <h2 style={{...postcardTextDisplay, fontSize: '18px'}}>{post.caption}</h2>
+            </div>
+          </div>
+        ) : allMedia.length > 0 ? (
+          /* --- ရိုးရိုးပုံ သို့မဟုတ် ဗီဒီယို --- */
+          allMedia[0].type === "video" ? (
+            <video src={allMedia[0].url} controls style={mainMedia} />
+          ) : (
+            <img
+              src={allMedia[0].url}
+              style={mainMedia}
+              alt="post"
+              referrerPolicy="no-referrer"
+              onClick={() => setViewImage(allMedia[0].url)}
+              onError={(e) => { e.target.style.display = 'none'; }} // ပုံပျက်နေရင် ဖျောက်ထားမယ်
             />
           )
-        )}
-
-        {isPostcard && post.postcardAud && (
-          <div style={audioOverlay}>
-            <audio src={post.postcardAud} controls style={{ height: '28px', width: '180px' }} />
-          </div>
+        ) : (
+          <div style={{ color: "#94a3b8", fontSize: "12px" }}>No Media</div>
         )}
       </div>
 
       {/* ၄။ Interaction Bar */}
-      <div style={interactionBar}>
+      <div
+        style={{
+          ...interactionBar,
+          backgroundColor: darkMode ? "#1e293b" : "#fff",
+          borderTop: darkMode ? "1px solid #334155" : "1px solid #f1f5f9",
+        }}
+      >
         <div style={{ display: "flex", gap: "15px" }}>
-          <div onMouseEnter={() => setShowEmojiPicker(post.id)} onMouseLeave={() => setShowEmojiPicker(null)} style={{ position: "relative", display: "flex", alignItems: "center" }}>
-            <button style={actionBtnBase}>
-              <span style={{ fontSize: "20px" }}>{post.reactions?.[auth.currentUser.uid] || (isPostcard ? "🎉" : "🙏")}</span>
-              <span style={{ fontWeight: 'bold' }}>React</span>
+          <div
+            onMouseEnter={() => setShowEmojiPicker(post.id)}
+            onMouseLeave={() => setShowEmojiPicker(null)}
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <button
+              style={{
+                ...actionBtnBase,
+                color: darkMode ? "#94a3b8" : "#64748b",
+              }}
+            >
+              <span style={{ fontSize: "18px" }}>
+                {post.reactions?.[auth.currentUser.uid] || "🙏"}
+              </span>
+              <span>React</span>
             </button>
+
             {showEmojiPicker === post.id && (
               <div style={hoverReactionBox}>
-                {["❤️", "🎂", "🎉", "🎁", "🔥", "🙏", "👏", '👨‍👩‍👧‍👦', '🏠', '💍', '❤️', '💖', "🥰", "🥳", '😊', '🤩', '🥳', '😎', '😌', '😴', '😑', '😋', '🤤', '😢', '🥺', '😰', '😱', '😡', '🤒', '🤕', '☕', '🧘', '🏃‍♂️', '👨‍💻', '📚', '💪', '✨', '🥘', '🍕', '🍦', '🍺', '🙏', '🫂', '🎊', '🎈', '🎁', '🥂',].map((e) => (
-                  <span key={e} onClick={() => handleReaction(post.id, e)} style={emojiHoverItem}>{e}</span>
+                {[
+                  "❤️",
+                  "💖",
+                  "🥰",
+                  "🙏",
+                  "👏",
+                  "😂",
+                  "🥳",
+                  "🤣",
+                  "🎂",
+                  "🎉",
+                  "🔥",
+                  "✨",
+                  "🫂",
+                  "😮",
+                  "👍",
+                  "👌",
+                ].map((e) => (
+                  <span
+                    key={e}
+                    onClick={() => handleReaction(post.id, e)}
+                    style={emojiHoverItem}
+                  >
+                    {e}
+                  </span>
                 ))}
               </div>
             )}
           </div>
-          <button style={actionBtnBase} onClick={() => setActiveCommentPost(post)}>
+
+          <button
+            style={{
+              ...actionBtnBase,
+              color: darkMode ? "#94a3b8" : "#64748b",
+            }}
+            onClick={() => setActiveCommentPost(post)}
+          >
             <MessageCircle size={18} />
-            <span style={{ fontWeight: 'bold' }}>{post.comments?.length || 0}</span>
+            <span>{post.comments?.length || 0}</span>
           </button>
         </div>
+
         <div style={reactionPreview}>
-          <span style={{ fontSize: "14px" }}>{post.reactions ? Object.values(post.reactions)[0] : (isPostcard ? "🎈" : "🙏")}</span>
-          <span style={{ fontSize: "14px", fontWeight: "800" }}>{post.reactions ? Object.keys(post.reactions).length : 0}</span>
+          <span style={{ fontSize: "12px" }}>
+            {post.reactions ? Object.values(post.reactions)[0] : "🙏"}
+          </span>
+          <span style={{ fontSize: "12px", fontWeight: "600" }}>
+            {post.reactions ? Object.keys(post.reactions).length : 0}
+          </span>
         </div>
       </div>
     </div>
@@ -182,19 +260,6 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
     "#ffffff",
   ];
 
-  const [selectedFont, setSelectedFont] = useState("'Dancing Script', cursive"); // Font ရွေးဖို့
-  const fonts = [
-    { name: "Cursive", family: "cursive" },
-    { name: "Handwriting", family: "'Dancing Script', cursive" },
-    { name: "Modern", family: "sans-serif" },
-    { name: "Classic", family: "serif" },
-    { name: "Elegant", family: "Georgia" },
-    { name: "Bold", family: "Impact" },
-    { name: "Modern", family: "'Inter', sans-serif" },
-      { name: "Classic", family: "'Playfair Display', serif" },
-      { name: "Simple", family: "system-ui" }
-  ];
-
   const colors = [
     "#ffcfdf",
     "#ffdb58",
@@ -225,15 +290,15 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
   // Postcard အတွက် အွန်လိုင်း အသင့်သုံးပုံများ
   const postcardTemplates = [
     {
-      name: "Birthday",
+      name: "မွေးနေ့",
       url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500",
     },
     {
-      name: "Event",
+      name: "ပွဲလမ်း",
       url: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=500",
     },
     {
-      name: "Valintine's Day",
+      name: "ချစ်သူများနေ့",
       url: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=500",
     },
     {
@@ -313,11 +378,11 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
       postUserName === auth.currentUser.displayName;
 
     if (!isOwner) {
-      alert("You can only delete your own posts.");
+      alert("ကိုယ်ပိုင် Post ကိုသာ ဖျက်လို့ရပါတယ်။");
       return;
     }
 
-    if (window.confirm("Are you sure you want to delete this post?")) {
+    if (window.confirm("ဒီ Post ကို ဖျက်မှာ သေချာပါသလား?")) {
       try {
         await deleteDoc(doc(db, "posts", postId));
       } catch (error) {
@@ -335,9 +400,9 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
 
     if (oversizedFiles.length > 0) {
       alert(
-        `⚠️ File size limit exceeded.\n\n` +
-          `Each file must not exceed 5MB.\n` +
-          `Oversized files - ${oversizedFiles.map((f) => f.name).join(", ")}`,
+        `⚠️ ဖိုင်အရွယ်အစား ကန့်သတ်ချက် ကျော်လွန်နေပါသည်။\n\n` +
+          `ဖိုင်တစ်ခုချင်းစီကို 5MB ထက်မကျော်ရပါ။\n` +
+          `ကျော်လွန်နေသောဖိုင်များ- ${oversizedFiles.map((f) => f.name).join(", ")}`,
       );
       e.target.value = null; // Input ကို ပြန်ရှင်းပစ်မယ်
       setSelectedFiles([]);
@@ -353,111 +418,77 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
 
   // ၄။ Postcard တင်ခြင်း
   const handlePostcardUpload = async () => {
-    if (!postcardMessage.trim()) return;
+    if (!postcardMessage.trim()) {
+        alert("Write A Birthday Message...");
+        return;
+    }
     setUploading(true);
-
     let imgUrl = "";
-    let audUrl = "";
 
     try {
-      // ပုံကို တင်ခြင်း
-      if (postcardImage) {
-        const imgRef = ref(
-          storage,
-          `postcards/images/${Date.now()}_${postcardImage.name}`,
-        );
+      // ၁။ ပုံအသစ် (File) ရွေးထားလျှင် Storage သို့တင်မည်
+      if (postcardImage && typeof postcardImage !== "string") {
+        const imgRef = ref(storage, `postcards/images/${Date.now()}_${postcardImage.name}`);
         const snapshot = await uploadBytes(imgRef, postcardImage);
         imgUrl = await getDownloadURL(snapshot.ref);
+      } 
+      // ၂။ Template (Link) ကိုပဲ ရွေးထားလျှင် Link ကို တိုက်ရိုက်ယူမည်
+      else if (typeof postcardImage === "string") {
+        imgUrl = postcardImage;
       }
 
-      // အသံကို တင်ခြင်း
-      if (postcardAudio) {
-        const audRef = ref(
-          storage,
-          `postcards/audio/${Date.now()}_${postcardAudio.name}`,
-        );
-        const snapshot = await uploadBytes(audRef, postcardAudio);
-        audUrl = await getDownloadURL(snapshot.ref);
-      }
-
-      // Firestore ထဲမှာ သိမ်းခြင်း
+      // Firestore ထဲသို့ သိမ်းခြင်း
       await addDoc(collection(db, "posts"), {
         caption: postcardMessage,
-        fileUrl: selectedColor, // နောက်ခံအရောင်
-        postcardImg: imgUrl, // ပူးတွဲပုံ
-        postcardAud: audUrl, // ပူးတွဲအသံ
+        fileUrl: selectedColor,
+        postcardImg: imgUrl,
         fileType: "postcard",
         userName: auth.currentUser.displayName,
         userImage: auth.currentUser.photoURL,
         uid: auth.currentUser.uid,
-        postcardFont: selectedFont,
+        postcardFont: "Inter, sans-serif", // Font ကို တစ်မျိုးတည်း ပုံသေထားလိုက်ပါပြီ
         reactions: {},
         comments: [],
         createdAt: serverTimestamp(),
-        // familyCode: auth.currentUser.familyCode,
         familyCode: userFamilyCode,
       });
 
-      // Form ကို Reset လုပ်ခြင်း
       setPostcardMessage("");
       setPostcardImage(null);
-      setPostcardAudio(null);
       setShowPostcardEditor(false);
-      setUploading(false);
-      alert("Birthday postcard uploaded successfully! ✨");
+      alert("Postcard posted! ✨");
     } catch (error) {
-      console.error(error);
-      alert("Error: Unable to upload. Please try again.");
-      setUploading(false);
+      console.error("Postcard Upload Error:", error);
+      alert("Postcard failed. Tray again!");
     }
+    setUploading(false);
   };
 
   const handleUpload = async () => {
-    // selectedFiles က state အသစ်ဖြစ်ရပါမယ် (array ပုံစံ)
-    // externalUrl က online link အတွက်
-    if (!selectedFiles.length && !externalUrl && !caption) return;
+    // ပုံလည်းမပါ၊ Link လည်းမပါ၊ စာလည်းမပါရင် ဘာမှမလုပ်ဘူး
+    if (selectedFiles.length === 0 && !externalUrl && !caption) return;
 
     setUploading(true);
     let uploadedMedia = [];
 
     try {
-      // ၁။ Online Link ကိုအရင်စစ်မယ် (ပုံ၊ ဗီဒီယို သို့မဟုတ် အသံ ဖြစ်နိုင်သည်)
+      // ၁။ Online Link ထည့်ထားရင် အရင်ယူမယ်
       if (externalUrl) {
-        let linkType = "image"; // default
-        const urlLower = externalUrl.toLowerCase();
-
-        if (urlLower.match(/\.(mp4|mov|wmv|avi|mkv)$/)) {
-          linkType = "video";
-        } else if (urlLower.match(/\.(mp3|wav|ogg|m4a)$/)) {
-          linkType = "audio";
-        }
-
-        uploadedMedia.push({
-          url: externalUrl,
-          type: linkType,
-          isExternal: true,
-        });
+        uploadedMedia.push({ url: externalUrl, type: "image", isExternal: true });
       }
 
-      // ၂။ စက်ထဲကရွေးထားတဲ့ File များကို Upload တင်မယ် (ပုံ၊ ဗီဒီယို၊ အသံ အစုံရသည်)
+      // ၂။ စက်ထဲက ပုံတွေကို Loop ပတ်ပြီး Upload တင်မယ်
       for (const f of selectedFiles) {
-        // file type ကို စစ်မယ် (image, video, audio)
-        const fileType = f.type.split("/")[0];
         const storageRef = ref(storage, `media/${Date.now()}_${f.name}`);
+        const snapshot = await uploadBytes(storageRef, f);
+        const url = await getDownloadURL(snapshot.ref);
 
-        await uploadBytes(storageRef, f);
-        const url = await getDownloadURL(storageRef);
-
-        uploadedMedia.push({
-          url: url,
-          type: fileType,
-        });
+        uploadedMedia.push({ url: url, type: "image" });
       }
 
-      // ၃။ Firestore ထဲကို Data ထည့်မယ်
       await addDoc(collection(db, "posts"), {
         caption: caption,
-        media: uploadedMedia, // အခု media array နဲ့သိမ်းမှ grid နဲ့ပြလို့ရမှာပါ
+        media: uploadedMedia,
         layoutStyle: selectedStyle,
         userName: auth.currentUser.displayName,
         userImage: auth.currentUser.photoURL,
@@ -469,17 +500,17 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
         createdAt: serverTimestamp(),
       });
 
-      // ၄။ အောင်မြင်ရင် အကုန် Reset ပြန်လုပ်မယ်
       setCaption("");
-      setSelectedFiles([]); // array ကို ရှင်းမယ်
+      setSelectedFiles([]);
+      setPreviewUrls([]);
       setExternalUrl("");
-      setUploading(false);
-      alert("Memory uploaded successfully! ✨");
+      setIsCreating(false);
+      alert("အမှတ်တရကို တင်ပြီးပါပြီ! ✨");
     } catch (error) {
-      console.error("Upload Error: ", error);
-      setUploading(false);
-      alert("Upload failed. Please try again.");
+      console.error("Upload Error:", error);
+      alert("ပုံတင်လို့ မရပါဘူး။");
     }
+    setUploading(false);
   };
 
   return (
@@ -540,7 +571,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               alt="me"
             />
             <div style={{ flex: 1, color: "#94a3b8", fontSize: "15px" }}>
-              What would you like to share? {auth.currentUser?.displayName.split(" ")[0]}...
+              ဘာတွေမျှဝေချင်လဲ၊ {auth.currentUser?.displayName.split(" ")[0]}...
             </div>
             <Image color="#10b981" size={22} />
           </div>
@@ -566,7 +597,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               }}
             >
               <h4 style={{ margin: 0, color: "#1e293b" }}>
-                Create a New Memory
+                အမှတ်တရအသစ် ဖန်တီးပါ
               </h4>
               <X
                 onClick={() => setIsCreating(false)}
@@ -596,7 +627,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                 alt="me"
               />
               <textarea
-                placeholder="What's special about today?..."
+                placeholder="ဒီနေ့အတွက် ဘာတွေထူးခြားလဲ..."
                 style={{
                   width: "100%",
                   minHeight: "100px",
@@ -684,7 +715,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                   fontSize: "13px",
                   width: "100%",
                 }}
-                placeholder="Enter Link (URL)..."
+                placeholder="လင့်ခ် (URL) ထည့်သွင်းရန်..."
                 value={externalUrl}
                 onChange={(e) => setExternalUrl(e.target.value)}
               />
@@ -757,12 +788,12 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                   }}
                 >
                   <Image size={20} color="#10b981" />
-                  <span>Photo/Video</span>
+                  <span>Photo</span>
                   <input
                     type="file"
                     hidden
                     multiple
-                    accept="image/*,video/*,audio/*"
+                    accept="image/*"
                     onChange={onFileChange}
                   />
                 </label>
@@ -853,7 +884,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               }}
             >
               <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>
-                Create a Birthday Greeting Card
+                မွေးနေ့ဆုတောင်းကတ် ဖန်တီးပါ
               </h3>
               <X
                 onClick={() => {
@@ -899,7 +930,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                 />
               )}
               <textarea
-                placeholder="Write a Birthday Message..."
+                placeholder="ဆုတောင်းစကား ရေးသားပါ..."
                 style={{
                   ...postcardTextArea,
                   zIndex: 1,
@@ -961,40 +992,6 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               </div>
             </div>
 
-            {/* Font & Style Controls */}
-            <div
-              style={{
-                display: "flex",
-                gap: "8px",
-                overflowX: "auto",
-                paddingBottom: '5px'
-              }}
-            >
-              {fonts.map((f) => (
-                <button
-                  key={f.name}
-                  onClick={() => setSelectedFont(f.family)}
-                  style={{
-                    padding: "6px 15px",
-                    borderRadius: "20px",
-                    border:
-                      selectedFont === f.family
-                        ? "2px solid #3b82f6"
-                        : "1px solid #e2e8f0",
-                    backgroundColor:
-                      selectedFont === f.family ? "#eff6ff" : "#fff",
-                    color: selectedFont === f.family ? "#3b82f6" : "#64748b",
-                    fontFamily: f.family,
-                    fontSize: '12px',
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {f.name}
-                </button>
-              ))}
-            </div>
-
             {/* Media Upload Buttons */}
             <div
               style={{
@@ -1018,7 +1015,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                 }}
               >
                 <Image size={20} color="#3b82f6" />
-                <span>Add Photo</span>
+                <span>ပုံထည့်မည်</span>
                 <input
                   type="file"
                   hidden
@@ -1026,7 +1023,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                   onChange={(e) => setPostcardImage(e.target.files[0])}
                 />
               </label>
-              <label
+              {/* <label
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -1040,18 +1037,18 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                 }}
               >
                 <Music size={20} color="#8b5cf6" />
-                <span>Add Music</span>
+                <span>သီချင်းထည့်မည်</span>
                 <input
                   type="file"
                   hidden
                   accept="audio/*"
                   onChange={(e) => setPostcardAudio(e.target.files[0])}
                 />
-              </label>
+              </label> */}
             </div>
 
             {/* Selected File Names */}
-            {(postcardImage || postcardAudio) && (
+            {(postcardImage) && (
               <div
                 style={{
                   textAlign: "center",
@@ -1066,7 +1063,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                 {postcardImage && typeof postcardImage !== "string" && (
                   <div>🖼️ {postcardImage.name}</div>
                 )}
-                {postcardAudio && <div>🎵 {postcardAudio.name}</div>}
+                {/* {postcardAudio && <div>🎵 {postcardAudio.name}</div>} */}
               </div>
             )}
 
@@ -1163,8 +1160,8 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
             }}
           >
             {loadingMore
-              ? "Please wait..."
-              : "View More Memories ↓"}
+              ? "ခေတ္တစောင့်ပါ..."
+              : "နောက်ထပ် အမှတ်တရများ ကြည့်ရန် ↓"}
           </button>
         </div>
       )}
@@ -1280,7 +1277,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
         <div style={modalOverlay} onClick={() => setActiveCommentPost(null)}>
           <div style={commentPopupContent} onClick={(e) => e.stopPropagation()}>
             <div style={commentPopupHeader}>
-              <h3 style={{ margin: 0, fontSize: "18px" }}>Comments</h3>
+              <h3 style={{ margin: 0, fontSize: "18px" }}>မှတ်ချက်များ</h3>
               <X
                 onClick={() => setActiveCommentPost(null)}
                 style={{ cursor: "pointer" }}
@@ -1306,7 +1303,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                     marginTop: "20px",
                   }}
                 >
-                  No comments yet.
+                  မှတ်ချက် မရှိသေးပါ။
                 </p>
               )}
             </div>
@@ -1315,7 +1312,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               <input
                 value={activeCommentText}
                 onChange={(e) => setActiveCommentText(e.target.value)}
-                placeholder="Add a Comment..."
+                placeholder="မှတ်ချက်ပေးရန်..."
                 style={commentInputPopup}
                 onKeyDown={async (e) => {
                   if (e.key === "Enter" && activeCommentText.trim() !== "") {
@@ -1415,7 +1412,7 @@ const PostItem = ({
               marginLeft: "5px",
             }}
           >
-            {expanded ? " Read Less..." : " Read More..."}
+            {expanded ? " လျှော့ဖတ်ရန်" : " ဆက်လက်ဖတ်ရှုရန်"}
           </span>
         )}
       </p>
@@ -1520,7 +1517,7 @@ const PostItem = ({
                 fontSize: "13px",
               }}
             >
-              🔗 View Shared Link
+              🔗 မျှဝေထားသော Link ကိုကြည့်ရန်
             </a>
           )}
         </div>
@@ -1529,8 +1526,6 @@ const PostItem = ({
   );
 };
 
-// --- Styles (အသစ်ထပ်တိုးထားသည်) ---
-const feedWrapper = { maxWidth: "650px", margin: "0 auto", padding: "0 15px" };
 const inputCardStyle = {
   backgroundColor: "#fff",
   borderRadius: "20px",
@@ -1545,39 +1540,18 @@ const inputHeader = {
   marginBottom: "15px",
 };
 const smallAvatar = { width: "40px", height: "40px", borderRadius: "50%" };
-const textInput = {
-  flex: 1,
-  border: "none",
-  backgroundColor: "#f1f5f9",
-  padding: "12px 20px",
-  borderRadius: "25px",
-  outline: "none",
-};
+
 const inputActions = {
   display: "flex",
   justifyContent: "space-between",
   gap: "10px",
 };
-const uploadLabel = {
-  cursor: "pointer",
-  color: "#64748b",
-  display: "flex",
-  alignItems: "center",
-};
+
 const postcardBtn = {
   backgroundColor: "#f0f9ff",
   color: "#0ea5e9",
   border: "1px solid #bae6fd",
   padding: "8px 15px",
-  borderRadius: "15px",
-  cursor: "pointer",
-  fontWeight: "600",
-};
-const postBtn = {
-  backgroundColor: "#3b82f6",
-  color: "#fff",
-  border: "none",
-  padding: "8px 20px",
   borderRadius: "15px",
   cursor: "pointer",
   fontWeight: "600",
@@ -1612,72 +1586,61 @@ const previewBox = {
   padding: "20px",
 };
 const postcardTextArea = {
-  width: "100%",
-  height: "100%",
+  zIndex: 1,
+  width: "85%",
   background: "none",
   border: "none",
-  color: "#fff",
-  fontSize: "20px",
-  fontWeight: "bold",
-  textAlign: "center",
   outline: "none",
+  color: "#fff",
+  fontSize: "22px",
+  textAlign: "center",
+  fontWeight: "700", // စာလုံးကို ပိုထင်ရှားအောင် Bold လုပ်ထားသည်
+  textShadow: "2px 2px 8px rgba(0,0,0,0.6)", // စာသားဖတ်ရလွယ်အောင် အရိပ်ထည့်သည်
+  fontFamily: "Inter, -apple-system, sans-serif", // Apple Style စာလုံးပုံစံ
   resize: "none",
 };
-const colorGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(5, 1fr)",
-  gap: "10px",
-  marginBottom: "20px",
-};
-const colorCircle = {
-  height: "40px",
-  borderRadius: "50%",
-  cursor: "pointer",
-  transition: "0.2s",
-};
-const postBtnFull = {
-  width: "100%",
-  backgroundColor: "#3b82f6",
-  color: "#fff",
-  border: "none",
-  padding: "12px",
-  borderRadius: "15px",
-  fontWeight: "bold",
-  cursor: "pointer",
-};
 
-const postsGrid = { display: "flex", flexDirection: "column", gap: "20px" };
-const postCardStyle = {
-  backgroundColor: "#fff",
-  borderRadius: "20px",
-  overflow: "hidden",
-  boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-};
-const postUserBar = {
-  padding: "15px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-};
-
-const postName = { margin: 0, fontSize: "15px", fontWeight: "600" };
 const postTime = { fontSize: "11px", color: "#94a3b8" };
-const postActionBar = {
+
+const postcardDisplay = {
+  height: "350px", // ပိုရှည်လိုက်ရင် ပိုလှပါတယ်
+  margin: "10px",
+  borderRadius: "25px",
+  position: "relative",
   display: "flex",
-  padding: "10px",
-  borderTop: "1px solid #f1f5f9",
-};
-const actionBtn = {
-  flex: 1,
-  display: "flex",
-  alignItems: "center",
   justifyContent: "center",
-  gap: "8px",
-  border: "none",
-  background: "none",
-  cursor: "pointer",
-  fontSize: "14px",
-  fontWeight: "600",
+  alignItems: "center",
+  overflow: "hidden",
+  boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+};
+const postcardBgImgStyle = {
+  position: "absolute",
+  width: "100%",
+  height: "100%",
+  objectFit: "cover", // ပုံမပြဲသွားအောင် cover ထားပါ
+  zIndex: 0,
+  borderRadius: "25px",
+};
+const postcardContentOverlay = {
+  zIndex: 1,
+  // backgroundColor: 'rgba(255, 255, 255, 0.15)', // Glassmorphism
+  backgroundColor: "rgba(0,0,0,0.2)",
+  // backdropFilter: 'blur(5px)',
+  padding: "20px",
+  borderRadius: "15px",
+  width: "85%",
+  textAlign: "center",
+  // border: '1px solid rgba(255,255,255,0.3)',
+};
+const postcardTextDisplay = {
+  color: "#fff",
+  fontSize: "28px",
+  fontWeight: "bold",
+  /* စာလုံးကို ပုံပေါ်မှာ ထင်းနေအောင် အရိပ် (Shadow) ပိုထည့်ခြင်း */
+  textShadow: "2px 2px 10px rgba(0,0,0,0.8), -1px -1px 0 rgba(0,0,0,0.5)",
+  margin: "0 0 15px 0",
+  wordWrap: "break-word",
+  lineHeight: "1.4",
 };
 
 const commentAvatar = { width: "25px", height: "25px", borderRadius: "50%" };
@@ -1702,17 +1665,6 @@ const postGridContainer = {
   alignItems: "start",
 };
 
-const mainLayout = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  width: "100%", // 👈 100% ဖြစ်ရပါမယ်
-  maxWidth: "1200px", // 👈 1200px အထိ ချဲ့ပေးပါ
-  margin: "0 auto",
-  paddingTop: "70px",
-  paddingBottom: "100px",
-};
-
 // ၃။ Header (User Info နှင့် Delete Button ကို ဘေးတိုက်ခွဲရန်)
 const postHeader = {
   padding: "15px 20px",
@@ -1734,22 +1686,6 @@ const userNameStyle = {
   fontSize: "15px",
   fontWeight: "700",
   color: "#1e293b",
-};
-
-const dateStyle = {
-  fontSize: "11px",
-  color: "#94a3b8",
-};
-
-const deleteBtnStyle = {
-  cursor: "pointer",
-  padding: "8px",
-  borderRadius: "50%",
-  backgroundColor: "#fef2f2", // အနီနုရောင်နောက်ခံ
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  transition: "0.2s",
 };
 
 const actionBtnBase = {
@@ -1854,11 +1790,15 @@ const modernPostCard = {
   height: "560px", // 🌟 ကတ်အမြင့်ကို ပုံသေပြန်ထားလိုက်ပါပြီ
   position: "relative",
   marginBottom: "10px",
+  transition: "0.3s ease"
 };
 
 const postCaption = {
   padding: "0 20px 10px",
-  fontSize: "14px",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  color: "#1e293b",
+  fontSize: "12px",
+  whiteSpace: "pre-wrap",
   lineHeight: "1.4",
   height: "50px", // 🌟 စာသားနေရာကို အမြင့်ကန့်သတ်လိုက်လို့ ကတ်မရှည်တော့ပါဘူး
   overflow: "hidden",
@@ -1866,11 +1806,12 @@ const postCaption = {
 
 const imageContainer = {
   width: "100%",
+  height: "340px", // 🌟 ပုံအမြင့်ကို ပုံသေထားသည်
+  backgroundColor: "#f8fafc",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
   overflow: "hidden",
-  position: 'relative'
 };
 
 const mainMedia = {
@@ -1912,98 +1853,4 @@ const interactionBar = {
   alignItems: "center",
   marginTop: "auto", // 🌟 အောက်ခြေမှာ အမြဲကပ်နေစေရန်
 };
-
-const postcardDisplay = {
-  height: '340px',
-  margin: '0 10px 10px',
-  borderRadius: '20px',
-  position: 'relative',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  overflow: 'hidden'
-};
-
-const premiumBgImg = {
-  position: 'absolute',
-  width: '100%',
-  height: '100%',
-  objectFit: 'cover',
-  zIndex: 0,
-  filter: 'brightness(0.8)' // စာသားကြည်လင်အောင် ပုံကို နည်းနည်းမှောင်မယ်
-};
-
-const glassCardOverlay = {
-  zIndex: 1,
-  background: 'rgba(255, 255, 255, 0.15)', // မှန်ကြည်ရောင်
-  backdropFilter: 'blur(10px)', // Blur effect
-  borderRadius: '25px',
-  padding: '25px',
-  width: '85%',
-  height: '75%',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  border: '1px solid rgba(255, 255, 255, 0.3)',
-  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.2)',
-  textAlign: 'center'
-};
-
-const premiumPostcardText = {
-  color: '#ffffff',
-  fontSize: '24px',
-  fontWeight: '900',
-  fontFamily: "'Playfair Display', serif", // အဆင့်မြင့် Font
-  textShadow: '0 4px 15px rgba(0,0,0,0.5)',
-  lineHeight: '1.4',
-  margin: '15px 0'
-};
-
-const badgeBday = {
-  background: 'linear-gradient(45deg, #FFD700, #FFA500)', // ရွှေရောင် Gradient
-  color: '#000',
-  padding: '4px 15px',
-  borderRadius: '20px',
-  fontSize: '10px',
-  fontWeight: 'bold',
-  letterSpacing: '2px',
-  marginBottom: '10px'
-};
-
-const audioBoxPremium = {
-  width: '100%',
-  background: 'rgba(255, 255, 255, 0.2)',
-  padding: '8px',
-  borderRadius: '50px',
-  border: '1px solid rgba(255,255,255,0.4)'
-};
-
-const birthdayRibbon = {
-  position: 'absolute',
-  top: '5px',
-  left: '20px',
-  background: '#ef4444',
-  color: '#fff',
-  padding: '2px 10px',
-  borderRadius: '4px',
-  fontSize: '9px',
-  fontWeight: 'bold',
-  textTransform: 'uppercase',
-  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-  zIndex: 10
-};
-
-const audioOverlay = {
-  position: 'absolute',
-  bottom: '10px',
-  right: '10px',
-  background: 'rgba(255, 255, 255, 0.7)',
-  backdropFilter: 'blur(5px)',
-  padding: '5px 10px',
-  borderRadius: '30px',
-  display: 'flex',
-  alignItems: 'center'
-};
-
 export default MainDashboard;
