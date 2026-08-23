@@ -48,7 +48,7 @@ const LandingPage = ({ onLogin }) => {
             <div style={badge}>SPECIAL OFFER</div>
             <h2 style={cardTitle}>Unlimited Memories</h2>
             <div style={price}>
-              $3.99<span style={perMonth}>/month</span>
+              $7.99<span style={perMonth}>/year</span>
             </div>
 
             <ul style={features}>
@@ -68,12 +68,12 @@ const LandingPage = ({ onLogin }) => {
 
             <div style={buttonGroup}>
               <a
-                href="https://buy.stripe.com/dRmeVd9vS0z4493ebU1B60g"
+                href="https://buy.stripe.com/fZu6oHeQcbdI0WR4Bk1B60h"
                 target="_blank"
                 rel="noreferrer"
                 style={buyBtn}
               >
-                ☕ Buy Me A Coffee ($3.99)
+                ❤️ $7.99/yr
               </a>
 
               <p style={infoText}>

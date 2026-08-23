@@ -733,7 +733,7 @@ function App() {
             Thank you for your payment. Your account is awaiting approval from the Admin. It will be approved within 12 hours.
           </p>
           <a
-            href="https://buy.stripe.com/dRmeVd9vS0z4493ebU1B60g"
+            href="https://buy.stripe.com/fZu6oHeQcbdI0WR4Bk1B60h"
             target="_blank"
             rel="noreferrer"
             style={buyBtnMini}
