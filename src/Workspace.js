@@ -260,7 +260,7 @@ const kanbanGrid = {
 };
 const kanbanCol = {
   flex: "1 1 300px", // အနည်းဆုံး 300px ယူမယ်၊ နေရာရှိရင် ချဲ့မယ်
-  minHeight: "400px",
+  minHeight: "300px",
   backgroundColor: "rgba(255,255,255,0.5)",
   padding: "20px",
   borderRadius: "24px",

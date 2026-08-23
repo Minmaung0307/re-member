@@ -29,12 +29,12 @@ const LandingPage = ({ onLogin }) => {
         <div style={mainGrid}>
           {/* Video Section */}
           <div style={videoWrapper}>
-            <div style={responsiveVideo}>
+            <div style={videoContainer}>
               <iframe
-                width="560"
-                height="315"
+                width="100%"
+                height="100%"
                 src="https://www.youtube.com/embed/tW-DkRldhng?si=fZodmuS518kZzsPg"
-                title="YouTube video player"
+                title="App Tutorial"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 referrerpolicy="strict-origin-when-cross-origin"
@@ -163,7 +163,8 @@ const container = {
   width: "100%",
   minHeight: "100vh",
   backgroundColor: "#f0f4f8",
-  padding: "20px",
+  padding: "20px 10px",
+  textAlign: "center",
   fontFamily:
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   position: "relative",
@@ -203,14 +204,38 @@ const contentWrapper = {
   textAlign: "center",
 };
 
-const header = { marginBottom: "40px" };
+const header = {
+  marginBottom: "20px",
+  width: "100%",
+  maxWidth: "600px"
+};
+
 const logo = {
-  fontSize: "48px",
+  fontSize: "clamp(30px, 8vw, 45px)",
   fontWeight: "900",
   color: "#1e293b",
-  marginBottom: "10px",
+  margin: "0 0 10px 0",
   letterSpacing: "-1px",
 };
+
+const videoContainer = {
+  width: "95%",
+  maxWidth: "500px", // ကွန်ပျူတာမှာ ၅၀၀ ထက် ပိုမကြီးစေဖို့
+  aspectRatio: "16/9", // Video ratio မှန်အောင်
+  margin: "20px 0",
+  borderRadius: "15px",
+  overflow: "hidden",
+  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+  backgroundColor: "#000"
+};
+
+const title = {
+  fontSize: "clamp(20px, 5vw, 28px)", // Title ကိုလည်း အလိုလို ညှိမယ်
+  lineHeight: "1.3",
+  color: "#1e293b",
+  padding: "0 10px"
+};
+
 const mainHeading = {
   fontSize: "32px",
   fontWeight: "800",
@@ -261,15 +286,17 @@ const iframeStyle = {
 // Pricing Card ဒီဇိုင်း (Glassmorphism)
 const pricingCard = {
   flex: "1 1 350px",
+  width: "95%",
   maxWidth: "400px",
   backgroundColor: "rgba(255, 255, 255, 0.8)",
   backdropFilter: "blur(10px)",
-  padding: "40px",
-  borderRadius: "32px",
+  padding: "clamp(20px, 5vw, 40px)",
+  borderRadius: "30px",
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
   border: "1px solid rgba(255, 255, 255, 0.6)",
   textAlign: "center",
+  boxSizing: "border-box"
 };
 
 const badge = {
@@ -306,10 +333,15 @@ const features = {
   listStyle: "none",
   padding: 0,
   textAlign: "left",
-  margin: "25px 0",
+  margin: "0 auto 30px",
+  maxWidth: "280px",
   display: "grid",
   gap: "12px",
+  color: "#475569",
+  lineHeight: "2",
+  fontSize: "14px"
 };
+
 const featureLi = {
   fontSize: "15px",
   color: "#475569",
@@ -328,10 +360,11 @@ const buyBtn = {
   backgroundColor: "#FFDD00",
   color: "#000",
   textDecoration: "none",
-  padding: "16px",
-  borderRadius: "16px",
+  padding: "12px",
+  borderRadius: "12px",
   fontWeight: "800",
-  fontSize: "16px",
+  marginBottom: "12px",
+  fontSize: "15px",
   transition: "transform 0.2s",
   boxShadow: "0 4px 0 #d9c600",
 };
@@ -342,14 +375,15 @@ const loginBtn = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  gap: "12px",
-  padding: "16px",
-  borderRadius: "16px",
+  gap: "10px",
+  width: "100%",
+  padding: "12px",
+  borderRadius: "12px",
   border: "1px solid #e2e8f0",
   backgroundColor: "#fff",
   color: "#1e293b",
   fontWeight: "700",
-  fontSize: "16px",
+  fontSize: "15px",
   cursor: "pointer",
   transition: "all 0.2s",
   boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
