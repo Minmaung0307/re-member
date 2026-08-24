@@ -30,6 +30,7 @@ import MainDashboard from "./MainDashboard";
 import Chat from "./Chat";
 import Workspace from "./Workspace";
 import LandingPage from "./LandingPage";
+import Guide from './Guide';
 
 import {
   LogOut,
@@ -117,6 +118,7 @@ function App() {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [showGuide, setShowGuide] = useState(false);
 
   const [showBucketList, setShowBucketList] = useState(false);
   const [goals, setGoals] = useState([]);
@@ -700,6 +702,28 @@ function App() {
       upcomingBDays.push({ ...u, daysLeft: diffDays });
     }
   });
+
+
+const handleKick = async (targetUser) => {
+  if (window.confirm(`${targetUser.displayName} ကို အုပ်စုထဲမှ ဖယ်ရှားမှာ သေချာပါသလား?`)) {
+    try {
+      // firestore ထဲက user data ကို လှမ်းယူမယ်
+      const userRef = doc(db, "users", targetUser.id);
+      
+      // familyId နဲ့ familyCode ကို ဖျက်ချလိုက်ခြင်း (Kick လုပ်ခြင်း)
+      await updateDoc(userRef, {
+        familyId: null,
+        familyCode: "",
+        role: "Member" // Role ကို Member အဖြစ် ပြန်ပြောင်းမယ်
+      });
+      
+      alert("ဖယ်ရှားပြီးပါပြီ။ ✨");
+    } catch (error) {
+      console.error("Kick Error:", error);
+      alert("အမှားတစ်ခုရှိနေပါသည်။");
+    }
+  }
+};
 
   const isAdmin = user?.email === "minmaung0307@gmail.com";
 
@@ -1497,24 +1521,6 @@ function App() {
                                         <select
                                           onChange={async (e) => {
                                             const newRole = e.target.value;
-                                            //   const currentCount = users.filter(
-                                            //     (user) => user.role === newRole,
-                                            //   ).length;
-
-                                            //   // John's Plan Limits (A30, B20, C40)
-                                            //   const limits = {
-                                            //     Family: 30,
-                                            //     Friend: 20,
-                                            //     Member: 40,
-                                            //   };
-
-                                            //   if (currentCount >= limits[newRole]) {
-                                            //     alert(
-                                            //       `စိတ်မရှိပါနဲ့။ သင့်ရဲ့ Plan အရ ${newRole} အုပ်စုမှာ လူဦးရေ ${limits[newRole]} ယောက် ပြည့်နေပါပြီ။`,
-                                            //     );
-                                            //     e.target.value = u.role || "Member"; // မူလအတိုင်း ပြန်ထားမယ်
-                                            //     return;
-                                            //   }
                                             await updateDoc(
                                               doc(db, "users", u.id),
                                               { role: newRole },
@@ -1768,11 +1774,15 @@ function App() {
                       </h3>
                       {showFamily && (
                         <div style={userList}>
-                          {users
-                            .filter(
-                              (u) => u.id !== user.uid && u.role === "Family",
-                            )
-                            .map((u) => renderUserItem(u))}
+                          {users.filter((u) => u.id !== user.uid && u.role === "Family").map((u) => (
+        /* 🌟 ဤနေရာတွင် div ဖြင့်အုပ်ပြီး Kick ခလုတ်ထည့်သည် 🌟 */
+        <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div style={{ flex: 1 }}>{renderUserItem(u)}</div>
+          {isFamilyOwner && (
+            <button onClick={() => handleKick(u)} style={sidebarKickBtn}>Kick</button>
+          )}
+        </div>
+      ))}
                         </div>
                       )}
                     </div>
@@ -1795,11 +1805,15 @@ function App() {
                       </h3>
                       {showFriends && (
                         <div style={userList}>
-                          {users
-                            .filter(
-                              (u) => u.id !== user.uid && u.role === "Friend",
-                            )
-                            .map((u) => renderUserItem(u))}
+                         {users.filter((u) => u.id !== user.uid && u.role === "Friend").map((u) => (
+        /* 🌟 ဤနေရာတွင် div ဖြင့်အုပ်ပြီး Kick ခလုတ်ထည့်သည် 🌟 */
+        <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div style={{ flex: 1 }}>{renderUserItem(u)}</div>
+          {isFamilyOwner && (
+            <button onClick={() => handleKick(u)} style={sidebarKickBtn}>Kick</button>
+          )}
+        </div>
+      ))}
                         </div>
                       )}
                     </div>
@@ -1810,21 +1824,20 @@ function App() {
                         <Users size={16} /> Members
                       </h3>
                       <div style={userList}>
-                        {users.filter(
-                          (u) =>
-                            u.id !== user.uid &&
-                            (!u.role || u.role === "Member"),
-                        ).length > 0 ? (
-                          users
-                            .filter(
-                              (u) =>
-                                u.id !== user.uid &&
-                                (!u.role || u.role === "Member"),
-                            )
-                            .map((u) => renderUserItem(u))
-                        ) : (
-                          <p style={emptyText}>No other members</p>
-                        )}
+                        {users.filter((u) => u.id !== user.uid && (!u.role || u.role === "Member")).length > 0 ? (
+      users.filter((u) => u.id !== user.uid && (!u.role || u.role === "Member"))
+        .map((u) => (
+          /* 🌟 ဤနေရာတွင် div ဖြင့်အုပ်ပြီး Kick ခလုတ်ထည့်သည် 🌟 */
+          <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ flex: 1 }}>{renderUserItem(u)}</div>
+            {isFamilyOwner && (
+              <button onClick={() => handleKick(u)} style={sidebarKickBtn}>Kick</button>
+            )}
+          </div>
+        ))
+    ) : (
+      <p style={emptyText}>No other members</p>
+    )}
                       </div>
                     </div>
 
@@ -2101,10 +2114,26 @@ function App() {
                         )}
                       </div>
                     </div>
+
+                    <button 
+      onClick={() => setShowGuide(true)}
+      style={{
+        marginTop: '20px', width: '100%', padding: '12px', 
+        borderRadius: '12px', border: '1px solid #e2e8f0',
+        backgroundColor: darkMode ? '#334155' : '#fff',
+        color: darkMode ? '#fff' : '#1e293b',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+        cursor: 'pointer', fontWeight: '600'
+      }}
+    >
+      📖 Read the User Guide
+    </button>
                   </div>
                 </div>
+                
               )}
             </div>
+            
           </div>
 
           {/* Footer */}
@@ -2721,6 +2750,7 @@ function App() {
           )}
         </>
       )}
+      {showGuide && <Guide darkMode={darkMode} onClose={() => setShowGuide(false)} />}
     </div>
   );
   //    : (
@@ -3296,6 +3326,19 @@ const ownerSettingCard = {
   marginBottom: "20px",
   boxSizing: "border-box",
   boxShadow: "0 4px 10px rgba(0,0,0,0.02)",
+};
+
+const sidebarKickBtn = {
+  backgroundColor: '#fee2e2',
+  color: '#ef4444',
+  border: 'none',
+  padding: '4px 10px',
+  borderRadius: '8px',
+  fontSize: '10px',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+  marginLeft: '10px',
+  transition: '0.2s'
 };
 
 export default App;
