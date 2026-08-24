@@ -103,7 +103,7 @@ const PostCard = ({
             onClick={() => setIsExpanded(!isExpanded)}
             style={{ color: "#3b82f6", cursor: "pointer", fontWeight: "bold" }}
           >
-            {isExpanded ? " လျှော့ဖတ်ရန်" : "... ပိုဖတ်ရန်"}
+            {isExpanded ? " Read Less..." : " Read More..."}
           </span>
         )}
       </div>
@@ -378,11 +378,11 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
       postUserName === auth.currentUser.displayName;
 
     if (!isOwner) {
-      alert("ကိုယ်ပိုင် Post ကိုသာ ဖျက်လို့ရပါတယ်။");
+      alert("You can only delete your own posts.");
       return;
     }
 
-    if (window.confirm("ဒီ Post ကို ဖျက်မှာ သေချာပါသလား?")) {
+    if (window.confirm("Are you sure you want to delete this post?")) {
       try {
         await deleteDoc(doc(db, "posts", postId));
       } catch (error) {
@@ -400,9 +400,9 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
 
     if (oversizedFiles.length > 0) {
       alert(
-        `⚠️ ဖိုင်အရွယ်အစား ကန့်သတ်ချက် ကျော်လွန်နေပါသည်။\n\n` +
-          `ဖိုင်တစ်ခုချင်းစီကို 5MB ထက်မကျော်ရပါ။\n` +
-          `ကျော်လွန်နေသောဖိုင်များ- ${oversizedFiles.map((f) => f.name).join(", ")}`,
+        `⚠️ File size limit exceeded.\n\n` +
+          `Each file must not exceed 5MB.\n` +
+          `Oversized files: ${oversizedFiles.map((f) => f.name).join(", ")}`,
       );
       e.target.value = null; // Input ကို ပြန်ရှင်းပစ်မယ်
       setSelectedFiles([]);
@@ -505,10 +505,10 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
       setPreviewUrls([]);
       setExternalUrl("");
       setIsCreating(false);
-      alert("အမှတ်တရကို တင်ပြီးပါပြီ! ✨");
+      alert("Memory uploaded successfully! ✨");
     } catch (error) {
       console.error("Upload Error:", error);
-      alert("ပုံတင်လို့ မရပါဘူး။");
+      alert("Unable to upload the image.");
     }
     setUploading(false);
   };
@@ -571,7 +571,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               alt="me"
             />
             <div style={{ flex: 1, color: "#94a3b8", fontSize: "15px" }}>
-              ဘာတွေမျှဝေချင်လဲ၊ {auth.currentUser?.displayName.split(" ")[0]}...
+              What would you like to share? {auth.currentUser?.displayName.split(" ")[0]}...
             </div>
             <Image color="#10b981" size={22} />
           </div>
@@ -597,7 +597,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               }}
             >
               <h4 style={{ margin: 0, color: "#1e293b" }}>
-                အမှတ်တရအသစ် ဖန်တီးပါ
+                Create a New Memory
               </h4>
               <X
                 onClick={() => setIsCreating(false)}
@@ -627,7 +627,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                 alt="me"
               />
               <textarea
-                placeholder="ဒီနေ့အတွက် ဘာတွေထူးခြားလဲ..."
+                placeholder="What's special about today?..."
                 style={{
                   width: "100%",
                   minHeight: "100px",
@@ -715,7 +715,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                   fontSize: "13px",
                   width: "100%",
                 }}
-                placeholder="လင့်ခ် (URL) ထည့်သွင်းရန်..."
+                placeholder="Enter Link (URL)..."
                 value={externalUrl}
                 onChange={(e) => setExternalUrl(e.target.value)}
               />
@@ -884,7 +884,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               }}
             >
               <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>
-                မွေးနေ့ဆုတောင်းကတ် ဖန်တီးပါ
+                Create a Birthday Greeting Card
               </h3>
               <X
                 onClick={() => {
@@ -930,7 +930,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                 />
               )}
               <textarea
-                placeholder="ဆုတောင်းစကား ရေးသားပါ..."
+                placeholder="Write a Birthday Message..."
                 style={{
                   ...postcardTextArea,
                   zIndex: 1,
@@ -1015,7 +1015,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                 }}
               >
                 <Image size={20} color="#3b82f6" />
-                <span>ပုံထည့်မည်</span>
+                <span>Add Photo</span>
                 <input
                   type="file"
                   hidden
@@ -1023,28 +1023,6 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                   onChange={(e) => setPostcardImage(e.target.files[0])}
                 />
               </label>
-              {/* <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "10px 20px",
-                  borderRadius: "12px",
-                  backgroundColor: "#f8fafc",
-                  cursor: "pointer",
-                  border: "1px solid #e2e8f0",
-                  fontSize: "14px",
-                }}
-              >
-                <Music size={20} color="#8b5cf6" />
-                <span>သီချင်းထည့်မည်</span>
-                <input
-                  type="file"
-                  hidden
-                  accept="audio/*"
-                  onChange={(e) => setPostcardAudio(e.target.files[0])}
-                />
-              </label> */}
             </div>
 
             {/* Selected File Names */}
@@ -1160,8 +1138,8 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
             }}
           >
             {loadingMore
-              ? "ခေတ္တစောင့်ပါ..."
-              : "နောက်ထပ် အမှတ်တရများ ကြည့်ရန် ↓"}
+              ? "Please wait..."
+              : "View more memories... ↓"}
           </button>
         </div>
       )}
@@ -1277,7 +1255,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
         <div style={modalOverlay} onClick={() => setActiveCommentPost(null)}>
           <div style={commentPopupContent} onClick={(e) => e.stopPropagation()}>
             <div style={commentPopupHeader}>
-              <h3 style={{ margin: 0, fontSize: "18px" }}>မှတ်ချက်များ</h3>
+              <h3 style={{ margin: 0, fontSize: "18px" }}>Comments</h3>
               <X
                 onClick={() => setActiveCommentPost(null)}
                 style={{ cursor: "pointer" }}
@@ -1303,7 +1281,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
                     marginTop: "20px",
                   }}
                 >
-                  မှတ်ချက် မရှိသေးပါ။
+                  No Comments
                 </p>
               )}
             </div>
@@ -1412,7 +1390,7 @@ const PostItem = ({
               marginLeft: "5px",
             }}
           >
-            {expanded ? " လျှော့ဖတ်ရန်" : " ဆက်လက်ဖတ်ရှုရန်"}
+            {expanded ? " Read Less..." : " Read More..."}
           </span>
         )}
       </p>
@@ -1517,7 +1495,7 @@ const PostItem = ({
                 fontSize: "13px",
               }}
             >
-              🔗 မျှဝေထားသော Link ကိုကြည့်ရန်
+              🔗 View Shared Link
             </a>
           )}
         </div>

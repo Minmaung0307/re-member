@@ -207,7 +207,7 @@ const contentWrapper = {
 const header = {
   marginBottom: "20px",
   width: "100%",
-  maxWidth: "600px"
+  // maxWidth: "600px"
 };
 
 const logo = {
@@ -237,8 +237,8 @@ const title = {
 };
 
 const mainHeading = {
-  fontSize: "32px",
-  fontWeight: "800",
+  fontSize: "22px",
+  // fontWeight: "800",
   color: "#0f172a",
   lineHeight: "1.2",
   margin: "15px 0",
