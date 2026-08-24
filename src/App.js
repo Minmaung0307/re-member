@@ -1858,10 +1858,14 @@ function App() {
                           <div
                             key={goal.id}
                             style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              gap: "8px",
+                              backgroundColor: '#f0f9ff', // အပြာနုရောင် box
+                              padding: '10px 15px',
+                              borderRadius: '10px',
+                              marginBottom: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              border: '1px solid #e0f2fe'
                             }}
                           >
                             <label
@@ -1889,7 +1893,9 @@ function App() {
                                   )
                                 }
                               />
-                              {goal.text}
+                              <span style={{ fontSize: '13px', textDecoration: goal.completed ? 'line-through' : 'none', color: '#0369a1' }}>
+                                  {goal.text}
+                              </span>
                             </label>
                             <Trash2
                               size={14}
@@ -1972,15 +1978,20 @@ function App() {
                             <div
                               key={n.id}
                               style={{
-                                ...noteStyle,
+                                // ...noteStyle,
                                 display: "flex",
+                                backgroundColor: '#fef3c7',
                                 justifyContent: "space-between",
                                 alignItems: "center",
-                                padding: "5px 0",
+                                padding: "10px",
+                                borderRadius: '8px',
+                                marginBottom: '10px',
+                                boxShadow: '2px 2px 5px rgba(0,0,0,0.05)',
+                                borderLeft: '4px solid #f59e0b',
                               }}
                             >
-                              <div style={{ flex: 1, fontSize: "12px" }}>
-                                <strong>{n.userName}:</strong> {n.text}
+                              <div style={{ flex: 1, fontSize: "12px", color: '#92400e' }}>
+                                <strong style={{ display: 'block', fontSize: '11px', opacity: 0.8 }}>{n.userName}:</strong> {n.text}
                               </div>
 
                               {/* ဖျက်ရန် အမှိုက်ပုံးပုံလေး */}
@@ -2041,13 +2052,17 @@ function App() {
                             <div
                               key={item.id}
                               style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                                fontSize: "12px",
-                                marginBottom: "5px",
+                                backgroundColor: '#f0fdf4', // အစိမ်းနုရောင် box
+                                padding: '10px 15px',
+                                borderRadius: '10px',
+                                marginBottom: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                border: '1px solid #dcfce7'
                               }}
                             >
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, cursor: 'pointer' }}>
                               <input
                                 type="checkbox"
                                 checked={item.isBought}
@@ -2059,6 +2074,7 @@ function App() {
                               />
                               <span
                                 style={{
+                                  fontSize: "12px",
                                   textDecoration: item.isBought
                                     ? "line-through"
                                     : "none",
@@ -2067,6 +2083,7 @@ function App() {
                               >
                                 {item.text}
                               </span>
+                              </label>
                               <Trash2
                                 size={12}
                                 color="#ef4444"

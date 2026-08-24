@@ -79,9 +79,9 @@ const Workspace = ({ user, darkMode }) => {
   };
 
   const columns = {
-    todo: { name: "To Do", color: "#64748b" },
-    inprogress: { name: "In Progress", color: "#3b82f6" },
-    done: { name: "Done", color: "#10b981" },
+    todo: { name: "To Do", color: "#FFD700" },
+    inProgress: { name: "In Progress", color: "#3498db" },
+    done: { name: "Done", color: "#22c55e" },
   };
 
   return (
@@ -107,12 +107,19 @@ const Workspace = ({ user, darkMode }) => {
             <div
               key={n.id}
               style={{
-                ...noteCard,
-                backgroundColor: darkMode ? "#1e293b" : "#fff",
-                color: darkMode ? "#fff" : "#1e293b",
+                backgroundColor: '#eff6ff', // အပြာနုရောင် Sticky Note
+                padding: '15px',
+                borderRadius: '12px',
+                marginBottom: '10px',
+                borderLeft: '5px solid #3b82f6', // ဘေးလိုင်းအပြာရင့်
+                boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                width: '200px' // ပုံထဲကအတိုင်း အကွက်လေးဖြစ်အောင်
               }}
             >
-              <p>{n.text}</p>
+              <span style={{ fontSize: '14px', color: '#1e3a8a', lineHeight: '1.5' }}>{n.text}</span>
               <Trash2
                 size={14}
                 color="#ef4444"
@@ -171,11 +178,7 @@ const Workspace = ({ user, darkMode }) => {
                     {tasks
                       .filter((t) => t.status === id)
                       .map((task, index) => (
-                        <Draggable
-                          key={task.id}
-                          draggableId={task.id}
-                          index={index}
-                        >
+                        <Draggable key={task.id} draggableId={task.id} index={index}>
                           {(provided) => (
                             <div
                               ref={provided.innerRef}
@@ -183,17 +186,31 @@ const Workspace = ({ user, darkMode }) => {
                               {...provided.dragHandleProps}
                               style={{
                                 ...taskCard,
-                                backgroundColor: darkMode ? "#334155" : "#fff",
-                                color: darkMode ? "#fff" : "#1e293b",
+                                // backgroundColor logic ပြင်ဆင်ချက်
+                                backgroundColor:
+                                  id === "todo"
+                                    ? "#fef9c3"
+                                    : id === "inProgress"
+                                    ? "#dbeafe"
+                                    : "#dcfce7", // fallback အနေနဲ့ done အရောင်ကို တိုက်ရိုက်ပေးလိုက်ပါ
+
+                                // borderLeft logic ပြင်ဆင်ချက်
+                                borderLeft: `6px solid ${
+                                  id === "todo" 
+                                    ? "#facc15" 
+                                    : id === "inProgress" 
+                                    ? "#3b82f6" 
+                                    : "#22c55e"
+                                }`,
+
+                                color: "#1e293b",
                                 ...provided.draggableProps.style,
                               }}
                             >
-                              <span style={{ flex: 1 }}>{task.title}</span>
+                              <span style={{ flex: 1, fontWeight: "500" }}>{task.title}</span>
                               <Trash2
                                 size={14}
-                                onClick={() =>
-                                  deleteDoc(doc(db, "tasks", task.id))
-                                }
+                                onClick={() => deleteDoc(doc(db, "tasks", task.id))}
                                 style={{ cursor: "pointer", opacity: 0.7 }}
                               />
                             </div>
@@ -252,11 +269,11 @@ const noteCard = {
   alignItems: "flex-start",
 };
 const kanbanGrid = {
-  display: "flex",
-  flexWrap: "wrap",
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
   gap: "20px",
   width: "100%",
-  paddingBottom: "20px",
+  paddingBottom: "10px 0",
 };
 const kanbanCol = {
   flex: "1 1 300px", // အနည်းဆုံး 300px ယူမယ်၊ နေရာရှိရင် ချဲ့မယ်
