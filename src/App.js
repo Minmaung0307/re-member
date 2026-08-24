@@ -30,7 +30,7 @@ import MainDashboard from "./MainDashboard";
 import Chat from "./Chat";
 import Workspace from "./Workspace";
 import LandingPage from "./LandingPage";
-import Guide from './Guide';
+import Guide from "./Guide";
 
 import {
   LogOut,
@@ -54,18 +54,18 @@ function App() {
     "🤩",
     "🥳",
     "😎",
-    '🥂',
-    '🎊',
+    "🥂",
+    "🎊",
     // အနားယူခြင်း/ ပျင်းခြင်း (Relax/Bored)
     "😌",
     "😴",
     "☕",
     "🧘",
     "😑",
-    '🍺',
-    '👨‍👩‍👧‍👦', 
-    '🏠', 
-    '💍',
+    "🍺",
+    "👨‍👩‍👧‍👦",
+    "🏠",
+    "💍",
     // အလုပ်များခြင်း/ ကြိုးစားခြင်း (Productive/Busy)
     "🏃‍♂️",
     "👨‍💻",
@@ -664,7 +664,9 @@ function App() {
 
   // ၃။ Connection ကို ပယ်ဖျက်မယ် (Unfriend)
   const removeFriend = async (connectionId) => {
-    if (window.confirm("Are you sure you want to disconnect from this person?")) {
+    if (
+      window.confirm("Are you sure you want to disconnect from this person?")
+    ) {
       await deleteDoc(doc(db, "connections", connectionId));
     }
   };
@@ -703,27 +705,30 @@ function App() {
     }
   });
 
+  const handleKick = async (targetUser) => {
+    if (
+      window.confirm(
+        `${targetUser.displayName} Are you sure you want to remove this member from the group?`,
+      )
+    ) {
+      try {
+        // firestore ထဲက user data ကို လှမ်းယူမယ်
+        const userRef = doc(db, "users", targetUser.id);
 
-const handleKick = async (targetUser) => {
-  if (window.confirm(`${targetUser.displayName} ကို အုပ်စုထဲမှ ဖယ်ရှားမှာ သေချာပါသလား?`)) {
-    try {
-      // firestore ထဲက user data ကို လှမ်းယူမယ်
-      const userRef = doc(db, "users", targetUser.id);
-      
-      // familyId နဲ့ familyCode ကို ဖျက်ချလိုက်ခြင်း (Kick လုပ်ခြင်း)
-      await updateDoc(userRef, {
-        familyId: null,
-        familyCode: "",
-        role: "Member" // Role ကို Member အဖြစ် ပြန်ပြောင်းမယ်
-      });
-      
-      alert("ဖယ်ရှားပြီးပါပြီ။ ✨");
-    } catch (error) {
-      console.error("Kick Error:", error);
-      alert("အမှားတစ်ခုရှိနေပါသည်။");
+        // familyId နဲ့ familyCode ကို ဖျက်ချလိုက်ခြင်း (Kick လုပ်ခြင်း)
+        await updateDoc(userRef, {
+          familyId: null,
+          familyCode: "",
+          role: "Member", // Role ကို Member အဖြစ် ပြန်ပြောင်းမယ်
+        });
+
+        alert("ဖယ်ရှားပြီးပါပြီ။ ✨");
+      } catch (error) {
+        console.error("Kick Error:", error);
+        alert("အမှားတစ်ခုရှိနေပါသည်။");
+      }
     }
-  }
-};
+  };
 
   const isAdmin = user?.email === "minmaung0307@gmail.com";
 
@@ -754,7 +759,8 @@ const handleKick = async (targetUser) => {
               marginBottom: "20px",
             }}
           >
-            Thank you for your payment. Your account is awaiting approval from the Admin. It will be approved within 12 hours.
+            Thank you for your payment. Your account is awaiting approval from
+            the Admin. It will be approved within 12 hours.
           </p>
           <a
             href="https://buy.stripe.com/fZu6oHeQcbdI0WR4Bk1B60h"
@@ -868,9 +874,7 @@ const handleKick = async (targetUser) => {
                       {upcomingBDays.map((u, i) => (
                         <span key={u.id}>
                           {u.displayName} (
-                          {u.daysLeft === 1
-                            ? "မနက်ဖြန်"
-                            : `${u.daysLeft} ရက်အလို`}
+                          {u.daysLeft === 1 ? "Tomorrow" : `${u.daysLeft} Days`}
                           ){i < upcomingBDays.length - 1 ? "၊ " : ""}
                         </span>
                       ))}
@@ -927,15 +931,14 @@ const handleKick = async (targetUser) => {
                               {
                                 url: post.fileUrl || post.imageUrl,
                                 type: "image",
-                              }
+                              },
                             ]
                           : []);
 
-
-                          // အကယ်၍ Postcard ပုံရှိရင် allMedia ထဲကို ပေါင်းထည့်မယ်
-                          if (post.postcardImg) {
-                            allMedia.push({ url: post.postcardImg, type: 'image' });
-                          }
+                      // အကယ်၍ Postcard ပုံရှိရင် allMedia ထဲကို ပေါင်းထည့်မယ်
+                      if (post.postcardImg) {
+                        allMedia.push({ url: post.postcardImg, type: "image" });
+                      }
 
                       return allMedia.map((item, index) => (
                         <div
@@ -996,7 +999,7 @@ const handleKick = async (targetUser) => {
                         padding: "20px",
                       }}
                     >
-                      Gallery ထဲမှာ အမှတ်တရပုံများ မရှိသေးပါ
+                      There are no memories in the Gallery yet.
                     </p>
                   )}
                 </div>
@@ -1280,7 +1283,7 @@ const handleKick = async (targetUser) => {
                             marginBottom: "10px",
                           }}
                         >
-                          လက်ရှိကုဒ် -{" "}
+                          Current Code:{" "}
                           <strong style={{ color: darkMode ? "#fff" : "#000" }}>
                             {userFamilyCode}
                           </strong>
@@ -1310,7 +1313,7 @@ const handleKick = async (targetUser) => {
                             }}
                             style={saveBtnSmall}
                           >
-                            ပြောင်းမည်
+                            Change
                           </button>
                         </div>
                       </div>
@@ -1526,7 +1529,7 @@ const handleKick = async (targetUser) => {
                                               { role: newRole },
                                             );
                                             alert(
-                                              `${u.displayName} ကို ${newRole} အဖြစ် ပြောင်းလဲပြီးပါပြီ။`,
+                                              `${u.displayName} has been changed to ${newRole}.`,
                                             );
                                           }}
                                           defaultValue={u.role || "Member"}
@@ -1640,9 +1643,7 @@ const handleKick = async (targetUser) => {
                                               familyCode: finalFamilyCode, // 🌟 ဤစာကြောင်းကို ထည့်ပေးပါ
                                             },
                                           );
-                                          alert(
-                                            "အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ! ✨",
-                                          );
+                                          alert("Saved successfully! ✨");
 
                                           // ကုဒ်ပြောင်းသွားရင် အုပ်စုတွေ အလိုလိုကွဲသွားအောင် refresh တစ်ချက်လုပ်ပေးတာ ပိုကောင်းပါတယ်
                                           if (
@@ -1774,15 +1775,34 @@ const handleKick = async (targetUser) => {
                       </h3>
                       {showFamily && (
                         <div style={userList}>
-                          {users.filter((u) => u.id !== user.uid && u.role === "Family").map((u) => (
-        /* 🌟 ဤနေရာတွင် div ဖြင့်အုပ်ပြီး Kick ခလုတ်ထည့်သည် 🌟 */
-        <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <div style={{ flex: 1 }}>{renderUserItem(u)}</div>
-          {isFamilyOwner && (
-            <button onClick={() => handleKick(u)} style={sidebarKickBtn}>Kick</button>
-          )}
-        </div>
-      ))}
+                          {users
+                            .filter(
+                              (u) => u.id !== user.uid && u.role === "Family",
+                            )
+                            .map((u) => (
+                              /* 🌟 ဤနေရာတွင် div ဖြင့်အုပ်ပြီး Kick ခလုတ်ထည့်သည် 🌟 */
+                              <div
+                                key={u.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  marginBottom: "8px",
+                                }}
+                              >
+                                <div style={{ flex: 1 }}>
+                                  {renderUserItem(u)}
+                                </div>
+                                {isFamilyOwner && (
+                                  <button
+                                    onClick={() => handleKick(u)}
+                                    style={sidebarKickBtn}
+                                  >
+                                    Kick
+                                  </button>
+                                )}
+                              </div>
+                            ))}
                         </div>
                       )}
                     </div>
@@ -1805,15 +1825,34 @@ const handleKick = async (targetUser) => {
                       </h3>
                       {showFriends && (
                         <div style={userList}>
-                         {users.filter((u) => u.id !== user.uid && u.role === "Friend").map((u) => (
-        /* 🌟 ဤနေရာတွင် div ဖြင့်အုပ်ပြီး Kick ခလုတ်ထည့်သည် 🌟 */
-        <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <div style={{ flex: 1 }}>{renderUserItem(u)}</div>
-          {isFamilyOwner && (
-            <button onClick={() => handleKick(u)} style={sidebarKickBtn}>Kick</button>
-          )}
-        </div>
-      ))}
+                          {users
+                            .filter(
+                              (u) => u.id !== user.uid && u.role === "Friend",
+                            )
+                            .map((u) => (
+                              /* 🌟 ဤနေရာတွင် div ဖြင့်အုပ်ပြီး Kick ခလုတ်ထည့်သည် 🌟 */
+                              <div
+                                key={u.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  marginBottom: "8px",
+                                }}
+                              >
+                                <div style={{ flex: 1 }}>
+                                  {renderUserItem(u)}
+                                </div>
+                                {isFamilyOwner && (
+                                  <button
+                                    onClick={() => handleKick(u)}
+                                    style={sidebarKickBtn}
+                                  >
+                                    Kick
+                                  </button>
+                                )}
+                              </div>
+                            ))}
                         </div>
                       )}
                     </div>
@@ -1824,20 +1863,44 @@ const handleKick = async (targetUser) => {
                         <Users size={16} /> Members
                       </h3>
                       <div style={userList}>
-                        {users.filter((u) => u.id !== user.uid && (!u.role || u.role === "Member")).length > 0 ? (
-      users.filter((u) => u.id !== user.uid && (!u.role || u.role === "Member"))
-        .map((u) => (
-          /* 🌟 ဤနေရာတွင် div ဖြင့်အုပ်ပြီး Kick ခလုတ်ထည့်သည် 🌟 */
-          <div key={u.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <div style={{ flex: 1 }}>{renderUserItem(u)}</div>
-            {isFamilyOwner && (
-              <button onClick={() => handleKick(u)} style={sidebarKickBtn}>Kick</button>
-            )}
-          </div>
-        ))
-    ) : (
-      <p style={emptyText}>No other members</p>
-    )}
+                        {users.filter(
+                          (u) =>
+                            u.id !== user.uid &&
+                            (!u.role || u.role === "Member"),
+                        ).length > 0 ? (
+                          users
+                            .filter(
+                              (u) =>
+                                u.id !== user.uid &&
+                                (!u.role || u.role === "Member"),
+                            )
+                            .map((u) => (
+                              /* 🌟 ဤနေရာတွင် div ဖြင့်အုပ်ပြီး Kick ခလုတ်ထည့်သည် 🌟 */
+                              <div
+                                key={u.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  marginBottom: "8px",
+                                }}
+                              >
+                                <div style={{ flex: 1 }}>
+                                  {renderUserItem(u)}
+                                </div>
+                                {isFamilyOwner && (
+                                  <button
+                                    onClick={() => handleKick(u)}
+                                    style={sidebarKickBtn}
+                                  >
+                                    Kick
+                                  </button>
+                                )}
+                              </div>
+                            ))
+                        ) : (
+                          <p style={emptyText}>No other members</p>
+                        )}
                       </div>
                     </div>
 
@@ -1871,14 +1934,14 @@ const handleKick = async (targetUser) => {
                           <div
                             key={goal.id}
                             style={{
-                              backgroundColor: '#f0f9ff', // အပြာနုရောင် box
-                              padding: '10px 15px',
-                              borderRadius: '10px',
-                              marginBottom: '8px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              border: '1px solid #e0f2fe'
+                              backgroundColor: "#f0f9ff", // အပြာနုရောင် box
+                              padding: "10px 15px",
+                              borderRadius: "10px",
+                              marginBottom: "8px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              border: "1px solid #e0f2fe",
                             }}
                           >
                             <label
@@ -1906,8 +1969,16 @@ const handleKick = async (targetUser) => {
                                   )
                                 }
                               />
-                              <span style={{ fontSize: '13px', textDecoration: goal.completed ? 'line-through' : 'none', color: '#0369a1' }}>
-                                  {goal.text}
+                              <span
+                                style={{
+                                  fontSize: "13px",
+                                  textDecoration: goal.completed
+                                    ? "line-through"
+                                    : "none",
+                                  color: "#0369a1",
+                                }}
+                              >
+                                {goal.text}
                               </span>
                             </label>
                             <Trash2
@@ -1993,18 +2064,33 @@ const handleKick = async (targetUser) => {
                               style={{
                                 // ...noteStyle,
                                 display: "flex",
-                                backgroundColor: '#fef3c7',
+                                backgroundColor: "#fef3c7",
                                 justifyContent: "space-between",
                                 alignItems: "center",
                                 padding: "10px",
-                                borderRadius: '8px',
-                                marginBottom: '10px',
-                                boxShadow: '2px 2px 5px rgba(0,0,0,0.05)',
-                                borderLeft: '4px solid #f59e0b',
+                                borderRadius: "8px",
+                                marginBottom: "10px",
+                                boxShadow: "2px 2px 5px rgba(0,0,0,0.05)",
+                                borderLeft: "4px solid #f59e0b",
                               }}
                             >
-                              <div style={{ flex: 1, fontSize: "12px", color: '#92400e' }}>
-                                <strong style={{ display: 'block', fontSize: '11px', opacity: 0.8 }}>{n.userName}:</strong> {n.text}
+                              <div
+                                style={{
+                                  flex: 1,
+                                  fontSize: "12px",
+                                  color: "#92400e",
+                                }}
+                              >
+                                <strong
+                                  style={{
+                                    display: "block",
+                                    fontSize: "11px",
+                                    opacity: 0.8,
+                                  }}
+                                >
+                                  {n.userName}:
+                                </strong>{" "}
+                                {n.text}
                               </div>
 
                               {/* ဖျက်ရန် အမှိုက်ပုံးပုံလေး */}
@@ -2065,37 +2151,48 @@ const handleKick = async (targetUser) => {
                             <div
                               key={item.id}
                               style={{
-                                backgroundColor: '#f0fdf4', // အစိမ်းနုရောင် box
-                                padding: '10px 15px',
-                                borderRadius: '10px',
-                                marginBottom: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                border: '1px solid #dcfce7'
+                                backgroundColor: "#f0fdf4", // အစိမ်းနုရောင် box
+                                padding: "10px 15px",
+                                borderRadius: "10px",
+                                marginBottom: "8px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                border: "1px solid #dcfce7",
                               }}
                             >
-                              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, cursor: 'pointer' }}>
-                              <input
-                                type="checkbox"
-                                checked={item.isBought}
-                                onChange={() =>
-                                  updateDoc(doc(db, "shoppingList", item.id), {
-                                    isBought: !item.isBought,
-                                  })
-                                }
-                              />
-                              <span
+                              <label
                                 style={{
-                                  fontSize: "12px",
-                                  textDecoration: item.isBought
-                                    ? "line-through"
-                                    : "none",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
                                   flex: 1,
+                                  cursor: "pointer",
                                 }}
                               >
-                                {item.text}
-                              </span>
+                                <input
+                                  type="checkbox"
+                                  checked={item.isBought}
+                                  onChange={() =>
+                                    updateDoc(
+                                      doc(db, "shoppingList", item.id),
+                                      {
+                                        isBought: !item.isBought,
+                                      },
+                                    )
+                                  }
+                                />
+                                <span
+                                  style={{
+                                    fontSize: "12px",
+                                    textDecoration: item.isBought
+                                      ? "line-through"
+                                      : "none",
+                                    flex: 1,
+                                  }}
+                                >
+                                  {item.text}
+                                </span>
                               </label>
                               <Trash2
                                 size={12}
@@ -2115,25 +2212,30 @@ const handleKick = async (targetUser) => {
                       </div>
                     </div>
 
-                    <button 
-      onClick={() => setShowGuide(true)}
-      style={{
-        marginTop: '20px', width: '100%', padding: '12px', 
-        borderRadius: '12px', border: '1px solid #e2e8f0',
-        backgroundColor: darkMode ? '#334155' : '#fff',
-        color: darkMode ? '#fff' : '#1e293b',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-        cursor: 'pointer', fontWeight: '600'
-      }}
-    >
-      📖 Read the User Guide
-    </button>
+                    <button
+                      onClick={() => setShowGuide(true)}
+                      style={{
+                        marginTop: "20px",
+                        width: "100%",
+                        padding: "12px",
+                        borderRadius: "12px",
+                        border: "1px solid #e2e8f0",
+                        backgroundColor: darkMode ? "#334155" : "#fff",
+                        color: darkMode ? "#fff" : "#1e293b",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "10px",
+                        cursor: "pointer",
+                        fontWeight: "600",
+                      }}
+                    >
+                      📖 Read the User Guide
+                    </button>
                   </div>
                 </div>
-                
               )}
             </div>
-            
           </div>
 
           {/* Footer */}
@@ -2214,7 +2316,8 @@ const handleKick = async (targetUser) => {
                     marginBottom: "15px",
                   }}
                 >
-                  Enter the code to join the family. If you don't have a code yet,create a new code (at least 8 characters).
+                  Enter the code to join the family. If you don't have a code
+                  yet,create a new code (at least 8 characters).
                 </p>
                 <input
                   placeholder="At least 8 characters (e.g., MyFamily2026)"
@@ -2750,20 +2853,11 @@ const handleKick = async (targetUser) => {
           )}
         </>
       )}
-      {showGuide && <Guide darkMode={darkMode} onClose={() => setShowGuide(false)} />}
+      {showGuide && (
+        <Guide darkMode={darkMode} onClose={() => setShowGuide(false)} />
+      )}
     </div>
   );
-  //    : (
-  //     <div style={loginPageStyle}>
-  //       <div style={loginCard}>
-  //         <h1 style={{ fontSize: "2.5rem" }}>🏠</h1>
-  //         <h2>Family Memories</h2>
-  //         <button onClick={handleLogin} style={googleLoginBtn}>
-  //           Login with Google
-  //         </button>
-  //       </div>
-  //     </div>
-  //   )
 }
 
 // --- Styles ---
@@ -2991,7 +3085,7 @@ const galleryImg = {
   width: "100%",
   height: "100%",
   objectFit: "contain",
-  backgroundColor: "#f8fafc"
+  backgroundColor: "#f8fafc",
 };
 
 const interestInputStyle = {
@@ -3329,16 +3423,16 @@ const ownerSettingCard = {
 };
 
 const sidebarKickBtn = {
-  backgroundColor: '#fee2e2',
-  color: '#ef4444',
-  border: 'none',
-  padding: '4px 10px',
-  borderRadius: '8px',
-  fontSize: '10px',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-  marginLeft: '10px',
-  transition: '0.2s'
+  backgroundColor: "#fee2e2",
+  color: "#ef4444",
+  border: "none",
+  padding: "4px 10px",
+  borderRadius: "8px",
+  fontSize: "10px",
+  fontWeight: "bold",
+  cursor: "pointer",
+  marginLeft: "10px",
+  transition: "0.2s",
 };
 
 export default App;

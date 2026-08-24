@@ -151,8 +151,8 @@ const Guide = ({ onClose, darkMode }) => {
               marginBottom: "20px",
             }}
           >
-            ReMember App ကို အသုံးပြု၍ မိသားစုအမှတ်တရများကို စနစ်တကျ
-            သိမ်းဆည်းရန် လမ်းညွှန်ချက်များ။
+            A guide to using the ReMember App to organize and preserve family
+            memories.
           </p>
 
           {sections.map((section, idx) => (
@@ -214,7 +214,7 @@ const Guide = ({ onClose, darkMode }) => {
         {/* Footer */}
         <div style={footerStyle}>
           <button onClick={onClose} style={gotItBtn}>
-            နားလည်ပါပြီ
+            Understand
           </button>
         </div>
       </div>
