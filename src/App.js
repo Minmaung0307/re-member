@@ -153,6 +153,22 @@ function App() {
   const [userFamilyId, setUserFamilyId] = useState(null);
   const [isFamilyOwner, setIsFamilyOwner] = useState(false);
 
+  const [confirmModal, setConfirmModal] = useState({
+    show: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+  });
+  const [showShoppingAddModal, setShowShoppingAddModal] = useState(false); // Shopping Item ထည့်ရန် Modal
+  const [shoppingInput, setShoppingInput] = useState("");
+  const [statusModal, setStatusModal] = useState({
+    show: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
+  const [newCodeInput, setNewCodeInput] = useState("");
+
   //   အကောင့်ဝင်ခြင်းနှင့် မိသားစုကုဒ် စစ်ဆေးခြင်း Effect
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -582,27 +598,54 @@ function App() {
 
   const updateFamilyCode = async (newCode) => {
     if (newCode.length < 8) {
-      alert("For security, the code must be at least 8 characters long.");
-      return;
-    }
-
-    if (!userFamilyId) {
-      alert("Family ID (FID) not found.");
+      setStatusModal({
+        show: true,
+        title: "⚠️ Warning: ",
+        message: "Family Code must be at least 8 characters long.",
+        type: "error",
+      });
       return;
     }
 
     try {
-      // ၁။ Families collection ထဲက code ကို အရင်ပြင်မယ်
-      await updateDoc(doc(db, "families", userFamilyId), { code: newCode });
+      let currentFID = userFamilyId;
 
-      // ၂။ ကိုယ့်ရဲ့ User Profile ထဲက familyCode ကိုပါ ပြင်မယ်
+      // 🌟 ID မရှိသေးတဲ့ လူဟောင်းဖြစ်နေရင် ID အသစ် ထုတ်ပေးမယ် 🌟
+      if (!currentFID) {
+        currentFID = `FID_${Date.now()}`;
+        await setDoc(doc(db, "families", currentFID), {
+          code: newCode,
+          ownerId: user.uid,
+          createdAt: serverTimestamp(),
+        });
+        await updateDoc(doc(db, "users", user.uid), {
+          familyId: currentFID,
+          isFamilyOwner: true,
+        });
+        setUserFamilyId(currentFID);
+      } else {
+        // ID ရှိပြီးသားဆိုရင် ကုဒ်ကိုပဲ update လုပ်မယ်
+        await updateDoc(doc(db, "families", currentFID), { code: newCode });
+      }
+
       await updateDoc(doc(db, "users", user.uid), { familyCode: newCode });
+      setUserFamilyCode(newCode);
 
-      setUserFamilyCode(newCode); // UI မှာ ချက်ချင်း ပြောင်းသွားစေရန်
-      alert("Family Code changed successfully. ✨");
+      // 🌟 Browser Alert အစား Custom Modal ပြခြင်း 🌟
+      setStatusModal({
+        show: true,
+        title: "🎉 Success",
+        message: "Family Code changed successfully. ✨",
+        type: "success",
+      });
     } catch (error) {
-      console.error("Update Code Error:", error);
-      alert("Unable to change the code.");
+      console.error(error);
+      setStatusModal({
+        show: true,
+        title: "❌ Error: ",
+        message: "Unable to change the code. Please try again later.",
+        type: "error",
+      });
     }
   };
 
@@ -616,29 +659,50 @@ function App() {
 
     try {
       // ၂။ Firestore မှာ အဲ့ဒီ Email နဲ့လူရှိလား ရှာမယ်
-      const q = query(
+      const userQ = query(
         collection(db, "users"),
         where("email", "==", targetEmail),
       );
-      const snap = await getDocs(q);
+      const userSnap = await getDocs(userQ);
 
-      // ၃။ ရှာမတွေ့ရင် (တစ်ခါမှ Login မဝင်ဖူးတဲ့လူဆိုရင် ရှာမတွေ့ပါဘူး)
-      if (snap.empty) {
-        alert(
-          "No user was found with this email address. Please check the spelling and try again. The other person must have logged into the app at least once.",
-        );
+      if (userSnap.empty) {
+        alert("No user was found with this email address.");
         return;
       }
 
-      const targetUser = snap.docs[0].data();
-
-      // ၄။ ကိုယ့် Email ကိုယ် ပြန်ရှာမိတာလား စစ်မယ်
+      const targetUser = userSnap.docs[0].data();
       if (targetUser.id === user.uid) {
         alert("You can't add yourself as a friend.");
         return;
       }
 
-      // ၅။ Connection Request (သူငယ်ချင်းတောင်းဆိုချက်) ပို့မယ်
+      // ၂။ 🌟 အရေးကြီးဆုံးအချက် - သူငယ်ချင်း ဖြစ်ပြီးသားလား သို့မဟုတ် Request ပို့ထားဆဲလား စစ်မယ်
+      const connQ = query(
+        collection(db, "connections"),
+        or(
+          and(
+            where("requesterId", "==", user.uid),
+            where("receiverId", "==", targetUser.id),
+          ),
+          and(
+            where("requesterId", "==", targetUser.id),
+            where("receiverId", "==", user.uid),
+          ),
+        ),
+      );
+      const connSnap = await getDocs(connQ);
+
+      if (!connSnap.empty) {
+        const status = connSnap.docs[0].data().status;
+        alert(
+          status === "pending"
+            ? "The request is still pending."
+            : "You are already connected with this person.",
+        );
+        return;
+      }
+
+      // ၃။ အားလုံးအိုကေမှ Request ပို့မယ်
       await addDoc(collection(db, "connections"), {
         requesterId: user.uid,
         requesterName: user.displayName,
@@ -706,27 +770,18 @@ function App() {
   });
 
   const handleKick = async (targetUser) => {
-    if (
-      window.confirm(
-        `${targetUser.displayName} Are you sure you want to remove this member from the group?`,
-      )
-    ) {
-      try {
-        // firestore ထဲက user data ကို လှမ်းယူမယ်
-        const userRef = doc(db, "users", targetUser.id);
-
-        // familyId နဲ့ familyCode ကို ဖျက်ချလိုက်ခြင်း (Kick လုပ်ခြင်း)
-        await updateDoc(userRef, {
-          familyId: null,
-          familyCode: "",
-          role: "Member", // Role ကို Member အဖြစ် ပြန်ပြောင်းမယ်
-        });
-
-        alert("ဖယ်ရှားပြီးပါပြီ။ ✨");
-      } catch (error) {
-        console.error("Kick Error:", error);
-        alert("အမှားတစ်ခုရှိနေပါသည်။");
-      }
+    // 🌟 window.confirm အဟောင်းကို ဖြုတ်ပစ်လိုက်ပါပြီ 🌟
+    try {
+      const userRef = doc(db, "users", targetUser.id);
+      await updateDoc(userRef, {
+        familyId: null,
+        familyCode: "",
+        role: "Member",
+      });
+      alert("Removed successfully. ✨");
+    } catch (error) {
+      console.error("Kick Error:", error);
+      alert("Something went wrong.");
     }
   };
 
@@ -1272,6 +1327,7 @@ function App() {
                             display: "flex",
                             alignItems: "center",
                             gap: "8px",
+                            fontSize: "15px",
                           }}
                         >
                           🔐 Change Family Code (Owner Only)
@@ -1284,15 +1340,21 @@ function App() {
                           }}
                         >
                           Current Code:{" "}
-                          <strong style={{ color: darkMode ? "#fff" : "#000" }}>
+                          <strong
+                            style={{
+                              color: darkMode ? "#fff" : "#000",
+                              letterSpacing: "1px",
+                            }}
+                          >
                             {userFamilyCode}
                           </strong>
                         </p>
 
                         <div style={{ display: "flex", gap: "10px" }}>
                           <input
-                            id="newFamilyCodeInput"
-                            placeholder="ကုဒ်အသစ် (၈ လုံး)"
+                            placeholder="New Code (Min 8 chars)"
+                            value={newCodeInput}
+                            onChange={(e) => setNewCodeInput(e.target.value)}
                             style={{
                               ...modalInputSmall,
                               flex: 1,
@@ -1303,19 +1365,36 @@ function App() {
                           />
                           <button
                             onClick={() => {
-                              const inputEl =
-                                document.getElementById("newFamilyCodeInput");
-                              const newCode = inputEl.value
-                                .trim()
-                                .toUpperCase();
-                              updateFamilyCode(newCode);
-                              inputEl.value = "";
+                              updateFamilyCode(newCodeInput.trim());
+                              setNewCodeInput(""); // ရိုက်ထားတာကို ချက်ချင်း ရှင်းပစ်မယ်
                             }}
-                            style={saveBtnSmall}
+                            // ၈ လုံးမပြည့်ရင် နှိပ်လို့မရအောင် ပိတ်ထားမယ်
+                            disabled={newCodeInput.trim().length < 8}
+                            style={{
+                              ...saveBtnSmall,
+                              opacity: newCodeInput.trim().length < 8 ? 0.5 : 1,
+                              cursor:
+                                newCodeInput.trim().length < 8
+                                  ? "not-allowed"
+                                  : "pointer",
+                              backgroundColor: "#166534",
+                            }}
                           >
                             Change
                           </button>
                         </div>
+                        {newCodeInput.length > 0 && newCodeInput.length < 8 && (
+                          <p
+                            style={{
+                              color: "#ef4444",
+                              fontSize: "10px",
+                              marginTop: "5px",
+                            }}
+                          >
+                            * At least 8 characters are required. (
+                            {newCodeInput.length}/8)
+                          </p>
+                        )}
                       </div>
                     )}
 
@@ -1585,28 +1664,41 @@ function App() {
                                         style={{
                                           display: "flex",
                                           alignItems: "center",
-                                          gap: "5px",
-                                          fontSize: "11px",
-                                          color: "#64748b",
-                                          backgroundColor: "#f1f5f9",
-                                          padding: "2px 10px",
-                                          borderRadius: "8px",
-                                          border: "1px solid #e2e8f0",
+                                          gap: "10px",
+                                          fontSize: "12px",
+                                          backgroundColor: darkMode
+                                            ? "#334155"
+                                            : "#f1f5f9",
+                                          padding: "6px 12px",
+                                          borderRadius: "10px",
+                                          border: `1px solid ${darkMode ? "#475569" : "#e2e8f0"}`,
+                                          minWidth: "200px", // အကွက်ကို ပိုကျယ်လိုက်ပါပြီ
+                                          flex: 1,
+                                          boxSizing: "border-box",
                                         }}
                                       >
-                                        <span>ID:</span>
+                                        <span
+                                          style={{
+                                            color: darkMode
+                                              ? "#94a3b8"
+                                              : "#64748b",
+                                            whiteSpace: "nowrap",
+                                          }}
+                                        >
+                                          ID:
+                                        </span>
                                         <input
                                           placeholder="Code"
                                           defaultValue={u.familyCode || ""}
                                           style={{
-                                            width: "60px",
                                             border: "none",
                                             background: "none",
-                                            fontSize: "11px",
+                                            fontSize: "12px",
                                             fontWeight: "bold",
                                             outline: "none",
                                             color: "#3b82f6",
-                                            padding: "0",
+                                            width: "100%", // နေရာအပြည့်ယူမယ်
+                                            fontFamily: "monospace",
                                           }}
                                           onChange={(e) =>
                                             setAdminBirthdays({
@@ -1615,6 +1707,51 @@ function App() {
                                             })
                                           }
                                         />
+
+                                        {/* Copy Icon လေး ထည့်လိုက်ပါပြီ */}
+                                        <div
+                                          onClick={() => {
+                                            if (u.familyCode) {
+                                              navigator.clipboard.writeText(
+                                                u.familyCode,
+                                              );
+                                              // Browser alert အစား statusModal သုံးထားရင် အဲ့ဒါနဲ့ပြလို့ရပါတယ်
+                                              alert(
+                                                "Family ID ကို Copy ကူးလိုက်ပါပြီ! ✨",
+                                              );
+                                            }
+                                          }}
+                                          style={{
+                                            cursor: "pointer",
+                                            color: "#3b82f6",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            padding: "2px",
+                                          }}
+                                          title="Copy ID"
+                                        >
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            <rect
+                                              width="14"
+                                              height="14"
+                                              x="8"
+                                              y="8"
+                                              rx="2"
+                                              ry="2"
+                                            />
+                                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                          </svg>
+                                        </div>
                                       </div>
 
                                       <button
@@ -1743,16 +1880,57 @@ function App() {
                       {showConnections && (
                         <div style={userList}>
                           {/* လက်ရှိရှိနေတဲ့ connections filter code ကို ဒီမှာထည့်ပါ */}
-                          {connections.map((conn) => {
-                            const friendId =
-                              conn.requesterId === user.uid
-                                ? conn.receiverId
-                                : conn.requesterId;
-                            const friend = allUsers.find(
-                              (u) => u.id === friendId,
-                            );
-                            return friend ? renderUserItem(friend) : null;
-                          })}
+                          {connections.length > 0 ? (
+                            connections.map((conn) => {
+                              const friendId =
+                                conn.requesterId === user.uid
+                                  ? conn.receiverId
+                                  : conn.requesterId;
+                              const friend = allUsers.find(
+                                (u) => u.id === friendId,
+                              );
+
+                              if (!friend) return null;
+
+                              return (
+                                <div
+                                  key={conn.id}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    marginBottom: "8px",
+                                    paddingRight: "5px",
+                                  }}
+                                >
+                                  {/* လူပုံနှင့် နာမည် */}
+                                  <div style={{ flex: 1 }}>
+                                    {renderUserItem(friend)}
+                                  </div>
+
+                                  {/* 🌟 Kick ခလုတ် (Confirm Modal ဖြင့် ချိတ်ထားသည်) 🌟 */}
+                                  <button
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        show: true,
+                                        title: "Disconnect",
+                                        message: `Are you sure you want to disconnect from ${friend.displayName}?`,
+                                        onConfirm: () =>
+                                          deleteDoc(
+                                            doc(db, "connections", conn.id),
+                                          ),
+                                      })
+                                    }
+                                    style={sidebarKickBtn}
+                                  >
+                                    Kick
+                                  </button>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <p style={emptyText}>No connections yet</p>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1795,7 +1973,14 @@ function App() {
                                 </div>
                                 {isFamilyOwner && (
                                   <button
-                                    onClick={() => handleKick(u)}
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        show: true,
+                                        title: "အဖွဲ့ဝင်ကို ဖယ်ရှားမည်",
+                                        message: `${u.displayName} ကို မိသားစုစာရင်းမှ ဖယ်ရှားမှာ သေချာပါသလား?`,
+                                        onConfirm: () => handleKick(u),
+                                      })
+                                    }
                                     style={sidebarKickBtn}
                                   >
                                     Kick
@@ -1845,7 +2030,14 @@ function App() {
                                 </div>
                                 {isFamilyOwner && (
                                   <button
-                                    onClick={() => handleKick(u)}
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        show: true,
+                                        title: "အဖွဲ့ဝင်ကို ဖယ်ရှားမည်",
+                                        message: `${u.displayName} ကို မိသားစုစာရင်းမှ ဖယ်ရှားမှာ သေချာပါသလား?`,
+                                        onConfirm: () => handleKick(u),
+                                      })
+                                    }
                                     style={sidebarKickBtn}
                                   >
                                     Kick
@@ -1890,7 +2082,14 @@ function App() {
                                 </div>
                                 {isFamilyOwner && (
                                   <button
-                                    onClick={() => handleKick(u)}
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        show: true,
+                                        title: "အဖွဲ့ဝင်ကို ဖယ်ရှားမည်",
+                                        message: `${u.displayName} ကို မိသားစုစာရင်းမှ ဖယ်ရှားမှာ သေချာပါသလား?`,
+                                        onConfirm: () => handleKick(u),
+                                      })
+                                    }
                                     style={sidebarKickBtn}
                                   >
                                     Kick
@@ -1985,16 +2184,15 @@ function App() {
                               size={14}
                               color="#ef4444"
                               style={{ cursor: "pointer", opacity: 0.6 }}
-                              onClick={async () => {
-                                if (
-                                  window.confirm(
-                                    "Are you sure you want to delete this?",
-                                  )
-                                )
-                                  await deleteDoc(
-                                    doc(db, "bucketList", goal.id),
-                                  );
-                              }}
+                              onClick={() =>
+                                setConfirmModal({
+                                  show: true,
+                                  title: "Delete Goal",
+                                  message: `"${goal.text}" Are you sure you want to permanently delete this goal from the Bucket List?`,
+                                  onConfirm: () =>
+                                    deleteDoc(doc(db, "bucketList", goal.id)),
+                                })
+                              }
                             />
                           </div>
                         ))}
@@ -2102,7 +2300,16 @@ function App() {
                                   opacity: 0.7,
                                   marginLeft: "10px",
                                 }}
-                                onClick={() => handleDeleteFridgeNote(n.id)}
+                                // 🌟 Browser confirm အစား Custom Modal ကို လှမ်းခေါ်လိုက်တာပါ
+                                onClick={() =>
+                                  setConfirmModal({
+                                    show: true,
+                                    title: "Delete Short Note",
+                                    message: `"${n.userName}" Are you sure you want to permanently delete this?`,
+                                    onConfirm: () =>
+                                      deleteDoc(doc(db, "fridgeNotes", n.id)),
+                                  })
+                                }
                               />
                             </div>
                           ))
@@ -2151,7 +2358,7 @@ function App() {
                             <div
                               key={item.id}
                               style={{
-                                backgroundColor: "#f0fdf4", // အစိမ်းနုရောင် box
+                                backgroundColor: "#f0fdf4",
                                 padding: "10px 15px",
                                 borderRadius: "10px",
                                 marginBottom: "8px",
@@ -2194,12 +2401,22 @@ function App() {
                                   {item.text}
                                 </span>
                               </label>
+
+                              {/* 🌟 ပြင်ဆင်လိုက်သည့် နေရာ 🌟 */}
                               <Trash2
                                 size={12}
                                 color="#ef4444"
                                 style={{ cursor: "pointer" }}
                                 onClick={() =>
-                                  deleteDoc(doc(db, "shoppingList", item.id))
+                                  setConfirmModal({
+                                    show: true,
+                                    title: "Sure to delete?",
+                                    message: `"${item.text}" will be deleted from the shopping list.`,
+                                    onConfirm: () =>
+                                      deleteDoc(
+                                        doc(db, "shoppingList", item.id),
+                                      ),
+                                  })
                                 }
                               />
                             </div>
@@ -2845,6 +3062,123 @@ function App() {
             </div>
           )}
 
+          {confirmModal.show && (
+            <div style={modalOverlay}>
+              <div style={modalContentSmall}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "50px", marginBottom: "10px" }}>
+                    ⚠️
+                  </div>
+                  <h3 style={{ margin: "0 0 10px 0" }}>{confirmModal.title}</h3>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#64748b",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    {confirmModal.message}
+                  </p>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <button
+                      onClick={() => {
+                        confirmModal.onConfirm();
+                        setConfirmModal({ ...confirmModal, show: false });
+                      }}
+                      style={deleteBtnFull}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() =>
+                        setConfirmModal({ ...confirmModal, show: false })
+                      }
+                      style={cancelBtn}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showShoppingAddModal && (
+            <div style={modalOverlay}>
+              <div style={modalContentSmall}>
+                <h3>🛒 Add New Item</h3>
+                <input
+                  placeholder="For example - Sugar, Bread..."
+                  style={modalInput}
+                  value={shoppingInput}
+                  onChange={(e) => setShoppingInput(e.target.value)}
+                  autoFocus
+                />
+                <div
+                  style={{ display: "flex", gap: "10px", marginTop: "10px" }}
+                >
+                  <button
+                    onClick={async () => {
+                      if (shoppingInput.trim()) {
+                        await addDoc(collection(db, "shoppingList"), {
+                          text: shoppingInput,
+                          isBought: false,
+                          familyCode: userFamilyCode,
+                          createdAt: serverTimestamp(),
+                        });
+                        setShoppingInput("");
+                        setShowShoppingAddModal(false);
+                      }
+                    }}
+                    style={postBtnFull}
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setShowShoppingAddModal(false)}
+                    style={cancelBtn}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {statusModal.show && (
+            <div style={modalOverlay}>
+              <div style={modalContentSmall}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "50px", marginBottom: "10px" }}>
+                    {statusModal.type === "success" ? "✅" : "❌"}
+                  </div>
+                  <h3>{statusModal.title}</h3>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#64748b",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    {statusModal.message}
+                  </p>
+                  <button
+                    onClick={() =>
+                      setStatusModal({ ...statusModal, show: false })
+                    }
+                    style={
+                      statusModal.type === "success"
+                        ? postBtnFull
+                        : deleteBtnFull
+                    }
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {selectedUser && (
             <Chat
               recipient={selectedUser}
@@ -2861,6 +3195,17 @@ function App() {
 }
 
 // --- Styles ---
+const deleteBtnFull = {
+  flex: 2,
+  padding: "12px",
+  borderRadius: "12px",
+  border: "none",
+  backgroundColor: "#ef4444",
+  color: "#fff",
+  fontWeight: "bold",
+  cursor: "pointer",
+};
+
 const appContainer = {
   backgroundColor: "#f8fafc",
   minHeight: "100vh",

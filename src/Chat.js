@@ -274,7 +274,7 @@ const [showEmojiPicker, setShowEmojiPicker] = useState(false); // Emoji ပွ�
 
     <input 
         type="text" 
-        placeholder="စာရိုက်ပါ..." 
+        placeholder="Type here..." 
         style={chatInput} 
         value={message} 
         onChange={(e) => setMessage(e.target.value)} 
