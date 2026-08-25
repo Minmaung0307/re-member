@@ -2291,73 +2291,95 @@ function App() {
                           gap: "10px",
                         }}
                       >
-                        {goals.map((goal) => (
-                          <div
-                            key={goal.id}
-                            style={{
-                              backgroundColor: "#f0f9ff", // အပြာနုရောင် box
-                              padding: "10px 15px",
-                              borderRadius: "10px",
-                              marginBottom: "8px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              border: "1px solid #e0f2fe",
-                            }}
-                          >
-                            <label
+                        {goals.map((goal) => {
+                          // 🌟 ၁။ ဒီ Goal ကို တင်တဲ့သူ ဟုတ်မဟုတ် စစ်မယ်
+                          const isCreator = user && goal.userId === user.uid;
+
+                          // isAdmin ကို ဤနေရာတွင် တွက်ချက်ထားသော်လည်း အောက်က logic မှာ အသုံးမပြုတော့ပါ
+                          // ဒါမှမဟုတ် isAdmin ကို လုံးဝ ဖြုတ်ပစ်နိုင်ပါတယ်
+                          const showTrashIcon = isCreator;
+
+                          // Debug လုပ်ရန် (လိုအပ်ရင် Console မှာ ကြည့်နိုင်ပါတယ်)
+                          // console.log(`User: ${user.displayName}, isCreator: ${isCreator}, isAdmin: ${isAdmin}`);
+
+                          return (
+                            <div
+                              key={goal.id}
                               style={{
-                                fontSize: "12px",
+                                backgroundColor: darkMode
+                                  ? "#1e293b"
+                                  : "#f0f9ff",
+                                padding: "10px 15px",
+                                borderRadius: "12px",
+                                marginBottom: "8px",
                                 display: "flex",
-                                gap: "8px",
-                                cursor: "pointer",
-                                flex: 1,
-                                textDecoration: goal.completed
-                                  ? "line-through"
-                                  : "none",
-                                color: goal.completed ? "#94a3b8" : "inherit",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                border: `1px solid ${darkMode ? "#334155" : "#e0f2fe"}`,
                               }}
                             >
-                              <input
-                                type="checkbox"
-                                checked={goal.completed}
-                                onChange={async () =>
-                                  await updateDoc(
-                                    doc(db, "bucketList", goal.id),
-                                    {
-                                      completed: !goal.completed,
-                                    },
-                                  )
-                                }
-                              />
-                              <span
+                              <label
                                 style={{
-                                  fontSize: "13px",
-                                  textDecoration: goal.completed
-                                    ? "line-through"
-                                    : "none",
-                                  color: "#0369a1",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                  flex: 1,
+                                  cursor: "pointer",
                                 }}
                               >
-                                {goal.text}
-                              </span>
-                            </label>
-                            <Trash2
-                              size={14}
-                              color="#ef4444"
-                              style={{ cursor: "pointer", opacity: 0.6 }}
-                              onClick={() =>
-                                setConfirmModal({
-                                  show: true,
-                                  title: "Delete Goal",
-                                  message: `"${goal.text}" Are you sure you want to permanently delete this goal from the Bucket List?`,
-                                  onConfirm: () =>
-                                    deleteDoc(doc(db, "bucketList", goal.id)),
-                                })
-                              }
-                            />
-                          </div>
-                        ))}
+                                <input
+                                  type="checkbox"
+                                  checked={goal.completed}
+                                  onChange={async () =>
+                                    await updateDoc(
+                                      doc(db, "bucketList", goal.id),
+                                      { completed: !goal.completed },
+                                    )
+                                  }
+                                />
+                                <span
+                                  style={{
+                                    fontSize: "13px",
+                                    textDecoration: goal.completed
+                                      ? "line-through"
+                                      : "none",
+                                    color: goal.completed
+                                      ? "#94a3b8"
+                                      : darkMode
+                                        ? "#f8fafc"
+                                        : "#0369a1",
+                                  }}
+                                >
+                                  {goal.text}
+                                </span>
+                              </label>
+
+                              {/* 🌟 ဤနေရာတွင် စစ်ဆေးချက်ကို သုံးပါသည် 🌟 */}
+                              {showTrashIcon && (
+                                <Trash2
+                                  size={14}
+                                  color="#ef4444"
+                                  style={{
+                                    cursor: "pointer",
+                                    opacity: 0.7,
+                                    marginLeft: "10px",
+                                  }}
+                                  onClick={() =>
+                                    setConfirmModal({
+                                      show: true,
+                                      title: "Delete Goal",
+                                      message: `"Are you sure you want to delete "${goal.text}"?`,
+                                      onConfirm: () =>
+                                        deleteDoc(
+                                          doc(db, "bucketList", goal.id),
+                                        ),
+                                    })
+                                  }
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
                         <button
                           style={{
                             border: "none",
@@ -2711,13 +2733,19 @@ function App() {
                       .toUpperCase();
 
                     if (code.length < 8) {
-                      alert(
-                        "For security, the code must be at least 8 characters long.",
-                      );
+                      // 🌟 Alert အစား Modal ကို သုံးပါ
+                      setStatusModal({
+                        show: true,
+                        title: "⚠️ Warning",
+                        message:
+                          "For security, the code must be at least 8 characters long.",
+                        type: "error",
+                      });
                       return;
                     }
 
                     try {
+                      // 🌟 updateDoc နဲ့ doc ကိုပါ Import ထဲမှာ ထည့်ပေးရပါမယ်
                       const {
                         getDocs,
                         query,
@@ -2725,6 +2753,8 @@ function App() {
                         collection,
                         serverTimestamp,
                         setDoc,
+                        doc,
+                        updateDoc,
                       } = await import("firebase/firestore");
 
                       // ၁။ Database မှာ ဒီကုဒ် ရှိပြီးသားလား အရင်စစ်မယ်
@@ -2737,6 +2767,7 @@ function App() {
 
                       if (!querySnapshot.empty) {
                         // (က) ကုဒ် ရှိပြီးသားဆိုရင် - Join လုပ်ရုံပဲ (Owner မဟုတ်ဘူး)
+                        // 🌟 ဤနေရာက John Hap တို့လိုလူတွေကို Member အဖြစ်ပဲ ထားရှိမှာပါ
                         familyId = querySnapshot.docs[0].id;
                         isOwner = false;
                       } else {
@@ -2750,27 +2781,37 @@ function App() {
                         });
                       }
 
-                      // ၂။ User Profile မှာ အချက်အလက်တွေကို "အလိုလို" သိမ်းမယ်
+                      // ၂။ User Profile မှာ အချက်အလက်တွေကို သိမ်းမယ်
+                      // 🌟 ဒီနေရာမှာ isOwner variable က Join တဲ့သူအတွက် false ဖြစ်နေမှာပါ
                       await updateDoc(doc(db, "users", user.uid), {
                         familyId: familyId,
                         familyCode: code,
-                        isFamilyOwner: isOwner, // 🌟 ဒီစာကြောင်းက ဝယ်သူကို Owner အလိုလို ဖြစ်စေတာပါ
+                        isFamilyOwner: isOwner,
                       });
 
-                      // ၃။ UI ကို Update လုပ်မယ်
+                      // ၃။ Local State များကို Update လုပ်မယ်
                       setUserFamilyId(familyId);
                       setUserFamilyCode(code);
                       setIsFamilyOwner(isOwner);
                       setShowFamilyModal(false);
 
-                      alert(
-                        isOwner
+                      // 🌟 Professional Status Modal ပြခြင်း
+                      setStatusModal({
+                        show: true,
+                        title: isOwner ? "🎉 Success!" : "✨ Joined!",
+                        message: isOwner
                           ? "New family community created successfully! 🏠"
                           : "You have joined the family community! ✨",
-                      );
+                        type: "success",
+                      });
                     } catch (error) {
                       console.error(error);
-                      alert("Something went wrong. Please try again.");
+                      setStatusModal({
+                        show: true,
+                        title: "❌ Error",
+                        message: "Something went wrong. Please try again.",
+                        type: "error",
+                      });
                     }
                   }}
                   style={postBtnFull}
@@ -3195,6 +3236,7 @@ function App() {
                 >
                   <button
                     onClick={async () => {
+                      // Debug လုပ်ရန် (လိုအပ်လျှင် ချန်ထားနိုင်သည်)
                       console.log(
                         "Goal:",
                         bucketInput,
@@ -3202,21 +3244,49 @@ function App() {
                         userFamilyCode,
                       );
 
+                      // ၁။ စာရိုက်ထားခြင်း ရှိမရှိနှင့် မိသားစုကုဒ် ရှိမရှိ စစ်ဆေးခြင်း
                       if (bucketInput.trim() && userFamilyCode) {
                         try {
+                          // ၂။ Database ထဲသို့ ဒေတာထည့်သွင်းခြင်း
                           await addDoc(collection(db, "bucketList"), {
                             text: bucketInput,
                             completed: false,
                             familyCode: userFamilyCode,
+                            // 🌟 အရေးကြီးဆုံးအချက် - ပိုင်ရှင်မှသာ ဖျက်နိုင်ရန် userId ကို သိမ်းဆည်းမည် 🌟
+                            userId: user.uid,
                             createdAt: serverTimestamp(),
                           });
+
+                          // ၃။ အောင်မြင်ပါက Form ကို ရှင်းလင်းပြီး Modal ပိတ်မည်
                           setBucketInput("");
                           setShowBucketModal(false);
+
+                          // ၄။ 🌟 Professional ဆန်သော Status Modal ဖြင့် အသိပေးခြင်း
+                          setStatusModal({
+                            show: true,
+                            title: "Success!",
+                            message:
+                              "ရည်မှန်းချက်အသစ်ကို ထည့်သွင်းပြီးပါပြီ။ ✨",
+                            type: "success",
+                          });
                         } catch (error) {
                           console.error("Error adding goal:", error);
+                          setStatusModal({
+                            show: true,
+                            title: "Error",
+                            message:
+                              "တစ်ခုခု မှားယွင်းနေပါသည်။ ပြန်ကြိုးစားကြည့်ပါ။",
+                            type: "error",
+                          });
                         }
                       } else {
-                        alert("Goal description and family code are required.");
+                        // အချက်အလက် မပြည့်စုံပါက သတိပေးရန်
+                        setStatusModal({
+                          show: true,
+                          title: "⚠️ Warning",
+                          message: "စာသားနှင့် မိသားစုကုဒ် လိုအပ်နေပါသည်။",
+                          type: "error",
+                        });
                       }
                     }}
                     style={postBtnFull}
