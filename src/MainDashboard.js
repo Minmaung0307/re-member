@@ -47,9 +47,15 @@ const PostCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   // 🌟 ပုံဟောင်း/ပုံသစ် အကုန်ပေါ်စေမည့် Logic
-  const allMedia = post.media || 
+  const allMedia =
+    post.media ||
     (post.fileUrl || post.imageUrl || post.postcardImg
-      ? [{ url: post.fileUrl || post.imageUrl || post.postcardImg, type: "image" }]
+      ? [
+          {
+            url: post.fileUrl || post.imageUrl || post.postcardImg,
+            type: "image",
+          },
+        ]
       : []);
 
   const charLimit = 80; // စာသားကို အတိုပဲပြမယ် (ကတ်ညီစေရန်)
@@ -112,12 +118,23 @@ const PostCard = ({
       <div style={imageContainer}>
         {post.fileType === "postcard" ? (
           /* --- Postcard Display --- */
-          <div style={{...postcardDisplay, backgroundColor: post.fileUrl, width: '100%', height: '100%', margin: 0, borderRadius: 0}}>
+          <div
+            style={{
+              ...postcardDisplay,
+              backgroundColor: post.fileUrl,
+              width: "100%",
+              height: "100%",
+              margin: 0,
+              borderRadius: 0,
+            }}
+          >
             {post.postcardImg && (
               <img src={post.postcardImg} style={postcardBgImgStyle} alt="bg" />
             )}
             <div style={postcardContentOverlay}>
-              <h2 style={{...postcardTextDisplay, fontSize: '18px'}}>{post.caption}</h2>
+              <h2 style={{ ...postcardTextDisplay, fontSize: "18px" }}>
+                {post.caption}
+              </h2>
             </div>
           </div>
         ) : allMedia.length > 0 ? (
@@ -131,7 +148,9 @@ const PostCard = ({
               alt="post"
               referrerPolicy="no-referrer"
               onClick={() => setViewImage(allMedia[0].url)}
-              onError={(e) => { e.target.style.display = 'none'; }} // ပုံပျက်နေရင် ဖျောက်ထားမယ်
+              onError={(e) => {
+                e.target.style.display = "none";
+              }} // ပုံပျက်နေရင် ဖျောက်ထားမယ်
             />
           )
         ) : (
@@ -226,7 +245,14 @@ const PostCard = ({
   );
 };
 
-const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
+const MainDashboard = ({
+  posts,
+  setPosts,
+  userFamilyCode,
+  setStatusModal,
+  setConfirmModal,
+  darkMode,
+}) => {
   const [caption, setCaption] = useState("");
   const [file, setFile] = useState(null);
   // const [posts, setPosts] = useState([]);
@@ -372,23 +398,39 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
 
   // ၃။ Delete Function (အစက်သုံးစက် menu အတွက်)
   const handleDelete = async (postId, postUid, postUserName) => {
-    // ပိုင်ရှင် ဟုတ်မဟုတ် စစ်ဆေးခြင်း (UID သို့မဟုတ် အမည်ဖြင့်)
     const isOwner =
       postUid === auth.currentUser.uid ||
       postUserName === auth.currentUser.displayName;
+    if (!isOwner) return;
 
-    if (!isOwner) {
-      alert("You can only delete your own posts.");
-      return;
-    }
+    // 🌟 Browser confirm အစား Custom Modal ကို သုံးခြင်း
+    setConfirmModal({
+      show: true,
+      title: "Delete Memory?",
+      message:
+        "Are you sure you want to delete this post? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          const { doc, deleteDoc } = await import("firebase/firestore");
+          await deleteDoc(doc(db, "posts", postId));
 
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      try {
-        await deleteDoc(doc(db, "posts", postId));
-      } catch (error) {
-        console.error("Error deleting post:", error);
-      }
-    }
+          setStatusModal({
+            show: true,
+            title: "Deleted!",
+            message: "Memory has been removed successfully.",
+            type: "success",
+          });
+        } catch (error) {
+          console.error(error);
+          setStatusModal({
+            show: true,
+            title: "Error",
+            message: "Failed to delete.",
+            type: "error",
+          });
+        }
+      },
+    });
   };
 
   const onFileChange = (e) => {
@@ -419,8 +461,8 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
   // ၄။ Postcard တင်ခြင်း
   const handlePostcardUpload = async () => {
     if (!postcardMessage.trim()) {
-        alert("Write A Birthday Message...");
-        return;
+      alert("Write A Birthday Message...");
+      return;
     }
     setUploading(true);
     let imgUrl = "";
@@ -428,10 +470,13 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
     try {
       // ၁။ ပုံအသစ် (File) ရွေးထားလျှင် Storage သို့တင်မည်
       if (postcardImage && typeof postcardImage !== "string") {
-        const imgRef = ref(storage, `postcards/images/${Date.now()}_${postcardImage.name}`);
+        const imgRef = ref(
+          storage,
+          `postcards/images/${Date.now()}_${postcardImage.name}`,
+        );
         const snapshot = await uploadBytes(imgRef, postcardImage);
         imgUrl = await getDownloadURL(snapshot.ref);
-      } 
+      }
       // ၂။ Template (Link) ကိုပဲ ရွေးထားလျှင် Link ကို တိုက်ရိုက်ယူမည်
       else if (typeof postcardImage === "string") {
         imgUrl = postcardImage;
@@ -456,10 +501,21 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
       setPostcardMessage("");
       setPostcardImage(null);
       setShowPostcardEditor(false);
-      alert("Postcard posted! ✨");
+      setStatusModal({
+        show: true,
+        title: "🎨 Postcard Sent",
+        message: "Your postcard has been posted successfully! ✨",
+        type: "success",
+      });
     } catch (error) {
-      console.error("Postcard Upload Error:", error);
-      alert("Postcard failed. Tray again!");
+      console.error(error);
+      setUploading(false);
+      setStatusModal({
+        show: true,
+        title: "❌ Postcard Upload Failed",
+        message: "Something went wrong. Please try again.",
+        type: "error",
+      });
     }
     setUploading(false);
   };
@@ -474,7 +530,11 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
     try {
       // ၁။ Online Link ထည့်ထားရင် အရင်ယူမယ်
       if (externalUrl) {
-        uploadedMedia.push({ url: externalUrl, type: "image", isExternal: true });
+        uploadedMedia.push({
+          url: externalUrl,
+          type: "image",
+          isExternal: true,
+        });
       }
 
       // ၂။ စက်ထဲက ပုံတွေကို Loop ပတ်ပြီး Upload တင်မယ်
@@ -505,10 +565,21 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
       setPreviewUrls([]);
       setExternalUrl("");
       setIsCreating(false);
-      alert("Memory uploaded successfully! ✨");
+      setStatusModal({
+        show: true,
+        title: "🎉 Success",
+        message: "Memory uploaded successfully! ✨",
+        type: "success",
+      });
     } catch (error) {
-      console.error("Upload Error:", error);
-      alert("Unable to upload the image.");
+      console.error(error);
+      setUploading(false);
+      setStatusModal({
+        show: true,
+        title: "❌ Image Upload Failed",
+        message: "Something went wrong. Please try again.",
+        type: "error",
+      });
     }
     setUploading(false);
   };
@@ -571,7 +642,8 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               alt="me"
             />
             <div style={{ flex: 1, color: "#94a3b8", fontSize: "15px" }}>
-              What would you like to share? {auth.currentUser?.displayName.split(" ")[0]}...
+              What would you like to share?{" "}
+              {auth.currentUser?.displayName.split(" ")[0]}...
             </div>
             <Image color="#10b981" size={22} />
           </div>
@@ -1026,7 +1098,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
             </div>
 
             {/* Selected File Names */}
-            {(postcardImage) && (
+            {postcardImage && (
               <div
                 style={{
                   textAlign: "center",
@@ -1137,9 +1209,7 @@ const MainDashboard = ({ posts, setPosts, userFamilyCode, darkMode }) => {
               transition: "0.2s",
             }}
           >
-            {loadingMore
-              ? "Please wait..."
-              : "View more memories... ↓"}
+            {loadingMore ? "Please wait..." : "View more memories... ↓"}
           </button>
         </div>
       )}
@@ -1768,12 +1838,13 @@ const modernPostCard = {
   height: "560px", // 🌟 ကတ်အမြင့်ကို ပုံသေပြန်ထားလိုက်ပါပြီ
   position: "relative",
   marginBottom: "10px",
-  transition: "0.3s ease"
+  transition: "0.3s ease",
 };
 
 const postCaption = {
   padding: "0 20px 10px",
-  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  fontFamily:
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   color: "#1e293b",
   fontSize: "12px",
   whiteSpace: "pre-wrap",

@@ -953,6 +953,8 @@ function App() {
                   posts={posts}
                   setPosts={setPosts}
                   userFamilyCode={userFamilyCode}
+                  setStatusModal={setStatusModal}   // 🌟 ဤစာကြောင်း ထည့်ပါ
+    setConfirmModal={setConfirmModal} // 🌟 ဤစာကြောင်း ထည့်ပါ
                   darkMode={darkMode}
                 />
               )}
