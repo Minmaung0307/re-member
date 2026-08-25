@@ -1082,7 +1082,6 @@ function App() {
                   <div style={eventListGrid}>
                     {events.map((ev) => (
                       <div key={ev.id} style={eventCard}>
-                        {/* ၁။ ပုံပြသခြင်း (Field နာမည် ၂ မျိုးလုံးကို စစ်ပေးထားပါတယ်) */}
                         <div style={eventImageWrapper}>
                           {ev.imageUrl || ev.image ? (
                             <img
@@ -1091,19 +1090,17 @@ function App() {
                               alt="event"
                               referrerPolicy="no-referrer"
                               onError={(e) => {
-                                // ပုံအဟောင်းတွေ လင့်ခ်ပျက်နေရင် Placeholder အစား Gradient ပြောင်းခိုင်းလိုက်တာပါ
                                 e.target.style.display = "none";
                                 e.target.nextSibling.style.display = "flex";
                               }}
                             />
                           ) : null}
 
-                          {/* ပုံမရှိတဲ့အခါ သို့မဟုတ် ပုံပျက်နေတဲ့အခါ ပြမည့် ပုံစံလှလှလေး */}
                           <div
                             style={{
                               ...eventCardImg,
                               display:
-                                ev.imageUrl || ev.image ? "none" : "flex", // ပုံရှိရင် ဖျောက်ထားမယ်
+                                ev.imageUrl || ev.image ? "none" : "flex",
                               background:
                                 "linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%)",
                               justifyContent: "center",
@@ -1114,7 +1111,7 @@ function App() {
                           >
                             🗓️
                           </div>
-                          {/* ၂။ Edit/Delete Icons (ပုံပေါ်မှာ Floating ပုံစံတင်ထားပါတယ်) */}
+
                           <div style={eventActionsOverlay}>
                             <button
                               onClick={() => {
@@ -1126,15 +1123,36 @@ function App() {
                             >
                               <Edit size={14} color="#3b82f6" />
                             </button>
-                            <button
-                              onClick={() =>
-                                deleteDoc(doc(db, "events", ev.id))
-                              }
-                              style={iconActionBtn}
-                              title="Cancel"
+
+                            {/* 🌟 ဤနေရာတွင် Button အပိုကို ဖြုတ်ပြီး Confirmation Logic ကို တိုက်ရိုက်ထည့်ပါသည် 🌟 */}
+                            <div
+                              style={{ ...iconActionBtn, cursor: "pointer" }}
+                              title="Delete"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Event ပွားခြင်းကို တားရန်
+                                setConfirmModal({
+                                  show: true,
+                                  title: "Are you sure?",
+                                  message: `"${ev.title}" will be permanently deleted.`,
+                                  onConfirm: () => {
+                                    const eventRef = doc(db, "events", ev.id);
+                                    deleteDoc(eventRef)
+                                      .then(() => {
+                                        setStatusModal({
+                                          show: true,
+                                          title: "Deleted!",
+                                          message:
+                                            "The event has been removed.",
+                                          type: "success",
+                                        });
+                                      })
+                                      .catch((err) => console.error(err));
+                                  },
+                                });
+                              }}
                             >
                               <Trash2 size={14} color="#ef4444" />
-                            </button>
+                            </div>
                           </div>
                         </div>
 
@@ -1142,12 +1160,16 @@ function App() {
                           <div
                             style={{
                               fontWeight: "bold",
-                              fontSize: "17px",
-                              color: "#1e293b",
-                              marginBottom: "5px",
+                              fontSize: "15px",
+                              color: "#046ebf",
+                              marginBottom: "8px", // အောက်ကစာသားနဲ့ နည်းနည်းခြားအောင်
+                              marginTop: "5px",
+                              textTransform: "capitalize", // ရှေ့စာလုံးကြီး အလိုလိုပြောင်းပေးမယ်
+                              lineHeight: "1.2", // 🌟 စာကြောင်းအမြင့်ကို ညှိမယ်
+                              display: "block",
                             }}
                           >
-                            {ev.title}
+                            {ev.title || "No Title"}
                           </div>
                           <div
                             style={{
@@ -2659,11 +2681,16 @@ function App() {
 
                   <label style={labelStyle}>Date (MM/DD/YYYY)</label>
                   <input
-                    placeholder="08/25/2026"
+                    type="date"
                     style={modalInputLarge}
-                    onChange={(e) =>
-                      setNewEvent({ ...newEvent, date: e.target.value })
-                    }
+                    onChange={(e) => {
+                      // ရွေးလိုက်တဲ့ Date (YYYY-MM-DD) ကို MM/DD/YYYY အဖြစ် ပြောင်းလဲခြင်း
+                      const dateParts = e.target.value.split("-");
+                      if (dateParts.length === 3) {
+                        const formattedDate = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`;
+                        setNewEvent({ ...newEvent, date: formattedDate });
+                      }
+                    }}
                   />
 
                   <label style={labelStyle}>Place (Location)</label>
@@ -2701,6 +2728,8 @@ function App() {
                     style={{ display: "flex", gap: "12px", marginTop: "10px" }}
                   >
                     <button
+                      // 🌟 အရေးကြီးသည် - uploading ဖြစ်နေစဉ် ခလုတ်ကို နှိပ်မရအောင် ပိတ်ထားမည်
+                      disabled={uploading}
                       onClick={async () => {
                         if (newEvent.title && newEvent.date && userFamilyCode) {
                           try {
@@ -2709,6 +2738,8 @@ function App() {
 
                             // ပုံရွေးထားလျှင် Storage သို့ အရင်တင်မည်
                             if (eventFile) {
+                              const { ref, uploadBytes, getDownloadURL } =
+                                await import("firebase/storage");
                               const storageRef = ref(
                                 storage,
                                 `events/${Date.now()}_${eventFile.name}`,
@@ -2721,12 +2752,16 @@ function App() {
                             }
 
                             await addDoc(collection(db, "events"), {
-                              ...newEvent,
-                              imageUrl: eventImgUrl, // image နေရာတွင် imageUrl ဟု နာမည်ပေးခြင်းက ပိုစနစ်ကျပါသည်
+                              title: newEvent.title, // 👈 ဤနေရာတွင် 'title' ဖြစ်ရပါမည်
+                              date: newEvent.date,
+                              location: newEvent.location,
+                              details: newEvent.details,
+                              imageUrl: eventImgUrl,
                               familyCode: userFamilyCode,
                               createdAt: serverTimestamp(),
                             });
 
+                            // 🌟 အောင်မြင်ပါက Modal ကို ပိတ်ပြီး State များကို ရှင်းမည်
                             setShowEventModal(false);
                             setNewEvent({
                               title: "",
@@ -2734,26 +2769,55 @@ function App() {
                               location: "",
                               details: "",
                             });
-                            setEventFile(null); // ပုံကို Reset လုပ်မည်
+                            setEventFile(null);
                             setUploading(false);
-                            alert("New event saved successfully!");
+
+                            // 🌟 Browser Alert အစား Status Modal ကို သုံးခြင်း
+                            setStatusModal({
+                              show: true,
+                              title: "🎉 Success",
+                              message: "New event saved successfully!",
+                              type: "success",
+                            });
                           } catch (error) {
                             console.error("Error adding event:", error);
                             setUploading(false);
+                            setStatusModal({
+                              show: true,
+                              title: "❌ Error",
+                              message: "Something went wrong while saving.",
+                              type: "error",
+                            });
                           }
                         } else {
-                          alert(
-                            "Event name, date, and family code are required.",
-                          );
+                          // အချက်အလက် မပြည့်စုံပါက အသိပေးရန်
+                          setStatusModal({
+                            show: true,
+                            title: "⚠️ Alert",
+                            message:
+                              "Event name, date, and Family Code are required.",
+                            type: "error",
+                          });
                         }
                       }}
-                      style={postBtnFull}
+                      style={{
+                        ...postBtnFull,
+                        // 🌟 Upload တင်နေစဉ် အရောင်မှိန်သွားအောင်နှင့် cursor ပိတ်ရန်
+                        opacity: uploading ? 0.6 : 1,
+                        cursor: uploading ? "not-allowed" : "pointer",
+                      }}
                     >
-                      Save
+                      {/* 🌟 ခလုတ်ပေါ်ကစာသားကို အခြေအနေအလိုက် ပြောင်းပြမည် 🌟 */}
+                      {uploading ? "Saving..." : "Save"}
                     </button>
+
                     <button
-                      onClick={() => setShowEventModal(false)}
+                      onClick={() => {
+                        setShowEventModal(false);
+                        setEventFile(null);
+                      }}
                       style={cancelBtn}
+                      disabled={uploading} // တင်နေတုန်း Cancel နှိပ်မရအောင် တားထားခြင်း
                     >
                       Cancel
                     </button>
@@ -2801,11 +2865,18 @@ function App() {
 
                   <label style={labelStyle}>Date (MM/DD/YYYY)</label>
                   <input
-                    defaultValue={editingEvent.date}
+                    type="date"
                     style={modalInputLarge}
-                    onChange={(e) =>
-                      setEditingEvent({ ...editingEvent, date: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const dateParts = e.target.value.split("-");
+                      if (dateParts.length === 3) {
+                        const formattedDate = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`;
+                        setEditingEvent({
+                          ...editingEvent,
+                          date: formattedDate,
+                        });
+                      }
+                    }}
                   />
 
                   <label style={labelStyle}>Place (Location)</label>
@@ -2849,9 +2920,17 @@ function App() {
                     style={{ display: "flex", gap: "12px", marginTop: "10px" }}
                   >
                     <button
+                      // ၁။ 🌟 အရေးကြီးသည်: တင်နေစဉ်မှာ ထပ်နှိပ်လို့မရအောင် ပိတ်ထားပါမယ်
+                      disabled={uploading}
                       onClick={async () => {
                         if (!editingEvent.title || !editingEvent.date) {
-                          alert("Please enter a title and date");
+                          // ဒီနေရာမှာလည်း Alert အစား statusModal သုံးရင် ပို Professional ဆန်ပါတယ်
+                          setStatusModal({
+                            show: true,
+                            title: "⚠️ Warning",
+                            message: "Please enter a title and date",
+                            type: "error",
+                          });
                           return;
                         }
 
@@ -2880,25 +2959,50 @@ function App() {
                             date: editingEvent.date,
                             location: editingEvent.location || "",
                             details: editingEvent.details || "",
-                            imageUrl: finalImageUrl, // ပုံအသစ်ရှိရင် အသစ်၊ မရှိရင် အဟောင်းအတိုင်း သိမ်းမယ်
+                            imageUrl: finalImageUrl,
                           });
 
-                          setShowEditModal(false);
+                          // ၃။ 🌟 လုပ်ဆောင်ချက်များ အစဉ်လိုက်လုပ်ခြင်း
+                          setShowEditModal(false); // Edit Modal အရင်ပိတ်မယ်
+
+                          setStatusModal({
+                            show: true,
+                            title: "🎉 Success",
+                            message: "Event updated successfully!",
+                            type: "success",
+                          });
+
                           setEditingEvent(null);
                           setEventFile(null);
                           setUploading(false);
-                          alert("Edited! ✨");
+
+                          // ❌ alert("Edited! ✨");  <-- ဒီတစ်ကြောင်းကို ဖြုတ်ပစ်လိုက်ပါပြီ
                         } catch (error) {
                           console.error(error);
                           setUploading(false);
+                          setStatusModal({
+                            show: true,
+                            title: "❌ Error",
+                            message:
+                              "Failed to update event. Please try again.",
+                            type: "error",
+                          });
                         }
                       }}
-                      style={postBtnFull}
+                      style={{
+                        ...postBtnFull,
+                        // 🌟 Upload တင်နေစဉ်မှာ ခလုတ်ကို အရောင်မှိန်ပြပြီး Cursor ပိတ်ထားမယ်
+                        opacity: uploading ? 0.7 : 1,
+                        cursor: uploading ? "not-allowed" : "pointer",
+                      }}
                     >
                       {uploading ? "Please wait..." : "Saving changes"}
                     </button>
+
                     <button
-                      onClick={() => setShowEditModal(false)}
+                      onClick={() => {
+                        if (!uploading) setShowEditModal(false); // တင်နေတုန်း ပိတ်မရအောင် တားထားခြင်း
+                      }}
                       style={cancelBtn}
                     >
                       Cancel
@@ -3710,22 +3814,28 @@ const eventListGrid = {
 };
 const eventCard = {
   backgroundColor: "#fff",
-  borderRadius: "16px",
-  overflow: "hidden",
-  boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+  borderRadius: "24px",
+  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
   border: "1px solid #f1f5f9",
+  display: "flex", // 🌟 Flexbox သုံးမယ်
+  flexDirection: "column", // 🌟 အပေါ်အောက် စီမယ်
+  overflow: "hidden", // 🌟 ပုံက စာသားပေါ် ကျော်မတက်အောင် တားမယ်
+  height: "100%", // 🌟 ကတ်အမြင့်ကို ညီအောင်ထားမယ်
   position: "relative",
 };
+
 const eventImageWrapper = {
   position: "relative",
   width: "100%",
-  height: "140px",
+  height: "180px", // 🌟 အမြင့်ကို သေသေချာချာ သတ်မှတ်ပေးပါ
+  backgroundColor: "#f8fafc",
+  overflow: "hidden", // 🌟 ပုံပိုထွက်လာရင် ဖြတ်ချလိုက်မယ်
 };
+
 const eventCardImg = {
   width: "100%",
-  height: "180px",
+  height: "100%", // 🌟 Wrapper ရဲ့ အမြင့်အတိုင်းပဲ ယူမယ်
   objectFit: "contain",
-  backgroundColor: "#f8fafc",
   display: "block",
 };
 const eventActionsOverlay = {
