@@ -666,13 +666,25 @@ function App() {
       const userSnap = await getDocs(userQ);
 
       if (userSnap.empty) {
-        alert("No user was found with this email address.");
+        // 🌟 Browser Alert အစား Status Modal ကို သုံးခြင်း
+        setStatusModal({
+          show: true,
+          title: "⚠️ ရှာမတွေ့ပါ",
+          message:
+            "ဤ Email နှင့် အသုံးပြုသူ မရှိပါ။ စာလုံးပေါင်း မှန်/မမှန် ပြန်စစ်ပေးပါ။ (မှတ်ချက် - တစ်ဖက်လူသည် အက်ပ်သို့ အနည်းဆုံး တစ်ကြိမ် Login ဝင်ဖူးထားရပါမည်)",
+          type: "error",
+        });
         return;
       }
 
       const targetUser = userSnap.docs[0].data();
       if (targetUser.id === user.uid) {
-        alert("You can't add yourself as a friend.");
+        setStatusModal({
+          show: true,
+          title: "⚠️ မရပါ",
+          message: "ကိုယ့်ကိုယ်ကို ပြန်ပေါင်းလို့မရပါဘူးခင်ဗျာ။",
+          type: "error",
+        });
         return;
       }
 
@@ -694,11 +706,15 @@ function App() {
 
       if (!connSnap.empty) {
         const status = connSnap.docs[0].data().status;
-        alert(
-          status === "pending"
-            ? "The request is still pending."
-            : "You are already connected with this person.",
-        );
+        setStatusModal({
+          show: true,
+          title: "⚠️ Status",
+          message:
+            status === "pending"
+              ? "Request has already been sent. Please wait until the other person accepts it."
+              : "You are already connected with this person.",
+          type: "error",
+        });
         return;
       }
 
@@ -711,13 +727,23 @@ function App() {
         createdAt: serverTimestamp(),
       });
 
-      alert(
-        "Request sent! The person will appear in the Sidebar once they accept the request.",
-      );
+      // 🌟 အောင်မြင်ကြောင်း Modal ပြသခြင်း 🌟
+      setStatusModal({
+        show: true,
+        title: "🎉 Request Sent!",
+        message:
+          "Request ပို့လိုက်ပါပြီ။ တစ်ဖက်လူက လက်ခံ (Accept) လုပ်လိုက်လျှင် Sidebar ရှိ Connections အောက်တွင် ပေါ်လာပါလိမ့်မည်။",
+        type: "success",
+      });
       setSearchSearchEmail(""); // ရိုက်ထားတဲ့ Email အကွက်ကို ပြန်ရှင်းမယ်
     } catch (error) {
       console.error("Error in handleAddFriend:", error);
-      alert("Something went wrong. Please try again later.");
+      setStatusModal({
+        show: true,
+        title: "❌ Error",
+        message: "Something went wrong. Please try again later.",
+        type: "error",
+      });
     }
   };
 
@@ -739,30 +765,39 @@ function App() {
   const todayBDays = [];
   const upcomingBDays = [];
 
+  // 🌟 လက်ရှိအချိန်ကို တိကျအောင်ယူမယ်
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // ယနေ့ ၀ နာရီ ၀ မိနစ်
+
   users.forEach((u) => {
     if (!u.birthday || !u.birthday.includes("/")) return;
 
+    // 🌟 အသစ်ထည့်ရမည့် ကုဒ် - ကိုယ့် ID ဖြစ်နေရင် ကျော်သွားမယ်
+    if (u.id === user.uid) return;
+
+    // MM/DD/YYYY ကို parse လုပ်မယ်
     const [m, d] = u.birthday.split("/");
+    const birthMonth = parseInt(m) - 1; // JS တွင် Month သည် 0 မှ စသည်
+    const birthDay = parseInt(d);
 
-    // ၁။ ဒီနေ့ရက်စွဲကိုယူပြီး အချိန်ကို ၀ နာရီ (Midnight) သတ်မှတ်မယ်
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // ဒီနှစ်အတွက် မွေးနေ့ရက်စွဲကို တည်ဆောက်မယ်
+    let bdayThisYear = new Date(today.getFullYear(), birthMonth, birthDay);
 
-    // ၂။ ဒီနှစ်ထဲက မွေးနေ့ရက်စွဲကိုတည်ဆောက်ပြီး အချိန်ကို ၀ နာရီ (Midnight) သတ်မှတ်မယ်
-    let bdayDate = new Date(today.getFullYear(), parseInt(m) - 1, parseInt(d));
-    bdayDate.setHours(0, 0, 0, 0);
-
-    // ၃။ အကယ်၍ မွေးနေ့ရက်စွဲက 'ယနေ့' ထက် စောနေမှသာ (မွေးနေ့ကျော်သွားမှသာ) နောက်နှစ်ကို ရွှေ့မယ်
-    // (ဒီနေ့က မွေးနေ့ဆိုရင် today နဲ့ bdayDate က တူနေမှာဖြစ်လို့ ဒီအထဲ မဝင်တော့ပါဘူး)
-    if (bdayDate < today) {
-      bdayDate.setFullYear(today.getFullYear() + 1);
+    // အကယ်၍ ဒီနှစ်အတွက် မွေးနေ့ကျော်သွားရင် (ဥပမာ ဒီနေ့ Aug 25, မွေးနေ့က Jan 1) နောက်နှစ်ကို ယူမယ်
+    if (bdayThisYear < today) {
+      bdayThisYear.setFullYear(today.getFullYear() + 1);
     }
 
-    // ၄။ ရက်ခြားနားချက်ကို တွက်မယ်
-    const diffTime = bdayDate.getTime() - today.getTime();
+    // ရက်ခြားနားချက်ကို တွက်ချက်မယ်
+    const diffTime = bdayThisYear.getTime() - today.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0 || diffDays === 365 || diffDays === 366) {
+    // 🌟 Debug လုပ်ရန် Console မှာ အဖြေထုတ်ကြည့်မယ်
+    console.log(
+      `Check - Name: ${u.displayName}, Days Remaining: ${diffDays} days`,
+    );
+
+    if (diffDays === 0) {
       todayBDays.push(u);
     } else if (diffDays > 0 && diffDays <= 14) {
       upcomingBDays.push({ ...u, daysLeft: diffDays });
@@ -870,77 +905,88 @@ function App() {
             </div>
           </nav>
 
-          {/* 🌟 ဤနေရာတွင် မွေးနေ့ Banner ကုဒ်များကို ပြန်ထည့်ပါ 🌟 */}
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "1200px",
-              margin: "80px auto 0",
-              padding: "0 15px",
-            }}
-          >
-            {/* ဒီနေ့ မွေးနေ့ရှင်များ */}
-            {todayBDays.length > 0 && (
-              <div style={bdayBannerToday}>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "15px" }}
-                >
-                  <div style={{ display: "flex" }}>
-                    {todayBDays.map((u, index) => (
-                      <img
-                        key={u.id}
-                        src={u.photoURL}
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "50%",
-                          border: "2px solid #fff",
-                          marginLeft: index === 0 ? 0 : "-15px",
-                        }}
-                        alt="u"
-                      />
-                    ))}
-                  </div>
-                  <div style={{ textAlign: "left" }}>
-                    <strong style={{ color: "#92400e" }}>
-                      🎉 Happy Birthday!
-                    </strong>
-                    <div style={{ fontSize: "13px" }}>
-                      Today is {todayBDays.map((u) => u.displayName).join(", ")}{" "}
-                      birthday! Let's send our best wishes! 🎂
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* မကြာမီ မွေးနေ့ရှိသူများ */}
-            {upcomingBDays.length > 0 && (
-              <div style={bdayBannerUpcoming}>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "15px" }}
-                >
-                  <span style={{ fontSize: "24px" }}>🎁</span>
-                  <div style={{ textAlign: "left" }}>
-                    <strong style={{ color: "#065f46" }}>
-                      Upcoming Birthdays
-                    </strong>
-                    <div style={{ fontSize: "13px" }}>
-                      {upcomingBDays.map((u, i) => (
-                        <span key={u.id}>
-                          {u.displayName} (
-                          {u.daysLeft === 1 ? "Tomorrow" : `${u.daysLeft} Days`}
-                          ){i < upcomingBDays.length - 1 ? "၊ " : ""}
-                        </span>
+          <div style={mainLayout}>
+            {/* 🌟 ဤနေရာတွင် မွေးနေ့ Banner ကုဒ်များကို ပြန်ထည့်ပါ 🌟 */}
+            <div
+              style={{
+                width: "100%",
+                maxWidth: "1200px",
+                margin: "80px auto 0",
+                padding: "0 15px",
+              }}
+            >
+              {/* ဒီနေ့ မွေးနေ့ရှင်များ */}
+              {todayBDays.length > 0 && (
+                <div style={bdayBannerToday}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "15px",
+                    }}
+                  >
+                    <div style={{ display: "flex" }}>
+                      {todayBDays.map((u, index) => (
+                        <img
+                          key={u.id}
+                          src={u.photoURL}
+                          style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "50%",
+                            border: "2px solid #fff",
+                            marginLeft: index === 0 ? 0 : "-15px",
+                          }}
+                          alt="u"
+                        />
                       ))}
                     </div>
+                    <div style={{ textAlign: "left" }}>
+                      <strong style={{ color: "#92400e" }}>
+                        🎉 Happy Birthday!
+                      </strong>
+                      <div style={{ fontSize: "13px" }}>
+                        Today is{" "}
+                        {todayBDays.map((u) => u.displayName).join(", ")}{" "}
+                        birthday! Let's send our best wishes! 🎂
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
 
-          <div style={mainLayout}>
+              {/* မကြာမီ မွေးနေ့ရှိသူများ */}
+              {upcomingBDays.length > 0 && (
+                <div style={bdayBannerUpcoming}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "15px",
+                    }}
+                  >
+                    <span style={{ fontSize: "24px" }}>🎁</span>
+                    <div style={{ textAlign: "left" }}>
+                      <strong style={{ color: "#065f46" }}>
+                        Upcoming Birthdays
+                      </strong>
+                      <div style={{ fontSize: "13px" }}>
+                        {upcomingBDays.map((u, i) => (
+                          <span key={u.id}>
+                            {u.displayName} (
+                            {u.daysLeft === 1
+                              ? "Tomorrow"
+                              : `${u.daysLeft} Days`}
+                            ){i < upcomingBDays.length - 1 ? "၊ " : ""}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div
               style={{
                 ...contentBody,
@@ -953,8 +999,8 @@ function App() {
                   posts={posts}
                   setPosts={setPosts}
                   userFamilyCode={userFamilyCode}
-                  setStatusModal={setStatusModal}   // 🌟 ဤစာကြောင်း ထည့်ပါ
-    setConfirmModal={setConfirmModal} // 🌟 ဤစာကြောင်း ထည့်ပါ
+                  setStatusModal={setStatusModal} // 🌟 ဤစာကြောင်း ထည့်ပါ
+                  setConfirmModal={setConfirmModal} // 🌟 ဤစာကြောင်း ထည့်ပါ
                   darkMode={darkMode}
                 />
               )}
@@ -1627,13 +1673,29 @@ function App() {
                                         <select
                                           onChange={async (e) => {
                                             const newRole = e.target.value;
-                                            await updateDoc(
-                                              doc(db, "users", u.id),
-                                              { role: newRole },
-                                            );
-                                            alert(
-                                              `${u.displayName} has been changed to ${newRole}.`,
-                                            );
+                                            try {
+                                              await updateDoc(
+                                                doc(db, "users", u.id),
+                                                { role: newRole },
+                                              );
+
+                                              // 🌟 Browser Alert အစား Status Modal ကို သုံးခြင်း
+                                              setStatusModal({
+                                                show: true,
+                                                title: "🎉 Role Updated",
+                                                message: `${u.displayName} ကို ${newRole} အဖြစ် အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ။`,
+                                                type: "success",
+                                              });
+                                            } catch (error) {
+                                              console.error(error);
+                                              setStatusModal({
+                                                show: true,
+                                                title: "❌ Error",
+                                                message:
+                                                  "ပြင်ဆင်၍ မရပါ။ နောက်မှ ပြန်ကြိုးစားပါ။",
+                                                type: "error",
+                                              });
+                                            }
                                           }}
                                           defaultValue={u.role || "Member"}
                                           style={roleSelectStyle}
@@ -1780,38 +1842,62 @@ function App() {
 
                                       <button
                                         onClick={async () => {
-                                          const finalInterest =
-                                            adminInterests[u.id] !== undefined
-                                              ? adminInterests[u.id]
-                                              : u.interests || "";
-                                          const finalBirthday =
-                                            adminBirthdays[u.id] !== undefined
-                                              ? adminBirthdays[u.id]
-                                              : u.birthday || "";
+                                          // try { ကို ဒီနေရာမှာ စဖွင့်ပေးရပါမယ်
+                                          try {
+                                            const finalInterest =
+                                              adminInterests[u.id] !== undefined
+                                                ? adminInterests[u.id]
+                                                : u.interests || "";
+                                            const finalBirthday =
+                                              adminBirthdays[u.id] !== undefined
+                                                ? adminBirthdays[u.id]
+                                                : u.birthday || "";
 
-                                          // 🌟 အသစ်ထည့်လိုက်သော code: ရိုက်ထည့်လိုက်တဲ့ ID ကို ယူမယ်
-                                          const finalFamilyCode =
-                                            adminBirthdays[`${u.id}_code`] !==
-                                            undefined
-                                              ? adminBirthdays[`${u.id}_code`]
-                                              : u.familyCode || "";
+                                            // 🌟 အသစ်ထည့်လိုက်သော code: ရိုက်ထည့်လိုက်တဲ့ ID ကို ယူမယ်
+                                            const finalFamilyCode =
+                                              adminBirthdays[`${u.id}_code`] !==
+                                              undefined
+                                                ? adminBirthdays[`${u.id}_code`]
+                                                : u.familyCode || "";
 
-                                          await updateDoc(
-                                            doc(db, "users", u.id),
-                                            {
-                                              interests: finalInterest,
-                                              birthday: finalBirthday,
-                                              familyCode: finalFamilyCode, // 🌟 ဤစာကြောင်းကို ထည့်ပေးပါ
-                                            },
-                                          );
-                                          alert("Saved successfully! ✨");
+                                            // Database မှာသွားပြင်မယ်
+                                            await updateDoc(
+                                              doc(db, "users", u.id),
+                                              {
+                                                interests: finalInterest,
+                                                birthday: finalBirthday,
+                                                familyCode: finalFamilyCode,
+                                              },
+                                            );
 
-                                          // ကုဒ်ပြောင်းသွားရင် အုပ်စုတွေ အလိုလိုကွဲသွားအောင် refresh တစ်ချက်လုပ်ပေးတာ ပိုကောင်းပါတယ်
-                                          if (
-                                            adminBirthdays[`${u.id}_code`] !==
-                                            undefined
-                                          ) {
-                                            window.location.reload();
+                                            // ✅ alert ကို ဖြုတ်လိုက်ပါပြီ (Modal ပဲ သုံးပါမယ်)
+                                            setStatusModal({
+                                              show: true,
+                                              title: "🎉 Success!",
+                                              message: `${u.displayName}'s information has been saved successfully.`,
+                                              type: "success",
+                                            });
+
+                                            // ID (Family Code) ပြောင်းသွားရင် refresh လုပ်မည့် logic
+                                            if (
+                                              adminBirthdays[`${u.id}_code`] !==
+                                              undefined
+                                            ) {
+                                              setTimeout(
+                                                () => window.location.reload(),
+                                                1500,
+                                              );
+                                            }
+                                          } catch (error) {
+                                            // တစ်ခုခုမှားယွင်းခဲ့ရင် Error Modal ပြမယ်
+                                            console.error(error);
+                                            setStatusModal({
+                                              show: true,
+                                              title: "❌ Error",
+                                              message:
+                                                "Unable to save. Please try again later.",
+                                              type: "error",
+                                            });
                                           }
                                         }}
                                         style={saveBtnSmall}
@@ -1903,58 +1989,81 @@ function App() {
                       </h3>
                       {showConnections && (
                         <div style={userList}>
-                          {/* လက်ရှိရှိနေတဲ့ connections filter code ကို ဒီမှာထည့်ပါ */}
-                          {connections.length > 0 ? (
-                            connections.map((conn) => {
-                              const friendId =
-                                conn.requesterId === user.uid
-                                  ? conn.receiverId
-                                  : conn.requesterId;
-                              const friend = allUsers.find(
-                                (u) => u.id === friendId,
-                              );
+                          {(() => {
+                            // ၁။ Connections စာရင်းထဲက လူတွေကို တစ်ယောက်ချင်း စစ်ထုတ်မယ်
+                            const externalFriends = connections.filter(
+                              (conn) => {
+                                const friendId =
+                                  conn.requesterId === user.uid
+                                    ? conn.receiverId
+                                    : conn.requesterId;
+                                const friend = allUsers.find(
+                                  (u) => u.id === friendId,
+                                );
 
-                              if (!friend) return null;
+                                if (!friend) return false;
 
-                              return (
-                                <div
-                                  key={conn.id}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    marginBottom: "8px",
-                                    paddingRight: "5px",
-                                  }}
-                                >
-                                  {/* လူပုံနှင့် နာမည် */}
-                                  <div style={{ flex: 1 }}>
-                                    {renderUserItem(friend)}
-                                  </div>
+                                // ၂။ 🌟 အိမ်သား ဟုတ်မဟုတ် စစ်ဆေးတဲ့ logic ကို ပိုမို ခိုင်မာအောင် လုပ်မယ် 🌟
+                                // (ID တူရင်ပဲဖြစ်ဖြစ်၊ Code တူရင်ပဲဖြစ်ဖြစ် သူဟာ အိမ်သား ဖြစ်တဲ့အတွက် Connection မှာ မပြတော့ဘူး)
+                                const isFamilyMember =
+                                  (friend.familyId &&
+                                    friend.familyId === userFamilyId) ||
+                                  (friend.familyCode &&
+                                    friend.familyCode === userFamilyCode);
 
-                                  {/* 🌟 Kick ခလုတ် (Confirm Modal ဖြင့် ချိတ်ထားသည်) 🌟 */}
-                                  <button
-                                    onClick={() =>
-                                      setConfirmModal({
-                                        show: true,
-                                        title: "Disconnect",
-                                        message: `Are you sure you want to disconnect from ${friend.displayName}?`,
-                                        onConfirm: () =>
-                                          deleteDoc(
-                                            doc(db, "connections", conn.id),
-                                          ),
-                                      })
-                                    }
-                                    style={sidebarKickBtn}
+                                return !isFamilyMember; // အိမ်သား မဟုတ်သူများကိုသာ ချန်လှပ်ထားမယ်
+                              },
+                            );
+
+                            // ၃။ စစ်ထုတ်ပြီးသားလူရှိမှ Sidebar မှာ ပြမယ်
+                            return externalFriends.length > 0 ? (
+                              externalFriends.map((conn) => {
+                                const friendId =
+                                  conn.requesterId === user.uid
+                                    ? conn.receiverId
+                                    : conn.requesterId;
+                                const friend = allUsers.find(
+                                  (u) => u.id === friendId,
+                                );
+                                if (!friend) return null;
+
+                                return (
+                                  <div
+                                    key={conn.id}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "space-between",
+                                      marginBottom: "8px",
+                                      paddingRight: "5px",
+                                    }}
                                   >
-                                    Kick
-                                  </button>
-                                </div>
-                              );
-                            })
-                          ) : (
-                            <p style={emptyText}>No connections yet</p>
-                          )}
+                                    <div style={{ flex: 1 }}>
+                                      {renderUserItem(friend)}
+                                    </div>
+                                    <button
+                                      onClick={() =>
+                                        setConfirmModal({
+                                          show: true,
+                                          title: "Disconnect",
+                                          message: `Are you sure you want to disconnect from ${friend.displayName}?`,
+                                          onConfirm: () =>
+                                            deleteDoc(
+                                              doc(db, "connections", conn.id),
+                                            ),
+                                        })
+                                      }
+                                      style={sidebarKickBtn}
+                                    >
+                                      Kick
+                                    </button>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <p style={emptyText}>No external connections</p>
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
@@ -3289,6 +3398,7 @@ function App() {
             <Chat
               recipient={selectedUser}
               onClose={() => setSelectedUser(null)}
+              setConfirmModal={setConfirmModal}
             />
           )}
         </>
