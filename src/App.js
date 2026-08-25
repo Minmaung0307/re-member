@@ -1720,8 +1720,17 @@ function App() {
 
                                       <input
                                         placeholder="Interest/Hobby"
-                                        style={interestInputStyle}
+                                        style={{
+                                          ...interestInputStyle,
+                                          backgroundColor: isMe
+                                            ? "#fff"
+                                            : "transparent",
+                                          border: isMe
+                                            ? "1px solid #e2e8f0"
+                                            : "none",
+                                        }}
                                         defaultValue={u.interests || ""}
+                                        readOnly={!isMe}
                                         onChange={(e) =>
                                           setAdminInterests({
                                             ...adminInterests,
@@ -1735,8 +1744,15 @@ function App() {
                                         style={{
                                           ...interestInputStyle,
                                           width: "120px",
+                                          backgroundColor: isMe
+                                            ? "#fff"
+                                            : "transparent",
+                                          border: isMe
+                                            ? "1px solid #e2e8f0"
+                                            : "none",
                                         }}
                                         defaultValue={u.birthday || ""}
+                                        readOnly={!isMe}
                                         onChange={(e) =>
                                           setAdminBirthdays({
                                             ...adminBirthdays,
@@ -1776,6 +1792,7 @@ function App() {
                                         <input
                                           placeholder="Code"
                                           defaultValue={u.familyCode || ""}
+                                          readOnly={!isMe}
                                           style={{
                                             border: "none",
                                             background: "none",
@@ -1840,70 +1857,82 @@ function App() {
                                         </div>
                                       </div>
 
-                                      <button
-                                        onClick={async () => {
-                                          // try { ကို ဒီနေရာမှာ စဖွင့်ပေးရပါမယ်
-                                          try {
-                                            const finalInterest =
-                                              adminInterests[u.id] !== undefined
-                                                ? adminInterests[u.id]
-                                                : u.interests || "";
-                                            const finalBirthday =
-                                              adminBirthdays[u.id] !== undefined
-                                                ? adminBirthdays[u.id]
-                                                : u.birthday || "";
+                                      {isMe ? (
+                                        <button
+                                          onClick={async () => {
+                                            // try { ကို ဒီနေရာမှာ စဖွင့်ပေးရပါမယ်
+                                            try {
+                                              const finalInterest =
+                                                adminInterests[u.id] !==
+                                                undefined
+                                                  ? adminInterests[u.id]
+                                                  : u.interests || "";
+                                              const finalBirthday =
+                                                adminBirthdays[u.id] !==
+                                                undefined
+                                                  ? adminBirthdays[u.id]
+                                                  : u.birthday || "";
 
-                                            // 🌟 အသစ်ထည့်လိုက်သော code: ရိုက်ထည့်လိုက်တဲ့ ID ကို ယူမယ်
-                                            const finalFamilyCode =
-                                              adminBirthdays[`${u.id}_code`] !==
-                                              undefined
-                                                ? adminBirthdays[`${u.id}_code`]
-                                                : u.familyCode || "";
+                                              // 🌟 အသစ်ထည့်လိုက်သော code: ရိုက်ထည့်လိုက်တဲ့ ID ကို ယူမယ်
+                                              const finalFamilyCode =
+                                                adminBirthdays[
+                                                  `${u.id}_code`
+                                                ] !== undefined
+                                                  ? adminBirthdays[
+                                                      `${u.id}_code`
+                                                    ]
+                                                  : u.familyCode || "";
 
-                                            // Database မှာသွားပြင်မယ်
-                                            await updateDoc(
-                                              doc(db, "users", u.id),
-                                              {
-                                                interests: finalInterest,
-                                                birthday: finalBirthday,
-                                                familyCode: finalFamilyCode,
-                                              },
-                                            );
-
-                                            // ✅ alert ကို ဖြုတ်လိုက်ပါပြီ (Modal ပဲ သုံးပါမယ်)
-                                            setStatusModal({
-                                              show: true,
-                                              title: "🎉 Success!",
-                                              message: `${u.displayName}'s information has been saved successfully.`,
-                                              type: "success",
-                                            });
-
-                                            // ID (Family Code) ပြောင်းသွားရင် refresh လုပ်မည့် logic
-                                            if (
-                                              adminBirthdays[`${u.id}_code`] !==
-                                              undefined
-                                            ) {
-                                              setTimeout(
-                                                () => window.location.reload(),
-                                                1500,
+                                              // Database မှာသွားပြင်မယ်
+                                              await updateDoc(
+                                                doc(db, "users", u.id),
+                                                {
+                                                  interests: finalInterest,
+                                                  birthday: finalBirthday,
+                                                  familyCode: finalFamilyCode,
+                                                },
                                               );
+
+                                              // ✅ alert ကို ဖြုတ်လိုက်ပါပြီ (Modal ပဲ သုံးပါမယ်)
+                                              setStatusModal({
+                                                show: true,
+                                                title: "🎉 Success!",
+                                                message: `${u.displayName}'s information has been saved successfully.`,
+                                                type: "success",
+                                              });
+
+                                              // ID (Family Code) ပြောင်းသွားရင် refresh လုပ်မည့် logic
+                                              if (
+                                                adminBirthdays[
+                                                  `${u.id}_code`
+                                                ] !== undefined
+                                              ) {
+                                                setTimeout(
+                                                  () =>
+                                                    window.location.reload(),
+                                                  1500,
+                                                );
+                                              }
+                                            } catch (error) {
+                                              // တစ်ခုခုမှားယွင်းခဲ့ရင် Error Modal ပြမယ်
+                                              console.error(error);
+                                              setStatusModal({
+                                                show: true,
+                                                title: "❌ Error",
+                                                message:
+                                                  "Unable to save. Please try again later.",
+                                                type: "error",
+                                              });
                                             }
-                                          } catch (error) {
-                                            // တစ်ခုခုမှားယွင်းခဲ့ရင် Error Modal ပြမယ်
-                                            console.error(error);
-                                            setStatusModal({
-                                              show: true,
-                                              title: "❌ Error",
-                                              message:
-                                                "Unable to save. Please try again later.",
-                                              type: "error",
-                                            });
-                                          }
-                                        }}
-                                        style={saveBtnSmall}
-                                      >
-                                        Save
-                                      </button>
+                                          }}
+                                          style={saveBtnSmall}
+                                        >
+                                          Save
+                                        </button>
+                                      ) : (
+                                        /* သူများအကောင့်ဆိုရင် Save ခလုတ် ဖျောက်ထားမယ် */
+                                        <div style={{ width: "60px" }}></div>
+                                      )}
                                     </div>
                                   </div>
                                 );
