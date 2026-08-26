@@ -5,7 +5,9 @@ import {
   QrCode,
   FileText,
   Gift,
+  Play,
   Video,
+  Youtube,
   LayoutGrid,
   Info,
   BookOpen,
@@ -16,6 +18,13 @@ import {
 const Portal = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("apps");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // --- Apps Data ---
   const apps = [
@@ -76,6 +85,11 @@ const Portal = () => {
           embedId: "7S_6v-F0XwA",
           desc: "ကုဒ်ဒင် အခြေခံလေ့လာရန်",
         },
+        {
+          name: "English for Success",
+          embedId: "dQw4w9WgXcQ",
+          desc: "နေ့စဉ်သုံး အင်္ဂလိပ်စာ",
+        },
       ],
     },
     {
@@ -85,6 +99,16 @@ const Portal = () => {
           name: "English for Success",
           embedId: "dQw4w9WgXcQ",
           desc: "နေ့စဉ်သုံး အင်္ဂလိပ်စာ",
+        },
+        {
+          name: "MMUSA Tech Tips",
+          embedId: "dQw4w9WgXcQ",
+          desc: "နည်းပညာပိုင်းဆိုင်ရာ ဗဟုသုတများ",
+        },
+        {
+          name: "Programming for Beginners",
+          embedId: "7S_6v-F0XwA",
+          desc: "ကုဒ်ဒင် အခြေခံလေ့လာရန်",
         },
       ],
     },
@@ -103,11 +127,30 @@ const Portal = () => {
     },
     {
       title: "Graphic Design Masterclass",
+      desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
       instructor: "မထက်ထက်",
       price: "Free",
       isFree: true,
       image:
-        "https://images.unsplash.com/photo-1541462608141-ad4d769421a1?auto=format&fit=crop&q=80&w=800",
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
+    },
+    {
+      title: "Full Stack Web Development",
+      desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
+      instructor: "ဆရာလင်း",
+      price: "၅၀,၀၀၀ MMK",
+      isFree: false,
+      image:
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
+    },
+    {
+      title: "Graphic Design Masterclass",
+      desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
+      instructor: "မထက်ထက်",
+      price: "Free",
+      isFree: true,
+      image:
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
     },
   ];
 
@@ -115,90 +158,184 @@ const Portal = () => {
     <div style={styles.container}>
       <header style={styles.header}>
         <h1 style={styles.logo} onClick={() => navigate("/")}>
-          MM<span style={{ color: "#3b82f6" }}>USA</span>
+          <span style={{ color: "#dd7c15" }}>MM</span>
+          <span style={{ color: "#3b82f6" }}>USA</span>
         </h1>
-        <p style={styles.tagline}>Digital Hub for Burmese Communities</p>
+        <p style={styles.tagline}>
+          <span style={{ color: "#dd7c15a1", fontSize: "15px", fontWeight: "Bold"}}>Digital</span>
+          <span style={{ color: "#3b83f6a5", fontSize: "15px", fontWeight: "Bold" }}> Hub</span>
+        </p>
       </header>
 
-      <nav style={styles.tabNav}>
-        <button
-          style={activeTab === "apps" ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab("apps")}
-        >
-          <LayoutGrid size={18} /> Applications
-        </button>
-        <button
-          style={activeTab === "youtube" ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab("youtube")}
-        >
-          <Video size={18} /> YouTube
-        </button>
-        <button
-          style={activeTab === "courses" ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab("courses")}
-        >
-          <BookOpen size={18} /> သင်တန်းများ
-        </button>
-        <button
-          style={activeTab === "about" ? styles.activeTab : styles.tab}
-          onClick={() => setActiveTab("about")}
-        >
-          <Info size={18} /> About
-        </button>
-      </nav>
+      {/* Navigation Tabs */}
+      {!isMobile && (
+        <nav style={styles.navContainer}>
+          <div style={styles.tabsWrapper}>
+            <button
+              onClick={() => setActiveTab("apps")}
+              style={activeTab === "apps" ? styles.activeTab : styles.tab}
+            >
+              <LayoutGrid size={18} />
+              <span>Apps</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("youtube")}
+              style={
+                activeTab === "youtube"
+                  ? activeTab === "youtube"
+                    ? styles.activeTab
+                    : styles.tab
+                  : styles.tab
+              }
+            >
+              <Play size={18} />
+              <span>YouTube</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("courses")}
+              style={activeTab === "courses" ? styles.activeTab : styles.tab}
+            >
+              <BookOpen size={18} />
+              <span>Courses</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("about")}
+              style={activeTab === "about" ? styles.activeTab : styles.tab}
+            >
+              <Info size={18} />
+              <span>About</span>
+            </button>
+          </div>
+        </nav>
+      )}
 
       <main style={styles.content}>
-        {/* --- Applications Tab --- */}
-        {activeTab === "apps" && (
-          <div style={styles.grid}>
-            {apps.map((app, index) => (
-              <AppCard key={index} data={app} />
-            ))}
-          </div>
-        )}
+  {/* --- Applications Tab --- */}
+  {activeTab === "apps" && (
+    <div style={styles.gridContainer}>
+      {apps.map((app, index) => (
+        <AppCard key={index} data={app} />
+      ))}
+    </div>
+  )}
 
-        {/* 🌟 YouTube Tab 🌟 */}
-        {activeTab === "youtube" && (
-          <div>
-            {youtubeCategories.map((cat, idx) => (
-              <div key={idx} style={{ marginBottom: "50px" }}>
-                <h2 style={styles.categoryTitle}>{cat.title}</h2>
-                <div style={styles.videoGrid}>
-                  {cat.channels.map((video, vIdx) => (
-                    <VideoCard key={vIdx} video={video} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+  {/* 🌟 YouTube Tab 🌟 */}
+  {activeTab === "youtube" &&
+  youtubeCategories.map((cat) => (
+    <div key={cat.title} style={{ width: "100%", marginBottom: "40px" }}>
+      <h2 style={{ color: "#1e293b", marginBottom: "20px", paddingLeft: "20px" }}>
+        {cat.title}
+      </h2>
+      
+      {/* 🌟 Grid Container ထဲမှာ VideoCard ကို ပြန်သုံးပါမယ် 🌟 */}
+      <div style={styles.gridContainer}>
+        {cat.channels.map((video) => (
+          <VideoCard key={video.embedId} video={video} /> // 👈 ဤနေရာတွင် ခေါ်သုံးလိုက်ပါပြီ
+        ))}
+      </div>
+    </div>
+  ))}
 
-        {/* --- Courses Tab --- */}
-        {activeTab === "courses" && (
-          <div style={styles.grid}>
-            {courses.map((course, index) => (
-              <CourseCard key={index} data={course} />
-            ))}
-          </div>
-        )}
+  {/* --- Courses Tab --- */}
+  {activeTab === "courses" && (
+    <div style={styles.gridContainer}>
+      {courses.map((course, index) => (
+        <CourseCard key={index} data={course} />
+      ))}
+    </div>
+  )}
 
-        {/* --- About Tab --- */}
-        {activeTab === "about" && (
-          <div style={styles.aboutBox}>
-            <h2>About MMUSA</h2>
-            <p>
-              မြန်မာလူငယ်များအတွက် နည်းပညာနှင့် လူမှုရေးဆိုင်ရာ အထောက်အကူပြု
-              Apps များကို တစ်နေရာတည်းတွင် စုစည်းပေးထားသော Portal ဖြစ်ပါသည်။
-            </p>
-          </div>
-        )}
-      </main>
+  {/* --- About Tab --- */}
+  {activeTab === "about" && (
+    <div style={styles.aboutBox}>
+      <h2>About MMUSA</h2>
+      <p>
+        မြန်မာလူငယ်များအတွက် နည်းပညာနှင့် လူမှုရေးဆိုင်ရာ အထောက်အကူပြု
+        Apps များကို တစ်နေရာတည်းတွင် စုစည်းပေးထားသော Portal ဖြစ်ပါသည်။
+      </p>
+    </div>
+  )}
+</main>
 
       <footer style={styles.footer}>
         <p>
           @{new Date().getFullYear()} MMUSA Platform. Built with ❤️ for Myanmar
         </p>
       </footer>
+
+      {/* 📱 Mobile Bottom Navigation - ဖုန်းမှာပဲ ပေါ်ပါမယ် */}
+      {isMobile && (
+        <div style={styles.bottomNav}>
+          <div
+            style={styles.bottomNavItem}
+            onClick={() => setActiveTab("apps")}
+          >
+            <LayoutGrid
+              size={24}
+              color={activeTab === "apps" ? "#2563eb" : "#64748b"}
+            />
+            <span
+              style={{
+                ...styles.bottomNavLabel,
+                color: activeTab === "apps" ? "#2563eb" : "#64748b",
+              }}
+            >
+              Apps
+            </span>
+          </div>
+          <div
+            style={styles.bottomNavItem}
+            onClick={() => setActiveTab("youtube")}
+          >
+            <Play
+              size={24}
+              color={activeTab === "youtube" ? "#2563eb" : "#64748b"}
+            />
+            <span
+              style={{
+                ...styles.bottomNavLabel,
+                color: activeTab === "youtube" ? "#2563eb" : "#64748b",
+              }}
+            >
+              YouTube
+            </span>
+          </div>
+          <div
+            style={styles.bottomNavItem}
+            onClick={() => setActiveTab("courses")}
+          >
+            <BookOpen
+              size={24}
+              color={activeTab === "courses" ? "#2563eb" : "#64748b"}
+            />
+            <span
+              style={{
+                ...styles.bottomNavLabel,
+                color: activeTab === "courses" ? "#2563eb" : "#64748b",
+              }}
+            >
+              Courses
+            </span>
+          </div>
+          <div
+            style={styles.bottomNavItem}
+            onClick={() => setActiveTab("about")}
+          >
+            <Info
+              size={24}
+              color={activeTab === "about" ? "#2563eb" : "#64748b"}
+            />
+            <span
+              style={{
+                ...styles.bottomNavLabel,
+                color: activeTab === "about" ? "#2563eb" : "#64748b",
+              }}
+            >
+              About
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -230,7 +367,15 @@ const AppCard = ({ data }) => {
       onClick={() => (window.location.href = data.url)}
     >
       <div style={styles.imageContainer}>
-        <img src={data.image} style={styles.cardImg} alt={data.title} />
+        <img
+          src={data.image}
+          style={styles.cardImg}
+          alt={data.title}
+          onError={(e) => {
+            e.target.src =
+              "https://via.placeholder.com/400x200?text=No+Image+Found";
+          }}
+        />
 
         {/* 🌟 ဤနေရာတွင် Badge ထည့်ပါသည် 🌟 */}
         <div style={styles.badgeContainer}>
@@ -316,7 +461,15 @@ const CourseCard = ({ data }) => {
       onMouseLeave={() => setHovered(false)}
     >
       <div style={styles.imageContainer}>
-        <img src={data.image} style={styles.cardImg} alt={data.title} />
+        <img
+          src={data.image}
+          style={styles.cardImg}
+          alt={data.title}
+          onError={(e) => {
+            e.target.src =
+              "https://via.placeholder.com/400x200?text=No+Image+Found";
+          }}
+        />
         {/* 🌟 ဤနေရာတွင် Badge ထည့်ပါသည် 🌟 */}
         <div style={styles.badgeContainer}>
           {data.isFree ? (
@@ -358,14 +511,12 @@ const VideoCard = ({ video }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div style={styles.videoCard}>
-      <div style={styles.videoWrapper}>
-        <div style={styles.badgeContainer}>
-          <div style={styles.freeBadge}>FREE</div>
-        </div>
+    <div style={styles.card}> {/* styles.videoCard အစား styles.card ကိုသုံးတာ ပိုညီပါတယ် */}
+      <div style={{ width: '100%', height: '180px', overflow: 'hidden', borderRadius: '15px 15px 0 0' }}>
         <iframe
           width="100%"
           height="100%"
+          // 🌟 ဤနေရာတွင် လမ်းကြောင်းကို အမှန်ပြင်လိုက်ပါပြီ
           src={`https://www.youtube.com/embed/${video.embedId}`}
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -374,18 +525,20 @@ const VideoCard = ({ video }) => {
           style={{ border: "none" }}
         ></iframe>
       </div>
-      <h3 style={styles.videoTitle}>{video.name}</h3>
+      <div style={styles.cardContent}>
+        <h3 style={styles.cardTitle}>{video.name}</h3>
 
-      {/* 🌟 YouTube Description - Click ရအောင် လုပ်ထားသည် 🌟 */}
-      <p
-        style={isExpanded ? styles.cardDescFull : styles.cardDesc}
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        {video.desc || ""}
-        {!isExpanded && video.desc?.length > 50 && (
-          <span style={styles.readMoreText}> ...ဖတ်ရန်</span>
-        )}
-      </p>
+        {/* 🌟 Description - နှိပ်လိုက်ရင် အရှည်ကြီးဖြစ်သွားမယ် 🌟 */}
+        <p
+          style={isExpanded ? styles.cardDescFull : styles.cardDesc}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {video.desc || ""}
+          {!isExpanded && video.desc?.length > 50 && (
+            <span style={styles.readMoreText}> ...ဖတ်ရန်</span>
+          )}
+        </p>
+      </div>
     </div>
   );
 };
@@ -401,6 +554,16 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+  },
+  gridContainer: {
+    display: "grid",
+    // minmax(300px, 1fr) က ကဒ်တစ်ခုကို အနည်းဆုံး 300px ရှိစေပြီး နေရာရှိသလောက် ကော်လံခွဲပေးမှာပါ
+    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+    gap: "25px",
+    width: "100%",
+    maxWidth: "1100px",
+    margin: "0 auto",
+    padding: "20px",
   },
   header: { textAlign: "center", marginBottom: "40px" },
   logo: {
@@ -420,30 +583,58 @@ const styles = {
     flexWrap: "wrap",
     justifyContent: "center",
   },
-  tab: {
-    padding: "10px 20px",
-    borderRadius: "100px",
-    border: "none",
-    backgroundColor: "transparent",
-    cursor: "pointer",
-    color: "#64748b",
-    fontWeight: "600",
+  navContainer: {
     display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    transition: "0.2s",
+    justifyContent: "center",
+    padding: "0 20px",
+    marginBottom: "30px",
   },
-  activeTab: {
-    padding: "10px 20px",
-    borderRadius: "100px",
-    border: "none",
-    backgroundColor: "#ffffff",
-    color: "#3b82f6",
-    fontWeight: "700",
+
+  tabsWrapper: {
+    display: "flex",
+    flexWrap: "wrap", // ဖုန်းမှာ နေရာမလောက်ရင် အောက်ကိုဆင်းပေးမယ်
+    justifyContent: "center",
+    gap: "10px",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    padding: "8px",
+    borderRadius: "20px",
+    backdropFilter: "blur(10px)",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+    maxWidth: "500px", // ဖုန်းမှာ အချိုးအစားကျအောင်
+  },
+
+  tab: {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+    padding: "10px 16px",
+    borderRadius: "15px",
+    border: "none",
+    background: "none",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#64748b",
+    transition: "all 0.2s ease",
+    flex: "1 1 auto", // တစ်ခုချင်းစီကို အချိုးကျ နေရာယူစေမယ်
+    minWidth: "100px",
+  },
+
+  activeTab: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "10px 16px",
+    borderRadius: "15px",
+    border: "none",
+    backgroundColor: "#fff",
+    color: "#2563eb",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "700",
+    boxShadow: "0 4px 12px rgba(37, 99, 235, 0.15)",
+    flex: "1 1 auto",
+    minWidth: "100px",
   },
   content: { width: "100%", maxWidth: "1100px" },
   grid: {
@@ -465,11 +656,13 @@ const styles = {
     height: "100%",
   },
   cardContent: {
-    padding: "24px",
-    flexGrow: 1, // စာသားနေရာကို အလိုလို ချဲ့ခိုင်းမယ်
+    padding: "20px",
+    flexGrow: 1,
     display: "flex",
     flexDirection: "column",
-    justifyContent: "space-between", // ခလုတ်ကို အမြဲတမ်း အောက်ခြေမှာ ကပ်နေစေမယ်
+    alignItems: "center", // 🌟 Content အားလုံးကို အလယ်ပို့မယ်
+    textAlign: "center", // 🌟 စာသားကို အလယ်ပို့မယ်
+    justifyContent: "space-between",
   },
   imageContainer: {
     width: "100%",
@@ -501,27 +694,32 @@ const styles = {
   cardTitle: {
     fontSize: "18px",
     fontWeight: "800",
-    margin: "0 0 8px 0",
-    color: "#0f172a",
+    color: "#1e293b",
+    marginBottom: "8px",
+    textAlign: "center", // 🌟
   },
   cardDesc: {
     fontSize: "14px",
     color: "#64748b",
     lineHeight: "1.6",
     marginBottom: "20px",
+    // textAlign: "center",
     cursor: "pointer",
     display: "-webkit-box",
-    WebkitLineClamp: 2, // အစပိုင်းမှာ ၂ ကြောင်းပဲပြမယ်
+    WebkitLineClamp: 2,
     WebkitBoxOrient: "vertical",
     overflow: "hidden",
+    padding: "0 15px",
   },
   cardDescFull: {
     fontSize: "14px",
     color: "#64748b",
     lineHeight: "1.6",
     marginBottom: "20px",
+    // textAlign: "center",
     cursor: "pointer",
-    // နှိပ်လိုက်ရင် စာသားအကုန်ပြမယ်
+    padding: "0 15px", // 🌟 ပွင့်လာတဲ့အခါမှာလည်း ဘေးဘောင်နဲ့ မကပ်အောင် ၁၅ px စီ ခွာမယ်
+    transition: "all 0.3s ease",
   },
 
   readMoreText: {
@@ -535,16 +733,18 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     gap: "10px",
-    background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", // Vivid Blue Gradient
+    background: "linear-gradient(135deg, #0f99e4a8 0%, #03a4fac2 100%)",
     color: "#fff",
     textDecoration: "none",
-    padding: "12px 20px",
-    borderRadius: "12px",
-    fontSize: "14px",
+    padding: "14px 24px",
+    borderRadius: "16px",
+    fontSize: "15px",
     fontWeight: "700",
-    boxShadow: "0 4px 15px rgba(37, 99, 235, 0.2)", // Soft blue shadow
-    transition: "all 0.3s ease",
+    boxShadow: "0 8px 20px rgba(37, 99, 235, 0.25)",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     marginTop: "auto",
+    width: "100%", // Mobile မှာ အပြည့်ယူတာက ပိုနှိပ်လို့ကောင်းတယ်
+    boxSizing: "border-box",
   },
 
   btnArrowWrapper: {
@@ -588,14 +788,20 @@ const styles = {
   },
 
   categoryTitle: {
-    fontSize: "24px",
+    fontSize: "22px",
     fontWeight: "800",
     color: "#1e293b",
-    textAlign: "left",
-    marginBottom: "25px",
-    borderLeft: "6px solid #3b82f6",
-    paddingLeft: "15px",
-    letterSpacing: "-0.5px",
+    marginBottom: "20px",
+    marginTop: "10px",
+    textAlign: "center", // 🌟 စာသားကို အလယ်ပို့မယ်
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center", // 🌟 အလယ်မှာ စုမယ်
+    gap: "10px",
+    borderBottom: "3px solid #3b82f6", // အောက်ခြေမှာ လိုင်းတိုလေး ထည့်မယ်
+    width: "fit-content",
+    margin: "0 auto 25px auto",
+    paddingBottom: "5px",
   },
   videoGrid: {
     display: "grid",
@@ -603,11 +809,13 @@ const styles = {
     gap: "30px",
   },
   videoCard: {
-    textAlign: "left",
     backgroundColor: "#fff",
-    padding: "15px",
     borderRadius: "20px",
-    border: "1px solid #e2e8f0",
+    overflow: "hidden",
+    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+    position: "relative", // 🌟 ဒါလေး ပါမှ Badge က card ထဲမှာပဲ နေမှာပါ
+    display: "flex",
+    flexDirection: "column",
   },
   videoWrapper: {
     width: "100%",
@@ -621,8 +829,10 @@ const styles = {
     fontSize: "16px",
     fontWeight: "700",
     marginTop: "15px",
-    marginBottom: "5px",
+    marginBottom: "8px",
     color: "#1e293b",
+    textAlign: "center", // 🌟 ဗီဒီယိုခေါင်းစဉ်ကို အလယ်ပို့ရန်
+    padding: "0 10px",
   },
   videoDesc: { color: "#64748b", fontSize: "14px", lineHeight: "1.5" },
 
@@ -651,6 +861,43 @@ const styles = {
     display: "flex",
     alignItems: "center",
     boxShadow: "0 4px 10px rgba(245, 158, 11, 0.3)",
+  },
+
+  bottomNav: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "70px",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    backdropFilter: "blur(10px)",
+    display: "flex",
+    justifyContent: "space-around",
+    alignItems: "center",
+    borderTop: "1px solid #e2e8f0",
+    zIndex: 1000,
+    paddingBottom: "env(safe-area-inset-bottom)", // iPhone တွေအတွက် နေရာချန်တာပါ
+  },
+
+  bottomNavItem: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "4px",
+    cursor: "pointer",
+    flex: 1,
+  },
+
+  bottomNavLabel: {
+    fontSize: "11px",
+    fontWeight: "600",
+  },
+
+  content: {
+    padding: "20px",
+    paddingBottom: "100px", // အောက်ခြေ Menu က Content တွေကို မဖုံးသွားအောင် နေရာပိုချန်ရပါမယ်
+    maxWidth: "1200px",
+    margin: "0 auto",
   },
 };
 
