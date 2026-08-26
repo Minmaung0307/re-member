@@ -142,7 +142,10 @@ function App() {
   const [fridgeNote, setFridgeNote] = useState("");
   const [fridgeNotes, setFridgeNotes] = useState([]);
   const [shoppingList, setShoppingList] = useState([]);
+
   const [showShoppingModal, setShowShoppingModal] = useState(false);
+  const [shoppingInput, setShoppingInput] = useState("");
+
   const [allNotes, setAllNotes] = useState([]);
   const [viewImage, setViewImage] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -159,8 +162,7 @@ function App() {
     message: "",
     onConfirm: null,
   });
-  const [showShoppingAddModal, setShowShoppingAddModal] = useState(false); // Shopping Item ထည့်ရန် Modal
-  const [shoppingInput, setShoppingInput] = useState("");
+
   const [statusModal, setStatusModal] = useState({
     show: false,
     title: "",
@@ -577,17 +579,22 @@ function App() {
 
   const handleFridgePost = async () => {
     if (!fridgeNote.trim()) return;
-    await addDoc(collection(db, "fridgeNotes"), {
-      text: fridgeNote,
-      userName: user.displayName,
-      familyCode: userFamilyCode,
-      createdAt: serverTimestamp(),
-    });
-    setFridgeNote("");
+    try {
+      await addDoc(collection(db, "fridgeNotes"), {
+        text: fridgeNote,
+        userName: user.displayName,
+        userId: user.uid, // 🌟 အရေးကြီးသည် - ဒါပါမှ အမှိုက်ပုံး ပေါ်မှာပါ
+        familyCode: userFamilyCode,
+        createdAt: serverTimestamp(),
+      });
+      setFridgeNote("");
+    } catch (error) {
+      console.error("Error posting note:", error);
+    }
   };
 
   const handleDeleteFridgeNote = async (id) => {
-    if (window.confirm("ဤစာတိုကို ဖျက်မှာ သေချာပါသလား?")) {
+    if (window.confirm("Are you sure you want to delete this FridgeNote?")) {
       try {
         await deleteDoc(doc(db, "fridgeNotes", id));
       } catch (error) {
@@ -2410,7 +2417,13 @@ function App() {
                         border: "1px dashed #3b82f6",
                       }}
                     >
-                      <h4 style={{ margin: "0 0 10px 0", fontSize: "14px" }}>
+                      <h4
+                        style={{
+                          margin: "0 0 10px 0",
+                          fontSize: "14px",
+                          color: darkMode ? "#fff" : "#1e293b",
+                        }}
+                      >
                         📌 Family Fridge
                       </h4>
                       <div
@@ -2431,7 +2444,6 @@ function App() {
                         </button>
                       </div>
 
-                      {/* 🌟 ဤနေရာသည် စာတိုများကို ပြန်ပြမည့်နေရာဖြစ်သည် 🌟 */}
                       <div
                         style={{
                           maxHeight: "150px",
@@ -2444,9 +2456,10 @@ function App() {
                             <div
                               key={n.id}
                               style={{
-                                // ...noteStyle,
                                 display: "flex",
-                                backgroundColor: "#fef3c7",
+                                backgroundColor: darkMode
+                                  ? "#334155"
+                                  : "#fef3c7", // Dark mode logic ထည့်သွင်းပေးထားသည်
                                 justifyContent: "space-between",
                                 alignItems: "center",
                                 padding: "10px",
@@ -2460,7 +2473,7 @@ function App() {
                                 style={{
                                   flex: 1,
                                   fontSize: "12px",
-                                  color: "#92400e",
+                                  color: darkMode ? "#fff" : "#92400e",
                                 }}
                               >
                                 <strong
@@ -2471,30 +2484,31 @@ function App() {
                                   }}
                                 >
                                   {n.userName}:
-                                </strong>{" "}
+                                </strong>
                                 {n.text}
                               </div>
 
-                              {/* ဖျက်ရန် အမှိုက်ပုံးပုံလေး */}
-                              <Trash2
-                                size={14}
-                                color="#ef4444"
-                                style={{
-                                  cursor: "pointer",
-                                  opacity: 0.7,
-                                  marginLeft: "10px",
-                                }}
-                                // 🌟 Browser confirm အစား Custom Modal ကို လှမ်းခေါ်လိုက်တာပါ
-                                onClick={() =>
-                                  setConfirmModal({
-                                    show: true,
-                                    title: "Delete Short Note",
-                                    message: `"${n.userName}" Are you sure you want to permanently delete this?`,
-                                    onConfirm: () =>
-                                      deleteDoc(doc(db, "fridgeNotes", n.id)),
-                                  })
-                                }
-                              />
+                              {/* ပိုင်ရှင်မှန်မှသာ အမှိုက်ပုံးပြမည် - Optional Chaining user?.uid သုံးထားသည် */}
+                              {n.userId === user?.uid && (
+                                <Trash2
+                                  size={14}
+                                  color="#ef4444"
+                                  style={{
+                                    cursor: "pointer",
+                                    opacity: 0.7,
+                                    marginLeft: "10px",
+                                  }}
+                                  onClick={() =>
+                                    setConfirmModal({
+                                      show: true,
+                                      title: "Delete Short Note",
+                                      message: `Are you sure you want to permanently delete this note?`,
+                                      onConfirm: () =>
+                                        deleteDoc(doc(db, "fridgeNotes", n.id)),
+                                    })
+                                  }
+                                />
+                              )}
                             </div>
                           ))
                         ) : (
@@ -2519,16 +2533,7 @@ function App() {
                           🛒 Shopping List
                         </h4>
                         <button
-                          onClick={() => {
-                            const item = prompt("Item Name:");
-                            if (item)
-                              addDoc(collection(db, "shoppingList"), {
-                                text: item,
-                                isBought: false,
-                                familyCode: userFamilyCode,
-                                createdAt: serverTimestamp(),
-                              });
-                          }}
+                          onClick={() => setShowShoppingModal(true)} // 🌟 Alert အစား Modal ဖွင့်မည်
                           style={saveBtnSmall}
                         >
                           + Item
@@ -2542,14 +2547,17 @@ function App() {
                             <div
                               key={item.id}
                               style={{
-                                backgroundColor: "#f0fdf4",
-                                padding: "10px 15px",
-                                borderRadius: "10px",
-                                marginBottom: "8px",
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "space-between",
-                                border: "1px solid #dcfce7",
+                                gap: "10px",
+                                padding: "10px",
+                                borderRadius: "10px",
+                                marginBottom: "5px",
+                                // 🌟 ဝယ်ပြီးလျှင် အစိမ်းနုရောင်၊ မဝယ်ရသေးလျှင် အဖြူရောင် 🌟
+                                backgroundColor: item.isBought
+                                  ? "#dcfce7"
+                                  : "#fff",
+                                border: `1px solid ${item.isBought ? "#86efac" : "#f1f5f9"}`,
                               }}
                             >
                               <label
@@ -2579,6 +2587,9 @@ function App() {
                                     textDecoration: item.isBought
                                       ? "line-through"
                                       : "none",
+                                    color: item.isBought
+                                      ? "#166534"
+                                      : "#1e293b",
                                     flex: 1,
                                   }}
                                 >
@@ -3417,10 +3428,22 @@ function App() {
             </div>
           )}
 
-          {showShoppingAddModal && (
+          {showShoppingModal && (
             <div style={modalOverlay}>
               <div style={modalContentSmall}>
-                <h3>🛒 Add New Item</h3>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "15px",
+                  }}
+                >
+                  <h3>🛒 Add New Item</h3>
+                  <X
+                    onClick={() => setShowShoppingModal(false)}
+                    style={{ cursor: "pointer" }}
+                  />
+                </div>
                 <input
                   placeholder="For example - Sugar, Bread..."
                   style={modalInput}
@@ -3438,10 +3461,11 @@ function App() {
                           text: shoppingInput,
                           isBought: false,
                           familyCode: userFamilyCode,
+                          userId: user.uid,
                           createdAt: serverTimestamp(),
                         });
                         setShoppingInput("");
-                        setShowShoppingAddModal(false);
+                        setShowShoppingModal(false);
                       }
                     }}
                     style={postBtnFull}
@@ -3449,7 +3473,7 @@ function App() {
                     Save
                   </button>
                   <button
-                    onClick={() => setShowShoppingAddModal(false)}
+                    onClick={() => setShowShoppingModal(false)}
                     style={cancelBtn}
                   >
                     Cancel
