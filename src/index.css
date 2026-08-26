@@ -29,3 +29,12 @@ code {
   pointer-events: none;
   z-index: 1;
 }
+
+.launch-btn:hover {
+  transform: translateY(-3px); /* ခလုတ်လေး အပေါ်ကြွသွားမယ် */
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); /* shadow ပိုကြီးလာမယ် */
+}
+
+.launch-btn:hover svg {
+  transform: translateX(5px); /* arrow လေးက ညာဘက်ကို တွန်းထွက်သွားမယ် */
+}
