@@ -2553,11 +2553,13 @@ function App() {
                                 padding: "10px",
                                 borderRadius: "10px",
                                 marginBottom: "5px",
-                                // 🌟 ဝယ်ပြီးလျှင် အစိမ်းနုရောင်၊ မဝယ်ရသေးလျှင် အဖြူရောင် 🌟
+                                // 🌟 ဝယ်ပြီးလျှင် အစိမ်းနုရောင် Highlight ပြမည်၊ မဝယ်ရသေးလျှင် အဖြူရောင်ပြမည် 🌟
                                 backgroundColor: item.isBought
                                   ? "#dcfce7"
-                                  : "#fff",
+                                  : "#ffffff",
                                 border: `1px solid ${item.isBought ? "#86efac" : "#f1f5f9"}`,
+                                boxShadow: "0 2px 5px rgba(0,0,0,0.02)",
+                                transition: "0.3s",
                               }}
                             >
                               <label
@@ -2590,30 +2592,46 @@ function App() {
                                     color: item.isBought
                                       ? "#166534"
                                       : "#1e293b",
+                                    fontWeight: item.isBought
+                                      ? "500"
+                                      : "normal",
                                     flex: 1,
                                   }}
                                 >
                                   {item.text}
+                                  {item.isBought && (
+                                    <small
+                                      style={{
+                                        marginLeft: "10px",
+                                        fontStyle: "italic",
+                                        opacity: 0.7,
+                                      }}
+                                    >
+                                      (bought. ✅)
+                                    </small>
+                                  )}
                                 </span>
                               </label>
 
                               {/* 🌟 ပြင်ဆင်လိုက်သည့် နေရာ 🌟 */}
-                              <Trash2
-                                size={12}
-                                color="#ef4444"
-                                style={{ cursor: "pointer" }}
-                                onClick={() =>
-                                  setConfirmModal({
-                                    show: true,
-                                    title: "Sure to delete?",
-                                    message: `"${item.text}" will be deleted from the shopping list.`,
-                                    onConfirm: () =>
-                                      deleteDoc(
-                                        doc(db, "shoppingList", item.id),
-                                      ),
-                                  })
-                                }
-                              />
+                              {item.userId === user?.uid && (
+                                <Trash2
+                                  size={12}
+                                  color="#ef4444"
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() =>
+                                    setConfirmModal({
+                                      show: true,
+                                      title: "Sure to delete?",
+                                      message: `"${item.text}" will be deleted from the shopping list.`,
+                                      onConfirm: () =>
+                                        deleteDoc(
+                                          doc(db, "shoppingList", item.id),
+                                        ),
+                                    })
+                                  }
+                                />
+                              )}
                             </div>
                           ))
                         ) : (
@@ -3456,7 +3474,7 @@ function App() {
                 >
                   <button
                     onClick={async () => {
-                      if (shoppingInput.trim()) {
+                      if (shoppingInput.trim() && userFamilyCode) {
                         await addDoc(collection(db, "shoppingList"), {
                           text: shoppingInput,
                           isBought: false,
