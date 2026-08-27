@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+
+// import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import {
   Heart,
@@ -12,6 +14,7 @@ import {
   Info,
   BookOpen,
   ArrowRight,
+  Star,
   Crown,
 } from "lucide-react";
 
@@ -29,18 +32,19 @@ const Portal = () => {
   // --- Apps Data ---
   const apps = [
     {
-      title: "Family Vault",
-      desc: "မိသားစုအမှတ်တရများနှင့် Chatting စနစ် မိသားစုအမှတ်တရများနှင့် Chatting စနစ် မိသားစုအမှတ်တရများနှင့် Chatting စနစ် မိသားစုအမှတ်တရများနှင့် Chatting စနစ်",
+      title: "Re-Member",
+      desc: "Experience the next level of private social networking. Designed for those who value privacy and deep connection.",
+      color: "#0789d0",
       isFree: false, // Premium ($3.99)
-      url: "https://vault.mmusa.org",
-      image:
-        "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&q=80&w=800",
+      url: "https://remember.mmusa.org",
+      image: "/images/remember.jpeg",
       icon: <Heart size={20} />,
       color: "#ff4b5c",
     },
     {
       title: "Ez-QR Maker",
       desc: "မြန်ဆန်လွယ်ကူသော QR Code ထုတ်လုပ်စနစ်",
+      color: "#10b981",
       isFree: true, // Free
       url: "https://qr.mmusa.org",
       image:
@@ -51,6 +55,7 @@ const Portal = () => {
     {
       title: "Dookeeper",
       desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန်",
+      color: "#f6c13b",
       isFree: false,
       url: "https://doc.mmusa.org",
       image:
@@ -162,8 +167,17 @@ const Portal = () => {
           <span style={{ color: "#3b82f6" }}>USA</span>
         </h1>
         <p style={styles.tagline}>
-          <span style={{ color: "#dd7c15a1", fontSize: "15px", fontWeight: "Bold"}}>Digital</span>
-          <span style={{ color: "#3b83f6a5", fontSize: "15px", fontWeight: "Bold" }}> Hub</span>
+          <span
+            style={{ color: "#dd7c15a1", fontSize: "15px", fontWeight: "Bold" }}
+          >
+            Digital
+          </span>
+          <span
+            style={{ color: "#3b83f6a5", fontSize: "15px", fontWeight: "Bold" }}
+          >
+            {" "}
+            Hub
+          </span>
         </p>
       </header>
 
@@ -180,13 +194,7 @@ const Portal = () => {
             </button>
             <button
               onClick={() => setActiveTab("youtube")}
-              style={
-                activeTab === "youtube"
-                  ? activeTab === "youtube"
-                    ? styles.activeTab
-                    : styles.tab
-                  : styles.tab
-              }
+              style={activeTab === "youtube" ? styles.activeTab : styles.tab}
             >
               <Play size={18} />
               <span>YouTube</span>
@@ -210,52 +218,61 @@ const Portal = () => {
       )}
 
       <main style={styles.content}>
-  {/* --- Applications Tab --- */}
-  {activeTab === "apps" && (
-    <div style={styles.gridContainer}>
-      {apps.map((app, index) => (
-        <AppCard key={index} data={app} />
-      ))}
-    </div>
-  )}
+        {/* --- Applications Tab --- */}
+        {activeTab === "apps" && (
+          <div style={styles.gridContainer}>
+            {apps.map((app, index) => (
+              <AppCard key={index} data={app} />
+            ))}
+          </div>
+        )}
 
-  {/* 🌟 YouTube Tab 🌟 */}
-  {activeTab === "youtube" &&
-  youtubeCategories.map((cat) => (
-    <div key={cat.title} style={{ width: "100%", marginBottom: "40px" }}>
-      <h2 style={{ color: "#1e293b", marginBottom: "20px", paddingLeft: "20px" }}>
-        {cat.title}
-      </h2>
-      
-      {/* 🌟 Grid Container ထဲမှာ VideoCard ကို ပြန်သုံးပါမယ် 🌟 */}
-      <div style={styles.gridContainer}>
-        {cat.channels.map((video) => (
-          <VideoCard key={video.embedId} video={video} /> // 👈 ဤနေရာတွင် ခေါ်သုံးလိုက်ပါပြီ
-        ))}
-      </div>
-    </div>
-  ))}
+        {/* 🌟 YouTube Tab 🌟 */}
+        {activeTab === "youtube" &&
+          youtubeCategories.map((cat) => (
+            <div
+              key={cat.title}
+              style={{ width: "100%", marginBottom: "40px" }}
+            >
+              <h2
+                style={{
+                  color: "#1e293b",
+                  marginBottom: "20px",
+                  paddingLeft: "20px",
+                }}
+              >
+                {cat.title}
+              </h2>
 
-  {/* --- Courses Tab --- */}
-  {activeTab === "courses" && (
-    <div style={styles.gridContainer}>
-      {courses.map((course, index) => (
-        <CourseCard key={index} data={course} />
-      ))}
-    </div>
-  )}
+              {/* 🌟 Grid Container ထဲမှာ VideoCard ကို ပြန်သုံးပါမယ် 🌟 */}
+              <div style={styles.gridContainer}>
+                {cat.channels.map((video) => (
+                  <VideoCard key={video.embedId} video={video} /> // 👈 ဤနေရာတွင် ခေါ်သုံးလိုက်ပါပြီ
+                ))}
+              </div>
+            </div>
+          ))}
 
-  {/* --- About Tab --- */}
-  {activeTab === "about" && (
-    <div style={styles.aboutBox}>
-      <h2>About MMUSA</h2>
-      <p>
-        မြန်မာလူငယ်များအတွက် နည်းပညာနှင့် လူမှုရေးဆိုင်ရာ အထောက်အကူပြု
-        Apps များကို တစ်နေရာတည်းတွင် စုစည်းပေးထားသော Portal ဖြစ်ပါသည်။
-      </p>
-    </div>
-  )}
-</main>
+        {/* --- Courses Tab --- */}
+        {activeTab === "courses" && (
+          <div style={styles.gridContainer}>
+            {courses.map((course, index) => (
+              <CourseCard key={index} data={course} />
+            ))}
+          </div>
+        )}
+
+        {/* --- About Tab --- */}
+        {activeTab === "about" && (
+          <div style={styles.aboutBox}>
+            <h2>About MMUSA</h2>
+            <p>
+              မြန်မာလူငယ်များအတွက် နည်းပညာနှင့် လူမှုရေးဆိုင်ရာ အထောက်အကူပြု
+              Apps များကို တစ်နေရာတည်းတွင် စုစည်းပေးထားသော Portal ဖြစ်ပါသည်။
+            </p>
+          </div>
+        )}
+      </main>
 
       <footer style={styles.footer}>
         <p>
@@ -344,11 +361,21 @@ const Portal = () => {
 const AppCard = ({ data }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  // 🌟 စာကိုနှိပ်တဲ့အခါ App ဆီ တန်းမသွားအောင် တားဆီးပေးမည့် function
+  const handleLaunchApp = (e) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    if (data.url) {
+      window.open(data.url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   const toggleDescription = (e) => {
-    e.preventDefault(); // Link အလုပ်လုပ်ခြင်းကို တားမြစ်သည်
-    e.stopPropagation(); // Parent (မိဘအကွက်) ဆီသို့ click event မရောက်အောင် တားသည်
+    e.preventDefault();
+    e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
 
@@ -361,10 +388,11 @@ const AppCard = ({ data }) => {
           ? "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
           : "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
         borderColor: hovered ? "#3b82f6" : "#e2e8f0",
+        cursor: "pointer",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => (window.location.href = data.url)}
+      onClick={handleLaunchApp}
     >
       <div style={styles.imageContainer}>
         <img
@@ -377,7 +405,6 @@ const AppCard = ({ data }) => {
           }}
         />
 
-        {/* 🌟 ဤနေရာတွင် Badge ထည့်ပါသည် 🌟 */}
         <div style={styles.badgeContainer}>
           {data.isFree ? (
             <div style={styles.freeBadge}>FREE</div>
@@ -391,46 +418,74 @@ const AppCard = ({ data }) => {
         <div style={{ ...styles.iconBadge, backgroundColor: data.color }}>
           {data.icon}
         </div>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFavorite(!isFavorite);
+          }}
+          style={{
+            ...styles.favoriteBtn,
+            backgroundColor: isFavorite
+              ? "rgba(250, 204, 21, 0.9)"
+              : "rgba(0,0,0,0.4)",
+            boxShadow: isFavorite ? "0 0 10px rgba(250, 204, 21, 0.5)" : "none",
+          }}
+        >
+          <Star
+            size={18}
+            fill={isFavorite ? "#fff" : "none"}
+            stroke="#fff"
+            strokeWidth={2}
+          />
+        </button>
       </div>
+
       <div style={styles.cardBody}>
-        <h3 style={styles.cardTitle}>{data.title}</h3>
-        {/* 🌟 Description - နှိပ်လိုက်ရင် အရှည်ကြီးဖြစ်သွားမယ် 🌟 */}
+        <h3 style={{ ...styles.cardTitle, color: data.color }}>{data.title}</h3>
+
         <p
           style={isExpanded ? styles.cardDescFull : styles.cardDesc}
           onClick={toggleDescription}
         >
           {data.desc || ""}
           {!isExpanded && data.desc?.length > 50 && (
-            <span style={styles.readMoreText}> ...ဆက်ဖတ်ရန်</span>
+            <span style={styles.readMoreText}> Read more...</span>
           )}
         </p>
-        {/* 🌟 ပိုမိုလန်းဆန်းသော Launch Button 🌟 */}
-        <a
-          href={data.url}
-          target="_blank"
-          rel="noreferrer"
-          // Mouse တင်တဲ့အခါနဲ့ ဖယ်တဲ့အခါ state ပြောင်းခိုင်းတာပါ
+
+        <button
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
+          onClick={handleLaunchApp}
           style={{
-            ...styles.launchBtnModern,
-            // Mouse တင်ထားရင် ခလုတ်ကို နည်းနည်း အပေါ်ကြွခိုင်းမယ်
+            ...styles.button,
+            cursor: "pointer",
+            position: "relative",
+            zIndex: 100,
+            border: "none",
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            outline: "none",
             transform: hovered ? "translateY(-3px)" : "translateY(0)",
+            transition: "all 0.3s ease",
             boxShadow: hovered
               ? "0 8px 20px rgba(37, 99, 235, 0.4)"
               : "0 4px 15px rgba(37, 99, 235, 0.2)",
           }}
         >
-          <span>Launch Application</span>
+          <span style={{ fontWeight: "700" }}>Launch App</span>
           <ArrowRight
-            size={16}
+            size={18}
             style={{
-              // Mouse တင်ထားရင် မျှားလေးကို ညာဘက် တိုးခိုင်းမယ်
+              marginLeft: "8px",
               transform: hovered ? "translateX(5px)" : "translateX(0)",
               transition: "transform 0.3s ease",
             }}
           />
-        </a>
+        </button>
       </div>
     </div>
   );
@@ -496,8 +551,8 @@ const CourseCard = ({ data }) => {
         <a
           href={data.url}
           target="_blank"
-          rel="noreferrer"
-          style={styles.launchBtnModern}
+          rel="noopener noreferrer"
+          style={styles.button}
         >
           <span>View Course</span>
           <ArrowRight size={16} />
@@ -511,8 +566,17 @@ const VideoCard = ({ video }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div style={styles.card}> {/* styles.videoCard အစား styles.card ကိုသုံးတာ ပိုညီပါတယ် */}
-      <div style={{ width: '100%', height: '180px', overflow: 'hidden', borderRadius: '15px 15px 0 0' }}>
+    <div style={styles.card}>
+      {" "}
+      {/* styles.videoCard အစား styles.card ကိုသုံးတာ ပိုညီပါတယ် */}
+      <div
+        style={{
+          width: "100%",
+          height: "180px",
+          overflow: "hidden",
+          borderRadius: "15px 15px 0 0",
+        }}
+      >
         <iframe
           width="100%"
           height="100%"
@@ -644,19 +708,46 @@ const styles = {
   },
 
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
     borderRadius: "24px",
-    // border: "1px solid #e2e8f0",
-    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
     overflow: "hidden",
-    cursor: "pointer",
-    transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-    display: "flex",
-    flexDirection: "column",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+    transition: "all 0.3s ease",
+    display: "flex", // 🌟 Card ကို Flex လုပ်မယ်
+    flexDirection: "column", // 🌟 အပေါ်အောက် စီမယ်
+    height: "100%", // 🌟 Card အမြင့်ကို အပြည့်ယူမယ်
+    border: "1px solid #e2e8f0",
+  },
+  imageWrapper: {
+    position: "relative",
+    height: "180px",
+  },
+  image: {
+    width: "100%",
     height: "100%",
+    objectFit: "cover",
+  },
+  favoriteBtn: {
+    position: "absolute",
+    top: "12px",
+    left: "12px", // ညာဘက်မှာ Premium badge ရှိနိုင်လို့ ဘယ်ဘက်မှာ ထားပေးထားပါတယ်
+    background: "rgba(0,0,0,0.3)",
+    backdropFilter: "blur(5px)",
+    border: "none",
+    borderRadius: "50%",
+    width: "36px",
+    height: "36px",
+    padding: "8px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    outline: "none",
+    zIndex: 20,
   },
   cardContent: {
-    padding: "20px",
+    padding: "15px 20px 20px",
     flexGrow: 1,
     display: "flex",
     flexDirection: "column",
@@ -686,38 +777,55 @@ const styles = {
   },
   cardBody: {
     padding: "20px",
-    textAlign: "left",
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
+    display: "flex", // 🌟 Body ကိုလည်း Flex လုပ်မယ်
+    flexDirection: "column", // 🌟 အပေါ်အောက် စီမယ်
+    flex: 1, // 🌟 ကျန်တဲ့နေရာအလွတ်တွေကို Body က ယူထားမယ်
   },
   cardTitle: {
     fontSize: "18px",
     fontWeight: "800",
     color: "#1e293b",
-    marginBottom: "8px",
+    marginBottom: "4px",
     textAlign: "center", // 🌟
   },
   cardDesc: {
-    fontSize: "14px",
+    fontSize: "13px",
     color: "#64748b",
     lineHeight: "1.6",
     marginBottom: "20px",
-    // textAlign: "center",
-    cursor: "pointer",
+    textAlign: "center",
+    // 🌟 ဤနေရာတွင် Min Height ထည့်ခြင်းဖြင့် စာတိုတိုရှည်ရှည် နေရာလွတ်တူသွားပါမယ်
+    minHeight: "65px",
     display: "-webkit-box",
-    WebkitLineClamp: 2,
+    WebkitLineClamp: "3", // အများဆုံး ၃ ကြောင်းပဲ ပြမယ်
     WebkitBoxOrient: "vertical",
     overflow: "hidden",
-    padding: "0 15px",
+  },
+  button: {
+    width: "100%",
+    padding: "14px",
+    borderRadius: "16px",
+    backgroundColor: "#81c7f5",
+    color: "#fff",
+    textDecoration: "none",
+    fontWeight: "700",
+    fontSize: "15px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
+    marginTop: "auto", // 🌟 ဤစာကြောင်းက ခလုတ်ကို အောက်ခြေမှာ အမြဲကပ်နေစေမှာပါ
+    border: "none",
+    transition: "all 0.2s ease",
   },
   cardDescFull: {
-    fontSize: "14px",
+    fontSize: "13px",
     color: "#64748b",
     lineHeight: "1.6",
     marginBottom: "20px",
     // textAlign: "center",
     cursor: "pointer",
+    whiteSpace: "pre-line",
     padding: "0 15px", // 🌟 ပွင့်လာတဲ့အခါမှာလည်း ဘေးဘောင်နဲ့ မကပ်အောင် ၁၅ px စီ ခွာမယ်
     transition: "all 0.3s ease",
   },
