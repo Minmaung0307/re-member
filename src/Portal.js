@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,9 @@ import {
   Heart,
   QrCode,
   FileText,
+  BookText,
+  Wallet,
+  Calculator,
   Gift,
   Play,
   Video,
@@ -16,6 +19,11 @@ import {
   ArrowRight,
   Star,
   Crown,
+  Grid3X3,
+  Gamepad2,
+  Clock,
+  CheckCircle,
+  PaintBucket,
 } from "lucide-react";
 
 const Portal = () => {
@@ -32,8 +40,8 @@ const Portal = () => {
   // --- Apps Data ---
   const apps = [
     {
-      title: "Re-Member",
-      desc: "Experience the next level of private social networking. Designed for those who value privacy and deep connection.",
+      title: "ReMember",
+      desc: "Designed for modern living, this app lets you schedule birthday reminders and holiday/event preparations for family, friends, and team members. Keep your home running smoothly with dedicated shopping lists for all your essential household purchases. Bring everyone closer together by collecting and sharing your future dreams all in one convenient place.",
       color: "#0789d0",
       isFree: false, // Premium ($3.99)
       url: "https://remember.mmusa.org",
@@ -42,36 +50,60 @@ const Portal = () => {
       color: "#ff4b5c",
     },
     {
-      title: "Ez-QR Maker",
-      desc: "မြန်ဆန်လွယ်ကူသော QR Code ထုတ်လုပ်စနစ်",
+      title: "Ledger",
+      desc: "Keep your finances organized effortless with quick weekly tracking built for busy individuals. Ledger streamlines tax preparation by mapping your records straight to the exact fields on tax forms. Save time and avoid headaches whether you're doing your own taxes or handing structured reports to your CPA.",
       color: "#10b981",
-      isFree: true, // Free
-      url: "https://qr.mmusa.org",
-      image:
-        "https://images.unsplash.com/photo-1590247813693-5541d1c609fd?auto=format&fit=crop&q=80&w=800",
-      icon: <QrCode size={20} />,
+      isFree: false,
+      url: "https://ledger.mmusa.org",
+      image: "/images/ledger.jpeg",
+      icon: <Calculator size={20} />,
       color: "#3b82f6",
     },
     {
-      title: "Dookeeper",
-      desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန်",
+      title: "DocKeeper",
+      desc: "Safely organize and store all your vital personal documents in one secure location. Easily categorize important files related to your home, vehicle, taxes, employment, government IDs, and residency records. Designed for quick access and peace of mind, this app ensures you never lose track of your essential paperwork.",
       color: "#f6c13b",
       isFree: false,
-      url: "https://doc.mmusa.org",
-      image:
-        "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=800",
-      icon: <FileText size={20} />,
+      url: "https://dockeeper.mmusa.org",
+      image: "/images/dockeeper.jpeg",
+      icon: <BookOpen size={20} />,
       color: "#10b981",
     },
     {
-      title: "Flood Relief",
-      desc: "ရေဘေးသင့်ပြည်သူများအတွက် အလှူခံစနစ်",
+      title: "NexQR",
+      desc: "Easily generate custom QR codes for your Wi-Fi networks, events, digital business cards (vCard), and cryptocurrency wallets in seconds. Customize your designs, share instantly, and streamline how you connect with others. Download now to turn your information into smart, scannable QR codes effortlessly!",
       isFree: true,
-      url: "https://donate.mmusa.org",
-      image:
-        "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800",
-      icon: <Gift size={20} />,
+      url: "https://qr.mmusa.org",
+      image: "/images/qr.jpeg",
+      icon: <QrCode size={20} />,
       color: "#f59e0b",
+    },
+    {
+      title: "KyarKwet",
+      desc: "Experience the deep strategy of traditional Myanmar Draughts (Kyarkwet) right on your smartphone, played vertically on a unique custom board. Challenge your mind by capturing one, two, or even three pieces in a single move to promote your piece to a powerful King. Master two distinct game modes—take control of the board in classic Myanmar Draughts or test your tactical survival in Tiger vs. Cows!",
+      isFree: true,
+      url: "https://kyar.mmusa.org",
+      image: "/images/kyar.jpeg",
+      icon: <Crown size={20} />,
+      color: "#800674",
+    },
+    {
+      title: "LifeManager",
+      desc: "LifeManager securely stores and organizes all your essential personal information in one convenient place. From home and vehicle details to work, office, government, and banking records, it keeps your vital data structured and easily accessible. Experience hassle-free management and stay completely in control of your daily life.",
+      isFree: true,
+      url: "https://lifemanager.mmusa.org",
+      image: "/images/lifemanager.jpeg",
+      icon: <Crown size={20} />,
+      color: "#068076",
+    },
+    {
+      title: "USLife",
+      desc: "USLife tracks your income, expenses, and monthly budget effortlessly to help you stay on top of your finances. It also enables you to quickly locate nearby essentials, including restaurants, hospitals, gyms, gas stations, churches, grocery stores, urgent care centers, and police stations. Simplify your daily living and navigate your surroundings with ultimate ease.",
+      isFree: true,
+      url: "https://uslife.mmusa.org",
+      image: "/images/uslife.jpeg",
+      icon: <Grid3X3 size={20} />,
+      color: "#068014",
     },
   ];
 
@@ -123,12 +155,22 @@ const Portal = () => {
   const courses = [
     {
       title: "Full Stack Web Development",
-      desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
+      desc: `ဒီသင်တန်းက JavaScript ကိုအခြေခံပြီး FrontEnd, BackEnd, FullStack တွေကို သင်ပေးပါသည်။ ဒီသင်တန်းမှာ -
+1. HTML, CSS, JavaScript
+2. Git & GitHub
+3. Markdown
+4. NodeJS
+5. MongoDB ...`,
       instructor: "ဆရာလင်း",
-      price: "၅၀,၀၀၀ MMK",
+      price: "၅၀,၀၀၀",
       isFree: false,
+      duration: "12h 45m",
+      level: "Intermediate",
+      lessons: "45",
       image:
         "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
+      icon: <Info size={20} />,
+      color: "#674c04",
     },
     {
       title: "Graphic Design Masterclass",
@@ -136,17 +178,27 @@ const Portal = () => {
       instructor: "မထက်ထက်",
       price: "Free",
       isFree: true,
+      duration: "10h 55m",
+      level: "Pro",
+      lessons: "25",
       image:
         "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
+      icon: <CheckCircle size={20} />,
+      color: "#08899a",
     },
     {
       title: "Full Stack Web Development",
       desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
       instructor: "ဆရာလင်း",
-      price: "၅၀,၀၀၀ MMK",
+      price: "၅၀,၀၀၀",
       isFree: false,
+      duration: "15h 40m",
+      level: "Beginner",
+      lessons: "35",
       image:
         "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
+      icon: <Crown size={20} />,
+      color: "#674c04",
     },
     {
       title: "Graphic Design Masterclass",
@@ -154,8 +206,13 @@ const Portal = () => {
       instructor: "မထက်ထက်",
       price: "Free",
       isFree: true,
+      duration: "14h 45m",
+      level: "Advanced",
+      lessons: "32",
       image:
         "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
+      icon: <PaintBucket size={20} />,
+      color: "#850796",
     },
   ];
 
@@ -363,6 +420,24 @@ const AppCard = ({ data }) => {
   const [hovered, setHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // နှိပ်လိုက်တဲ့နေရာက ဒီ Card ရဲ့ အပြင်ဘက်ဖြစ်နေရင် ပိတ်မယ်
+      if (cardRef.current && !cardRef.current.contains(event.target)) {
+        setIsExpanded(false);
+      }
+    };
+
+    // Event နားထောင်မယ်
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Memory မစားအောင် ပြန်ဖြုတ်မယ်
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleLaunchApp = (e) => {
     if (e) {
       e.stopPropagation();
@@ -381,6 +456,7 @@ const AppCard = ({ data }) => {
 
   return (
     <div
+      ref={cardRef}
       style={{
         ...styles.card,
         transform: hovered ? "translateY(-10px)" : "translateY(0)",
@@ -493,8 +569,27 @@ const AppCard = ({ data }) => {
 
 // --- Course Card Component ---
 const CourseCard = ({ data }) => {
-  const [hovered, setHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // နှိပ်လိုက်တဲ့နေရာက ဒီ Card ရဲ့ အပြင်ဘက်ဖြစ်နေရင် ပိတ်မယ်
+      if (cardRef.current && !cardRef.current.contains(event.target)) {
+        setIsExpanded(false);
+      }
+    };
+
+    // Event နားထောင်မယ်
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Memory မစားအောင် ပြန်ဖြုတ်မယ်
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const toggleDescription = (e) => {
     e.preventDefault();
@@ -504,59 +599,124 @@ const CourseCard = ({ data }) => {
 
   return (
     <div
+      ref={cardRef}
       style={{
-        ...styles.card,
-        transform: hovered ? "translateY(-10px)" : "translateY(0)",
+        ...styles.courseCard,
+        transform: hovered ? "translateY(-12px)" : "translateY(0)",
         boxShadow: hovered
-          ? "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
-          : "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
-        borderColor: hovered ? "#10b981" : "#e2e8f0",
+          ? "0 25px 30px -10px rgba(0, 0, 0, 0.15)"
+          : "0 10px 15px -3px rgba(0, 0, 0, 0.05)",
+        borderColor: hovered ? "#10b981" : "#f1f5f9",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div style={styles.imageContainer}>
+      {/* 🖼️ Image Section */}
+      <div style={styles.courseImageContainer}>
         <img
           src={data.image}
-          style={styles.cardImg}
+          style={styles.courseImg}
           alt={data.title}
           onError={(e) => {
             e.target.src =
-              "https://via.placeholder.com/400x200?text=No+Image+Found";
+              "https://via.placeholder.com/400x225?text=Course+Preview";
           }}
         />
-        {/* 🌟 ဤနေရာတွင် Badge ထည့်ပါသည် 🌟 */}
-        <div style={styles.badgeContainer}>
+
+        {/* Top Badges */}
+        <div style={styles.courseBadgeContainer}>
           {data.isFree ? (
-            <div style={styles.freeBadge}>FREE</div>
+            <div style={styles.freeLabel}>FREE</div>
           ) : (
-            <div style={styles.premiumBadge}>
+            <div style={styles.premiumLabel}>
               <Crown size={12} style={{ marginRight: "4px" }} /> PREMIUM
             </div>
           )}
         </div>
+
+        {/* Favorite Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFavorite(!isFavorite);
+          }}
+          style={{
+            ...styles.courseFavoriteBtn,
+            backgroundColor: isFavorite ? "#10b981" : "rgba(255,255,255,0.9)",
+            color: isFavorite ? "#fff" : "#64748b",
+          }}
+        >
+          <Star size={16} fill={isFavorite ? "#fff" : "none"} />
+        </button>
+
+        {/* Bottom Image Info (Lessons Count) */}
+        <div style={styles.lessonsOverlay}>
+          <BookOpen size={14} style={{ marginRight: "5px" }} />
+          {data.lessons} Lessons
+        </div>
+
+        <div style={styles.rightIconOverlay}>{data.icon}</div>
       </div>
-      <div style={styles.cardBody}>
-        <h3 style={styles.cardTitle}>{data.title}</h3>
+
+      {/* 📄 Card Body */}
+      <div style={styles.courseCardBody}>
+        <h3
+          style={{
+            ...styles.courseTitle,
+            color: hovered ? "#10b981" : "#1e293b",
+          }}
+        >
+          {data.title}
+        </h3>
+
+        {/* Meta Row: Duration & Level */}
+        <div style={styles.metaRow}>
+          <div style={styles.metaItem}>
+            <Clock size={14} style={{ marginRight: "4px" }} />
+            <span>{data.duration}</span>
+          </div>
+          <div style={styles.metaItem}>
+            <CheckCircle size={14} style={{ marginRight: "4px" }} />
+            <span>{data.level}</span>
+          </div>
+        </div>
+
         <p
-          style={isExpanded ? styles.cardDescFull : styles.cardDesc}
+          style={isExpanded ? styles.courseDescFull : styles.courseDesc}
           onClick={toggleDescription}
         >
-          {data.desc || ""}
-          {!isExpanded && data.desc?.length > 50 && (
-            <span style={styles.readMoreText}> ...ဖတ်ရန်</span>
+          {data.desc || "No course description is available yet."}
+          {!isExpanded && data.desc?.length > 45 && (
+            <span style={styles.readMoreGreen}> Read More...</span>
           )}
         </p>
-        <div style={styles.priceTag}>{data.price}</div>
-        <a
-          href={data.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={styles.button}
-        >
-          <span>View Course</span>
-          <ArrowRight size={16} />
-        </a>
+
+        {/* Price & Action Row */}
+        <div style={styles.footerRow}>
+          <div style={styles.priceContainer}>
+            <span
+              style={{
+                ...styles.priceValue,
+                color: data.isFree ? "#f59e0b" : "#4f46e5",
+              }}
+            >
+              {data.isFree ? "Free" : `${data.price} MMK`}
+            </span>
+          </div>
+
+          <a
+            href={data.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              ...styles.viewBtn,
+              backgroundColor: hovered ? "#059669" : "#10b981",
+            }}
+          >
+            <span>Enroll Now</span>
+            <ArrowRight size={16} style={{ marginLeft: "6px" }} />
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -1010,6 +1170,170 @@ const styles = {
     paddingBottom: "100px", // အောက်ခြေ Menu က Content တွေကို မဖုံးသွားအောင် နေရာပိုချန်ရပါမယ်
     maxWidth: "1200px",
     margin: "0 auto",
+  },
+
+  courseCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: "20px",
+    border: "1px solid #e2e8f0",
+    overflow: "hidden",
+    transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+    display: "flex",
+    flexDirection: "column",
+    width: "100%",
+    maxWidth: "360px",
+  },
+  courseImageContainer: {
+    position: "relative",
+    height: "180px",
+    width: "100%",
+    overflow: "hidden",
+  },
+  courseImg: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  courseBadgeContainer: {
+    position: "absolute",
+    top: "12px",
+    right: "12px",
+    display: "flex",
+    gap: "8px",
+  },
+  premiumLabel: {
+    backgroundColor: "#f59e0b",
+    color: "#fff",
+    padding: "4px 10px",
+    borderRadius: "8px",
+    fontSize: "11px",
+    fontWeight: "700",
+    display: "flex",
+    alignItems: "center",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+  },
+  freeLabel: {
+    backgroundColor: "#10b981",
+    color: "#fff",
+    padding: "4px 10px",
+    borderRadius: "8px",
+    fontSize: "11px",
+    fontWeight: "700",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+  },
+  courseFavoriteBtn: {
+    position: "absolute",
+    top: "12px",
+    left: "12px",
+    border: "none",
+    borderRadius: "10px",
+    width: "32px",
+    height: "32px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  },
+  lessonsOverlay: {
+    position: "absolute",
+    bottom: "10px",
+    left: "12px",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backdropFilter: "blur(4px)",
+    color: "#fff",
+    padding: "4px 10px",
+    borderRadius: "6px",
+    fontSize: "12px",
+    display: "flex",
+    alignItems: "center",
+  },
+  courseCardBody: {
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
+  },
+  courseTitle: {
+    fontSize: "18px",
+    fontWeight: "700",
+    margin: "0 0 10px 0",
+    lineHeight: "1.4",
+    transition: "color 0.3s ease",
+  },
+  metaRow: {
+    display: "flex",
+    gap: "15px",
+    marginBottom: "12px",
+  },
+  metaItem: {
+    display: "flex",
+    alignItems: "center",
+    color: "#64748b",
+    fontSize: "12px",
+  },
+  courseDesc: {
+    fontSize: "13px",
+    color: "#475569",
+    lineHeight: "1.6",
+    margin: "0 0 20px 0",
+    cursor: "pointer",
+    display: "-webkit-box",
+    WebkitLineClamp: "2",
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+    whiteSpace: "pre-wrap",
+  },
+  courseDescFull: {
+    fontSize: "13px",
+    color: "#475569",
+    lineHeight: "1.6",
+    margin: "0 0 20px 0",
+    cursor: "pointer",
+    whiteSpace: "pre-wrap",
+  },
+  rightIconOverlay: {
+    position: "absolute",
+    bottom: "10px",
+    right: "12px",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backdropFilter: "blur(4px)",
+    color: "#1e293b",
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+  },
+  readMoreGreen: {
+    color: "#10b981",
+    fontWeight: "600",
+  },
+  footerRow: {
+    marginTop: "auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: "15px",
+    borderTop: "1px solid #f1f5f9",
+  },
+  priceValue: {
+    fontSize: "18px",
+    fontWeight: "800",
+    color: "#10b981",
+  },
+  viewBtn: {
+    textDecoration: "none",
+    color: "#fff",
+    padding: "8px 16px",
+    borderRadius: "12px",
+    fontSize: "14px",
+    fontWeight: "600",
+    display: "flex",
+    alignItems: "center",
+    transition: "background-color 0.3s ease",
   },
 };
 
