@@ -449,7 +449,7 @@ const AppCard = ({ data }) => {
           onClick={toggleDescription}
         >
           {data.desc || ""}
-          {!isExpanded && data.desc?.length > 50 && (
+          {!isExpanded && data.desc?.length > 12 && (
             <span style={styles.readMoreText}> Read more...</span>
           )}
         </p>
@@ -790,14 +790,18 @@ const styles = {
   },
   cardDesc: {
     fontSize: "13px",
+    padding: "0 10px",
     color: "#64748b",
-    lineHeight: "1.6",
+    lineHeight: "1.5",
     marginBottom: "20px",
-    textAlign: "center",
+    // textAlign: "center",
     // 🌟 ဤနေရာတွင် Min Height ထည့်ခြင်းဖြင့် စာတိုတိုရှည်ရှည် နေရာလွတ်တူသွားပါမယ်
-    minHeight: "65px",
+    // 🌟 ၂ ကြောင်းစာ အမြင့်ကွက်တိဖြစ်အောင် 40px ပြောင်းလိုက်ပါ
+    // (တွက်ချက်ပုံ - 13px * 1.5 line-height * 2 lines = 39px)
+    minHeight: "40px",
+    height: "40px",
     display: "-webkit-box",
-    WebkitLineClamp: "3", // အများဆုံး ၃ ကြောင်းပဲ ပြမယ်
+    WebkitLineClamp: 2, // အများဆုံး 2 ကြောင်းပဲ ပြမယ်
     WebkitBoxOrient: "vertical",
     overflow: "hidden",
   },
@@ -821,12 +825,12 @@ const styles = {
   cardDescFull: {
     fontSize: "13px",
     color: "#64748b",
-    lineHeight: "1.6",
+    lineHeight: "1.5",
     marginBottom: "20px",
     // textAlign: "center",
     cursor: "pointer",
     whiteSpace: "pre-line",
-    padding: "0 15px", // 🌟 ပွင့်လာတဲ့အခါမှာလည်း ဘေးဘောင်နဲ့ မကပ်အောင် ၁၅ px စီ ခွာမယ်
+    padding: "0 10px", // 🌟 ပွင့်လာတဲ့အခါမှာလည်း ဘေးဘောင်နဲ့ မကပ်အောင် 10 px စီ ခွာမယ်
     transition: "all 0.3s ease",
   },
 
