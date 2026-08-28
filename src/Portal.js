@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
+import CourseEnrollPage from "./components/CourseEnrollPage";
+
 // import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import {
@@ -30,6 +32,7 @@ const Portal = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("apps");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
   React.useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -161,8 +164,8 @@ const Portal = () => {
 3. Markdown
 4. NodeJS
 5. MongoDB ...`,
-      instructor: "ဆရာလင်း",
-      price: "၅၀,၀၀၀",
+      instructor: "Lynn",
+      price: "50,000",
       isFree: false,
       duration: "12h 45m",
       level: "Intermediate",
@@ -175,7 +178,7 @@ const Portal = () => {
     {
       title: "Graphic Design Masterclass",
       desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
-      instructor: "မထက်ထက်",
+      instructor: "Htet",
       price: "Free",
       isFree: true,
       duration: "10h 55m",
@@ -189,8 +192,8 @@ const Portal = () => {
     {
       title: "Full Stack Web Development",
       desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
-      instructor: "ဆရာလင်း",
-      price: "၅၀,၀၀၀",
+      instructor: "Myo",
+      price: "50,000",
       isFree: false,
       duration: "15h 40m",
       level: "Beginner",
@@ -217,9 +220,9 @@ const Portal = () => {
   ];
 
   return (
-    <div style={styles.container}>
+    <div style={styles.pageWrapper}>
       <header style={styles.header}>
-        <h1 style={styles.logo} onClick={() => navigate("/")}>
+        <h1 style={styles.logoText} onClick={() => navigate("/")}>
           <span style={{ color: "#dd7c15" }}>MM</span>
           <span style={{ color: "#3b82f6" }}>USA</span>
         </h1>
@@ -240,7 +243,7 @@ const Portal = () => {
 
       {/* Navigation Tabs */}
       {!isMobile && (
-        <nav style={styles.navContainer}>
+        <nav style={styles.tabContainer}>
           <div style={styles.tabsWrapper}>
             <button
               onClick={() => setActiveTab("apps")}
@@ -274,7 +277,7 @@ const Portal = () => {
         </nav>
       )}
 
-      <main style={styles.content}>
+      <main style={styles.mainContent}>
         {/* --- Applications Tab --- */}
         {activeTab === "apps" && (
           <div style={styles.gridContainer}>
@@ -294,8 +297,11 @@ const Portal = () => {
               <h2
                 style={{
                   color: "#1e293b",
-                  marginBottom: "20px",
-                  paddingLeft: "20px",
+                  marginBottom: "30px",
+                  textAlign: "center", // အလယ်ပို့မယ်
+                  width: "100%",
+                  fontSize: "24px",
+                  fontWeight: "800",
                 }}
               >
                 {cat.title}
@@ -314,9 +320,19 @@ const Portal = () => {
         {activeTab === "courses" && (
           <div style={styles.gridContainer}>
             {courses.map((course, index) => (
-              <CourseCard key={index} data={course} />
+              <CourseCard
+                key={course.id}
+                data={course}
+                onEnroll={(data) => setSelectedCourse(data)}
+              />
             ))}
           </div>
+        )}
+        {selectedCourse && (
+          <CourseEnrollPage
+            data={selectedCourse}
+            onClose={() => setSelectedCourse(null)} // 🌟 ပိတ်လိုက်ရင် State ပြန်ရှင်းမယ်
+          />
         )}
 
         {/* --- About Tab --- */}
@@ -568,7 +584,7 @@ const AppCard = ({ data }) => {
 };
 
 // --- Course Card Component ---
-const CourseCard = ({ data }) => {
+const CourseCard = ({ data, onEnroll }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -700,22 +716,32 @@ const CourseCard = ({ data }) => {
                 color: data.isFree ? "#f59e0b" : "#4f46e5",
               }}
             >
-              {data.isFree ? "Free" : `${data.price} MMK`}
+              {data.isFree ? (
+                "Free"
+              ) : (
+                <>
+                  {data.price}
+                  <span style={styles.currencyText}>MMK</span>
+                </>
+              )}
             </span>
           </div>
 
-          <a
-            href={data.url}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            // 🌟 အရေးကြီးဆုံးအချက်- Link အစား onClick function ကို သုံးမယ်
+            onClick={() => onEnroll(data)}
             style={{
               ...styles.viewBtn,
               backgroundColor: hovered ? "#059669" : "#10b981",
+              // button ဖြစ်သွားတဲ့အတွက် default ဘောင်တွေကို ဖျောက်ဖို့ ဒါလေးတွေ ထည့်ပေးပါ
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "inherit",
             }}
           >
             <span>Enroll Now</span>
             <ArrowRight size={16} style={{ marginLeft: "6px" }} />
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -770,33 +796,101 @@ const VideoCard = ({ video }) => {
 // --- Styles ---
 const styles = {
   container: {
-    minHeight: "100vh",
+    width: "95%", // 🌟 ဖုန်းမှာ ဘေးဘောင်နည်းနည်းပဲ ချန်မယ်
+    maxWidth: "800px",
+    // minHeight: "100vh",
+    height: "92vh",
     backgroundColor: "#f8fafc",
+    borderRadius: "24px",
     color: "#1e293b",
     fontFamily: "'Inter', sans-serif",
     padding: "40px 20px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    overflow: "hidden",
+    position: "relative",
+    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
   },
   gridContainer: {
     display: "grid",
-    // minmax(300px, 1fr) က ကဒ်တစ်ခုကို အနည်းဆုံး 300px ရှိစေပြီး နေရာရှိသလောက် ကော်လံခွဲပေးမှာပါ
-    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-    gap: "25px",
+    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", // Desktop အတွက် 320px က ပိုမှန်ပါတယ်
+    gap: "30px",
     width: "100%",
-    maxWidth: "1100px",
+    maxWidth: "1200px",
     margin: "0 auto",
     padding: "20px",
+    justifyContent: "center",
+    boxSizing: "border-box",
   },
-  header: { textAlign: "center", marginBottom: "40px" },
+
+  mainContent: {
+    // 🌟 ဤ Style အသစ်ကို ထပ်ထည့်ပါ
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  pageWrapper: {
+    width: "100%",
+    minHeight: "100vh", // 🌟 height အစား minHeight သုံးမှ scroll ဆွဲလို့ရပါမည်
+    backgroundColor: "#f8fafc",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    paddingBottom: "120px", // Bottom Nav မဖုံးစေရန်
+    boxSizing: "border-box",
+    overflowX: "hidden", // 🌟 ဘေးတိုက် မပြတ်စေရန်
+  },
+
+  // 🌟 Mode ရွေးတဲ့ ကတ်တွေကို အပေါ်အောက် စီခိုင်းမယ် (FlexWrap သုံးမယ်)
+  modeGrid: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap", // 🌟 နေရာမလောက်ရင် အောက်ဆင်းသွားမယ်
+    gap: "15px",
+  },
+
+  modeCard: {
+    flex: "1 1 300px", // 🌟 အနည်းဆုံး 300px ယူမယ်၊ ဖုန်းမှာဆို အလိုလို stack ဖြစ်သွားမယ်
+    padding: "20px",
+    borderRadius: "20px",
+    border: "2px solid #eee",
+    cursor: "pointer",
+    transition: "0.3s ease",
+    boxSizing: "border-box",
+  },
+
+  header: {
+    textAlign: "center",
+    padding: "30px 15px 10px",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+
   logo: {
     fontSize: "42px",
     fontWeight: "900",
     letterSpacing: "-1px",
     margin: 0,
   },
-  tagline: { color: "#64748b", fontSize: "16px", marginTop: "8px" },
+
+  logoText: {
+    fontSize: "36px",
+    fontWeight: "900",
+    margin: "0 0 5px 0",
+    letterSpacing: "-0.5px",
+  },
+
+  tagline: {
+    fontSize: "14px",
+    color: "#64748b",
+    margin: 0,
+    fontWeight: "600",
+  },
+
   tabNav: {
     display: "flex",
     gap: "8px",
@@ -816,7 +910,7 @@ const styles = {
 
   tabsWrapper: {
     display: "flex",
-    flexWrap: "wrap", // ဖုန်းမှာ နေရာမလောက်ရင် အောက်ကိုဆင်းပေးမယ်
+    flexWrap: "nowrap", // 🌟 တစ်တန်းတည်း ဖြစ်စေရန် nowrap ပြောင်းပါ
     justifyContent: "center",
     gap: "10px",
     backgroundColor: "rgba(255, 255, 255, 0.8)",
@@ -824,7 +918,8 @@ const styles = {
     borderRadius: "20px",
     backdropFilter: "blur(10px)",
     boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-    maxWidth: "500px", // ဖုန်းမှာ အချိုးအစားကျအောင်
+    width: "100%",
+    maxWidth: "600px", // 🌟 ၄ ခုဆန့်အောင် width ချဲ့လိုက်ပါပြီ
   },
 
   tab: {
@@ -872,20 +967,31 @@ const styles = {
     borderRadius: "24px",
     overflow: "hidden",
     boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-    transition: "all 0.3s ease",
     display: "flex", // 🌟 Card ကို Flex လုပ်မယ်
     flexDirection: "column", // 🌟 အပေါ်အောက် စီမယ်
     height: "100%", // 🌟 Card အမြင့်ကို အပြည့်ယူမယ်
-    border: "1px solid #e2e8f0",
+    border: "1px solid #f1f5f9",
+    width: "100%",
+    boxSizing: "border-box",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
   },
   imageWrapper: {
     position: "relative",
-    height: "180px",
+    width: "100%",
+    height: "190px",
+    overflow: "hidden",
+    backgroundColor: "#f1f5f9",
   },
   image: {
     width: "100%",
     height: "100%",
     objectFit: "cover",
+  },
+  cardImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
   },
   favoriteBtn: {
     position: "absolute",
@@ -908,7 +1014,8 @@ const styles = {
   },
   cardContent: {
     padding: "15px 20px 20px",
-    flexGrow: 1,
+    flex: 1,
+    boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
     alignItems: "center", // 🌟 Content အားလုံးကို အလယ်ပို့မယ်
@@ -944,6 +1051,7 @@ const styles = {
   cardTitle: {
     fontSize: "18px",
     fontWeight: "800",
+    lineHeight: "1.3",
     color: "#1e293b",
     marginBottom: "4px",
     textAlign: "center", // 🌟
@@ -953,7 +1061,7 @@ const styles = {
     padding: "0 10px",
     color: "#64748b",
     lineHeight: "1.5",
-    marginBottom: "20px",
+    margin: "0 0 20px 0",
     // textAlign: "center",
     // 🌟 ဤနေရာတွင် Min Height ထည့်ခြင်းဖြင့် စာတိုတိုရှည်ရှည် နေရာလွတ်တူသွားပါမယ်
     // 🌟 ၂ ကြောင်းစာ အမြင့်ကွက်တိဖြစ်အောင် 40px ပြောင်းလိုက်ပါ
@@ -964,32 +1072,36 @@ const styles = {
     WebkitLineClamp: 2, // အများဆုံး 2 ကြောင်းပဲ ပြမယ်
     WebkitBoxOrient: "vertical",
     overflow: "hidden",
+    cursor: "pointer",
   },
   button: {
     width: "100%",
-    padding: "14px",
-    borderRadius: "16px",
-    backgroundColor: "#81c7f5",
+    padding: "12px",
+    borderRadius: "14px",
+    backgroundColor: "#79c2f8",
     color: "#fff",
     textDecoration: "none",
+    border: "none",
     fontWeight: "700",
-    fontSize: "15px",
+    fontSize: "14px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "10px",
+    gap: "8px",
     marginTop: "auto", // 🌟 ဤစာကြောင်းက ခလုတ်ကို အောက်ခြေမှာ အမြဲကပ်နေစေမှာပါ
     border: "none",
     transition: "all 0.2s ease",
+    cursor: "pointer",
+    boxSizing: "border-box",
   },
   cardDescFull: {
     fontSize: "13px",
     color: "#64748b",
     lineHeight: "1.5",
-    marginBottom: "20px",
+    margin: "0 0 20px 0",
     // textAlign: "center",
     cursor: "pointer",
-    whiteSpace: "pre-line",
+    whiteSpace: "pre-wrap",
     padding: "0 10px", // 🌟 ပွင့်လာတဲ့အခါမှာလည်း ဘေးဘောင်နဲ့ မကပ်အောင် 10 px စီ ခွာမယ်
     transition: "all 0.3s ease",
   },
@@ -1051,12 +1163,75 @@ const styles = {
 
   footer: {
     marginTop: "auto",
-    paddingTop: "60px",
-    paddingBottom: "20px",
+    // paddingTop: "60px",
+    // paddingBottom: "20px",
+    padding: "15px 20px",
+    backgroundColor: "#fff",
+    borderTop: "1px solid #f1f5f9",
     textAlign: "center",
     color: "#94a3b8",
     fontSize: "14px",
     width: "100%",
+    display: "flex",
+    flexDirection: "column", // 🌟 ဖုန်းမှာ အပေါ်အောက် စီမယ်
+    gap: "15px",
+  },
+
+  checkoutBox: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap", // 🌟 ဈေးနှုန်းနဲ့ ခလုတ် မဆန့်ရင် အောက်ဆင်းမယ်
+    gap: "10px",
+  },
+
+  tabContainer: {
+    display: "flex",
+    gap: "10px",
+    overflowX: "auto", // 🌟 ဖုန်းမှာ ဘေးတိုက် scroll ဆွဲလို့ရအောင်
+    whiteSpace: "nowrap",
+    padding: "15px",
+    width: "100%",
+    maxWidth: "500px",
+    boxSizing: "border-box",
+    justifyContent: "center", // Desktop မှာ အလယ်ထားမယ်
+    msOverflowStyle: "none", // IE/Edge scrollbar ဖျောက်မယ်
+    scrollbarWidth: "none", // Firefox scrollbar ဖျောက်မယ်
+    WebkitOverflowScrolling: "touch", // iOS မှာ ချောမွေ့အောင်
+  },
+
+  tabBtn: {
+    flex: 1,
+    padding: "10px 12px",
+    borderRadius: "14px",
+    border: "1px solid #e2e8f0",
+    backgroundColor: "#fff",
+    color: "#64748b",
+    fontSize: "13px",
+    fontWeight: "700",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    transition: "0.2s ease",
+  },
+
+  activeTabBtn: {
+    flex: 1,
+    padding: "10px 12px",
+    borderRadius: "14px",
+    border: "1px solid #3b82f6",
+    backgroundColor: "#3b82f6",
+    color: "#fff",
+    fontSize: "13px",
+    fontWeight: "700",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    boxShadow: "0 4px 12px rgba(59, 130, 246, 0.25)",
   },
 
   categoryTitle: {
@@ -1082,20 +1257,33 @@ const styles = {
   },
   videoCard: {
     backgroundColor: "#fff",
-    borderRadius: "20px",
+    borderRadius: "24px",
     overflow: "hidden",
-    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.05)",
+    border: "1px solid #f1f5f9",
     position: "relative", // 🌟 ဒါလေး ပါမှ Badge က card ထဲမှာပဲ နေမှာပါ
     display: "flex",
     flexDirection: "column",
+    width: "100%",
+    boxSizing: "border-box",
   },
   videoWrapper: {
+    position: "relative",
     width: "100%",
+    paddingTop: "56.25%", // 16:9 Aspect Ratio
     aspectRatio: "16/9",
     borderRadius: "12px",
     overflow: "hidden",
     marginBottom: "15px",
     backgroundColor: "#000",
+  },
+  videoIframe: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    border: "none",
   },
   videoTitle: {
     fontSize: "16px",
@@ -1174,14 +1362,19 @@ const styles = {
 
   courseCard: {
     backgroundColor: "#ffffff",
-    borderRadius: "20px",
+    borderRadius: "24px",
     border: "1px solid #e2e8f0",
     overflow: "hidden",
-    transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
     display: "flex",
     flexDirection: "column",
+    height: "100%",
     width: "100%",
-    maxWidth: "360px",
+    // maxWidth: "360px",
+    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.05)",
+    border: "1px solid #f1f5f9",
+    boxSizing: "border-box",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    marginTop: "auto",
   },
   courseImageContainer: {
     position: "relative",
@@ -1279,10 +1472,11 @@ const styles = {
     margin: "0 0 20px 0",
     cursor: "pointer",
     display: "-webkit-box",
-    WebkitLineClamp: "2",
+    WebkitLineClamp: 2, // 🌟 အများဆုံး ၂ ကြောင်းပဲပြမယ်
     WebkitBoxOrient: "vertical",
     overflow: "hidden",
     whiteSpace: "pre-wrap",
+    height: "42px", // 🌟 ဤနေရာတွင် height ကို ပုံသေထားလိုက်ပါ (Apps ကတ်အတိုင်း)
   },
   courseDescFull: {
     fontSize: "13px",
@@ -1312,27 +1506,43 @@ const styles = {
     fontWeight: "600",
   },
   footerRow: {
-    marginTop: "auto",
+    marginTop: "auto", // 🌟 ကျန်တဲ့နေရာလွတ်တွေကို အပေါ်ပို့ပြီး footer ကို အောက်ဆုံးတွန်းပို့မယ်
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: "15px",
     borderTop: "1px solid #f1f5f9",
+    width: "100%", // 🌟 အကျယ်အပြည့်ယူမယ်
   },
   priceValue: {
-    fontSize: "18px",
-    fontWeight: "800",
+    fontSize: "14px", // 🌟 ဂဏန်း သို့မဟုတ် Free စာသားကို ၁၅ အထိ သေးလိုက်ပါပြီ
+    fontWeight: "700",
     color: "#10b981",
+    display: "flex",
+    alignItems: "baseline", // ဂဏန်းနဲ့ MMK ကို ခြေဖျားချင်း ညီစေရန်
+  },
+  currencyText: {
+    fontSize: "12px", // 🌟 MMK ကို ပိုသေးအောင် ၁၀ သတ်မှတ်လိုက်ပါပြီ
+    fontWeight: "600",
+    marginLeft: "5px",
+    opacity: 0.8, // အရောင်ကို အနည်းငယ် မှိန်လိုက်ပါမယ်
   },
   viewBtn: {
     textDecoration: "none",
     color: "#fff",
-    padding: "8px 16px",
-    borderRadius: "12px",
+    backgroundColor: "#10b981",
+    // marginTop: "auto" ကို ဖြုတ်လိုက်ပါပြီ (ဘာလို့လဲဆိုတော့ footerRow မှာ ပါပြီးသားမို့လို့ပါ)
+    padding: "10px 16px",
+    borderRadius: "14px",
+    border: "none",
+    fontWeight: "700",
     fontSize: "14px",
-    fontWeight: "600",
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    cursor: "pointer",
+    boxSizing: "border-box",
     transition: "background-color 0.3s ease",
   },
 };
