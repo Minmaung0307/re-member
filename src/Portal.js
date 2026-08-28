@@ -26,6 +26,9 @@ import {
   Clock,
   CheckCircle,
   PaintBucket,
+  Calendar,
+  ChartBar,
+  ChessKing,
 } from "lucide-react";
 
 const Portal = () => {
@@ -91,6 +94,15 @@ const Portal = () => {
       color: "#800674",
     },
     {
+      title: "Chess",
+      desc: "Play chess your way by challenging either friends locally or playing against intelligent AI opponents. Connect seamlessly online to match with remote players and friends anywhere in the world. Elevate your strategy with real-time AI move suggestions and analysis designed to improve your gameplay.",
+      isFree: true,
+      url: "https://chess.mmusa.org",
+      image: "/images/chess.jpeg",
+      icon: <ChessKing size={20} />,
+      color: "#800674",
+    },
+    {
       title: "LifeManager",
       desc: "LifeManager securely stores and organizes all your essential personal information in one convenient place. From home and vehicle details to work, office, government, and banking records, it keeps your vital data structured and easily accessible. Experience hassle-free management and stay completely in control of your daily life.",
       isFree: true,
@@ -106,6 +118,24 @@ const Portal = () => {
       url: "https://uslife.mmusa.org",
       image: "/images/uslife.jpeg",
       icon: <Grid3X3 size={20} />,
+      color: "#068014",
+    },
+    {
+      title: "MMCal",
+      desc: "Explore full year-by-year Myanmar calendars complete with waxing/waning dates, Sabbath days, and national festivals. Effortlessly manage both traditional cultural holidays and your personal events in one place. Customize your calendar with personal notes, birthdays, and important reminders today.",
+      isFree: true,
+      url: "https://cal.mmusa.org",
+      image: "/images/cal.jpeg",
+      icon: <Calendar size={20} />,
+      color: "#068014",
+    },
+    {
+      title: "SaleReport",
+      desc: "Track your inventory items in detail with automated record-keeping for income, expenses, and stock movements. Easily manage daily business operations, multiple branch locations, and staff assignments from a single platform. Gain full control and insights into your business growth with our comprehensive sales reporting system.",
+      isFree: true,
+      url: "https://sales.mmusa.org",
+      image: "/images/sales.jpeg",
+      icon: <ChartBar size={20} />,
       color: "#068014",
     },
   ];
