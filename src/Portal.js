@@ -29,222 +29,224 @@ import {
   Calendar,
   ChartBar,
   ChessKing,
+  FileCode,
 } from "lucide-react";
 
 // --- Apps Data ---
-  const apps = [
-    {
-      title: "ReMember",
-      desc: "Designed for modern living, this app lets you schedule birthday reminders and holiday/event preparations for family, friends, and team members. Keep your home running smoothly with dedicated shopping lists for all your essential household purchases. Bring everyone closer together by collecting and sharing your future dreams all in one convenient place.",
-      color: "#0789d0",
-      isFree: false, // Premium ($3.99)
-      url: "https://remember.mmusa.org",
-      image: "/images/remember.jpeg",
-      icon: <Heart size={20} />,
-      color: "#ff4b5c",
-    },
-    {
-      title: "Ledger",
-      desc: "Keep your finances organized effortless with quick weekly tracking built for busy individuals. Ledger streamlines tax preparation by mapping your records straight to the exact fields on tax forms. Save time and avoid headaches whether you're doing your own taxes or handing structured reports to your CPA.",
-      color: "#10b981",
-      isFree: false,
-      url: "https://ledger.mmusa.org",
-      image: "/images/ledger.jpeg",
-      icon: <Calculator size={20} />,
-      color: "#3b82f6",
-    },
-    {
-      title: "DocKeeper",
-      desc: "Safely organize and store all your vital personal documents in one secure location. Easily categorize important files related to your home, vehicle, taxes, employment, government IDs, and residency records. Designed for quick access and peace of mind, this app ensures you never lose track of your essential paperwork.",
-      color: "#f6c13b",
-      isFree: false,
-      url: "https://dockeeper.mmusa.org",
-      image: "/images/dockeeper.jpeg",
-      icon: <BookOpen size={20} />,
-      color: "#10b981",
-    },
-    {
-      title: "NexQR",
-      desc: "Easily generate custom QR codes for your Wi-Fi networks, events, digital business cards (vCard), and cryptocurrency wallets in seconds. Customize your designs, share instantly, and streamline how you connect with others. Download now to turn your information into smart, scannable QR codes effortlessly!",
-      isFree: true,
-      url: "https://qr.mmusa.org",
-      image: "/images/qr.jpeg",
-      icon: <QrCode size={20} />,
-      color: "#f59e0b",
-    },
-    {
-      title: "KyarKwet",
-      desc: "Experience the deep strategy of traditional Myanmar Draughts (Kyarkwet) right on your smartphone, played vertically on a unique custom board. Challenge your mind by capturing one, two, or even three pieces in a single move to promote your piece to a powerful King. Master two distinct game modes—take control of the board in classic Myanmar Draughts or test your tactical survival in Tiger vs. Cows!",
-      isFree: true,
-      url: "https://kyar.mmusa.org",
-      image: "/images/kyar.jpeg",
-      icon: <Crown size={20} />,
-      color: "#800674",
-    },
-    {
-      title: "Chess",
-      desc: "Play chess your way by challenging either friends locally or playing against intelligent AI opponents. Connect seamlessly online to match with remote players and friends anywhere in the world. Elevate your strategy with real-time AI move suggestions and analysis designed to improve your gameplay.",
-      isFree: true,
-      url: "https://chess.mmusa.org",
-      image: "/images/chess.jpeg",
-      icon: <ChessKing size={20} />,
-      color: "#800674",
-    },
-    {
-      title: "LifeManager",
-      desc: "LifeManager securely stores and organizes all your essential personal information in one convenient place. From home and vehicle details to work, office, government, and banking records, it keeps your vital data structured and easily accessible. Experience hassle-free management and stay completely in control of your daily life.",
-      isFree: true,
-      url: "https://lifemanager.mmusa.org",
-      image: "/images/lifemanager.jpeg",
-      icon: <Crown size={20} />,
-      color: "#068076",
-    },
-    {
-      title: "USLife",
-      desc: "USLife tracks your income, expenses, and monthly budget effortlessly to help you stay on top of your finances. It also enables you to quickly locate nearby essentials, including restaurants, hospitals, gyms, gas stations, churches, grocery stores, urgent care centers, and police stations. Simplify your daily living and navigate your surroundings with ultimate ease.",
-      isFree: true,
-      url: "https://uslife.mmusa.org",
-      image: "/images/uslife.jpeg",
-      icon: <Grid3X3 size={20} />,
-      color: "#068014",
-    },
-    {
-      title: "MMCal",
-      desc: "Explore full year-by-year Myanmar calendars complete with waxing/waning dates, Sabbath days, and national festivals. Effortlessly manage both traditional cultural holidays and your personal events in one place. Customize your calendar with personal notes, birthdays, and important reminders today.",
-      isFree: true,
-      url: "https://cal.mmusa.org",
-      image: "/images/cal.jpeg",
-      icon: <Calendar size={20} />,
-      color: "#068014",
-    },
-    {
-      title: "SaleReport",
-      desc: "Track your inventory items in detail with automated record-keeping for income, expenses, and stock movements. Easily manage daily business operations, multiple branch locations, and staff assignments from a single platform. Gain full control and insights into your business growth with our comprehensive sales reporting system.",
-      isFree: true,
-      url: "https://sales.mmusa.org",
-      image: "/images/sales.jpeg",
-      icon: <ChartBar size={20} />,
-      color: "#068014",
-    },
-    {
-title: "Daily Scheduler",
-desc: "စနစ်ကျတဲ့ တစ်နေ့တာကို ဖန်တီးဖို့ Focus Timer ပါဝင်တဲ့ Scheduler",
-url: "https://remember.mmusa.org", // Family Vault ထဲမှာပဲ Tab အနေနဲ့ ရှိနေမှာမို့လို့ပါ
-image: "/images/sales.jpeg",
-icon: <Clock size={20} />,
-color: "#3b82f6",
-isFree: true
-}
-  ];
+const apps = [
+  {
+    title: "ReMember",
+    desc: "Designed for modern living, this app lets you schedule birthday reminders and holiday/event preparations for family, friends, and team members. Keep your home running smoothly with dedicated shopping lists for all your essential household purchases. Bring everyone closer together by collecting and sharing your future dreams all in one convenient place.",
+    color: "#0789d0",
+    isFree: false, // Premium ($3.99)
+    url: "https://remember.mmusa.org",
+    image: "/images/remember.jpeg",
+    icon: <Heart size={20} />,
+    color: "#ff4b5c",
+  },
+  {
+    title: "Ledger",
+    desc: "Keep your finances organized effortless with quick weekly tracking built for busy individuals. Ledger streamlines tax preparation by mapping your records straight to the exact fields on tax forms. Save time and avoid headaches whether you're doing your own taxes or handing structured reports to your CPA.",
+    color: "#10b981",
+    isFree: false,
+    url: "https://ledger.mmusa.org",
+    image: "/images/ledger.jpeg",
+    icon: <Calculator size={20} />,
+    color: "#3b82f6",
+  },
+  {
+    title: "DocKeeper",
+    desc: "Safely organize and store all your vital personal documents in one secure location. Easily categorize important files related to your home, vehicle, taxes, employment, government IDs, and residency records. Designed for quick access and peace of mind, this app ensures you never lose track of your essential paperwork.",
+    color: "#f6c13b",
+    isFree: false,
+    url: "https://dockeeper.mmusa.org",
+    image: "/images/dockeeper.jpeg",
+    icon: <BookOpen size={20} />,
+    color: "#10b981",
+  },
+  {
+    title: "NexQR",
+    desc: "Easily generate custom QR codes for your Wi-Fi networks, events, digital business cards (vCard), and cryptocurrency wallets in seconds. Customize your designs, share instantly, and streamline how you connect with others. Download now to turn your information into smart, scannable QR codes effortlessly!",
+    isFree: true,
+    url: "https://qr.mmusa.org",
+    image: "/images/qr.jpeg",
+    icon: <QrCode size={20} />,
+    color: "#f59e0b",
+  },
+  {
+    title: "KyarKwet",
+    desc: "Experience the deep strategy of traditional Myanmar Draughts (Kyarkwet) right on your smartphone, played vertically on a unique custom board. Challenge your mind by capturing one, two, or even three pieces in a single move to promote your piece to a powerful King. Master two distinct game modes—take control of the board in classic Myanmar Draughts or test your tactical survival in Tiger vs. Cows!",
+    isFree: true,
+    url: "https://kyar.mmusa.org",
+    image: "/images/kyar.jpeg",
+    icon: <Crown size={20} />,
+    color: "#800674",
+  },
+  {
+    title: "Chess",
+    desc: "Play chess your way by challenging either friends locally or playing against intelligent AI opponents. Connect seamlessly online to match with remote players and friends anywhere in the world. Elevate your strategy with real-time AI move suggestions and analysis designed to improve your gameplay.",
+    isFree: true,
+    url: "https://chess.mmusa.org",
+    image: "/images/chess.jpeg",
+    icon: <ChessKing size={20} />,
+    color: "#800674",
+  },
+  {
+    title: "LifeManager",
+    desc: "LifeManager securely stores and organizes all your essential personal information in one convenient place. From home and vehicle details to work, office, government, and banking records, it keeps your vital data structured and easily accessible. Experience hassle-free management and stay completely in control of your daily life.",
+    isFree: true,
+    url: "https://lifemanager.mmusa.org",
+    image: "/images/lifemanager.jpeg",
+    icon: <Crown size={20} />,
+    color: "#068076",
+  },
+  {
+    title: "USLife",
+    desc: "USLife tracks your income, expenses, and monthly budget effortlessly to help you stay on top of your finances. It also enables you to quickly locate nearby essentials, including restaurants, hospitals, gyms, gas stations, churches, grocery stores, urgent care centers, and police stations. Simplify your daily living and navigate your surroundings with ultimate ease.",
+    isFree: true,
+    url: "https://uslife.mmusa.org",
+    image: "/images/uslife.jpeg",
+    icon: <Grid3X3 size={20} />,
+    color: "#068014",
+  },
+  {
+    title: "MMCal",
+    desc: "Explore full year-by-year Myanmar calendars complete with waxing/waning dates, Sabbath days, and national festivals. Effortlessly manage both traditional cultural holidays and your personal events in one place. Customize your calendar with personal notes, birthdays, and important reminders today.",
+    isFree: true,
+    url: "https://cal.mmusa.org",
+    image: "/images/cal.jpeg",
+    icon: <Calendar size={20} />,
+    color: "#068014",
+  },
+  {
+    title: "SaleReport",
+    desc: "Track your inventory items in detail with automated record-keeping for income, expenses, and stock movements. Easily manage daily business operations, multiple branch locations, and staff assignments from a single platform. Gain full control and insights into your business growth with our comprehensive sales reporting system.",
+    isFree: true,
+    url: "https://sales.mmusa.org",
+    image: "/images/sales.jpeg",
+    icon: <ChartBar size={20} />,
+    color: "#068014",
+  },
+  {
+    title: "Daily Scheduler",
+    desc: "စနစ်ကျတဲ့ တစ်နေ့တာကို ဖန်တီးဖို့ Focus Timer ပါဝင်တဲ့ Scheduler",
+    url: "https://remember.mmusa.org", // Family Vault ထဲမှာပဲ Tab အနေနဲ့ ရှိနေမှာမို့လို့ပါ
+    image: "/images/sales.jpeg",
+    icon: <Clock size={20} />,
+    color: "#3b82f6",
+    isFree: true,
+  },
+];
 
-  // --- YouTube Data ---
-  const youtubeCategories = [
-    {
-      title: "နည်းပညာပိုင်းဆိုင်ရာ",
-      channels: [
-        {
-          name: "MMUSA Tech Tips",
-          embedId: "dQw4w9WgXcQ",
-          desc: "နည်းပညာပိုင်းဆိုင်ရာ ဗဟုသုတများ",
-        },
-        {
-          name: "Programming for Beginners",
-          embedId: "7S_6v-F0XwA",
-          desc: "ကုဒ်ဒင် အခြေခံလေ့လာရန်",
-        },
-        {
-          name: "English for Success",
-          embedId: "dQw4w9WgXcQ",
-          desc: "နေ့စဉ်သုံး အင်္ဂလိပ်စာ",
-        },
-      ],
-    },
-    {
-      title: "ဘာသာစကားနှင့် အထွေထွေ",
-      channels: [
-        {
-          name: "English for Success",
-          embedId: "dQw4w9WgXcQ",
-          desc: "နေ့စဉ်သုံး အင်္ဂလိပ်စာ",
-        },
-        {
-          name: "MMUSA Tech Tips",
-          embedId: "dQw4w9WgXcQ",
-          desc: "နည်းပညာပိုင်းဆိုင်ရာ ဗဟုသုတများ",
-        },
-        {
-          name: "Programming for Beginners",
-          embedId: "7S_6v-F0XwA",
-          desc: "ကုဒ်ဒင် အခြေခံလေ့လာရန်",
-        },
-      ],
-    },
-  ];
+// --- YouTube Data ---
+const youtubeCategories = [
+  {
+    title: "FrontEnd Web Developement",
+    channels: [
+      {
+        name: "HTML Tutorial",
+        embedId: "2u4q2vDLiU0",
+        desc: "HTML Tutorial For Beginners: HTML Crash Course (2026)",
+      },
+      {
+        name: "HTML & CSS – Full Course",
+        embedId: "lI3iZ5xMII8",
+        desc: "Web Development with HTML & CSS – Full Course for Beginners (2026)",
+      },
+      {
+        name: "Git & GitHub",
+        embedId: "mAFoROnOfHs",
+        desc: "Git & GitHub Crash Course for Beginners [2026]",
+      },
+    ],
+  },
+  {
+    title: "BackEnd Web Developement",
+    channels: [
+      {
+        name: "Node JS Tutorial",
+        embedId: "FPJzYFgexJA",
+        desc: "Node JS Tutorial for Beginners 2026 [Learn Node JS from Scratch]",
+      },
+      {
+        name: "SQL Tutorial",
+        embedId: "h0nxCDiD-zg",
+        desc: "SQL Tutorial for Beginners",
+      },
+      {
+        name: "APIs for Beginners",
+        embedId: "WXsD0ZgxjRw",
+        desc: "APIs for Beginners - How to use an API (Full Course / Tutorial)",
+      },
+    ],
+  },
+];
 
-  // --- Courses Data ---
-  const courses = [
-    {
-      title: "Full Stack Web Development",
-      desc: `ဒီသင်တန်းက JavaScript ကိုအခြေခံပြီး FrontEnd, BackEnd, FullStack တွေကို သင်ပေးပါသည်။ ဒီသင်တန်းမှာ -
-1. HTML, CSS, JavaScript
-2. Git & GitHub
-3. Markdown
-4. NodeJS
-5. MongoDB ...`,
-      instructor: "Lynn",
-      price: "50,000",
-      isFree: false,
-      duration: "12h 45m",
-      level: "Intermediate",
-      lessons: "45",
-      image:
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
-      icon: <Info size={20} />,
-      color: "#674c04",
-    },
-    {
-      title: "Graphic Design Masterclass",
-      desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
-      instructor: "Htet",
-      price: "Free",
-      isFree: true,
-      duration: "10h 55m",
-      level: "Pro",
-      lessons: "25",
-      image:
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
-      icon: <CheckCircle size={20} />,
-      color: "#08899a",
-    },
-    {
-      title: "Full Stack Web Development",
-      desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
-      instructor: "Myo",
-      price: "50,000",
-      isFree: false,
-      duration: "15h 40m",
-      level: "Beginner",
-      lessons: "35",
-      image:
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
-      icon: <Crown size={20} />,
-      color: "#674c04",
-    },
-    {
-      title: "Graphic Design Masterclass",
-      desc: "စာရွက်စာတမ်းများကို စနစ်တကျ သိမ်းဆည်းရန် React မှာ setHovered(true) လို့ ခိုင်းလိုက်တဲ့အခါ Browser က ငါ setHovered ဆိုတာ ဘယ်သူလဲ မသိဘူး လို့ ပြန်ပြောတာပါ။ အခု ကျွန်တော်တို့က const [hovered, setHovered] = useState(false); လို့ ရေးလိုက်တဲ့အတွက် -",
-      instructor: "မထက်ထက်",
-      price: "Free",
-      isFree: true,
-      duration: "14h 45m",
-      level: "Advanced",
-      lessons: "32",
-      image:
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800",
-      icon: <PaintBucket size={20} />,
-      color: "#850796",
-    },
-  ];
+// --- Courses Data ---
+const courses = [
+  {
+    title: "FrontEnd Web Developer",
+    desc: `Master the core foundations of modern web development by building responsive and interactive websites using HTML, CSS, and JavaScript. Gain hands-on experience with Git and GitHub to manage your code and showcase your portfolio to future employers. Start your developer journey today and turn your creative ideas into fully functional web applications!`,
+    instructor: "MM",
+    price: "$2,000",
+    isFree: false,
+    duration: "60hr",
+    level: "Beginner to Pro",
+    lessons: "25",
+    image: "/images/frontEnd.jpeg",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="#e34f26"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z" />
+      </svg>
+    ),
+    color: "#045567",
+  },
+  {
+    title: "BackEnd Web Developer",
+    desc: "Build robust, scalable server-side applications using Node.js while mastering database management with both SQL and NoSQL (MongoDB). Learn how to write secure APIs and seamlessly handle complex data logic for modern web applications. Master source code management and collaborative workflows using Git and GitHub to showcase your backend portfolio to top tech employers!",
+    instructor: "MM",
+    price: "$2,000",
+    isFree: false,
+    duration: "60hr",
+    level: "Beginner to Pro",
+    lessons: "25",
+    image: "/images/backEnd.jpeg",
+    icon: <FileCode size={20} />,
+    color: "#08899a",
+  },
+  {
+    title: "Full Stack Web Developer",
+    desc: "Learn to write clean, professional code while building dynamic websites and full-featured web applications from scratch. You will develop strong problem-solving skills by tackling real-world challenges across both frontend and backend systems. Master the end-to-end development process to transform your ideas into fully functional digital solutions.",
+    instructor: "MM",
+    price: "$2,000",
+    isFree: false,
+    duration: "60hr",
+    level: "Beginner to Pro",
+    lessons: "25",
+    image: "/images/fullStack.jpeg",
+    icon: <Crown size={20} />,
+    color: "#674c04",
+  },
+  {
+    title: "Canva AI Video",
+    desc: "Unlock your creativity with Canva by leveraging advanced AI tools like Gemini, ChatGPT, and Google AI Studio to generate unique images and custom logos effortlessly. Bring your static designs to life with smooth animations that grab attention and add professional flair to any project. Seamlessly edit and produce eye-catching videos tailored to your exact vision, all within an intuitive workspace.",
+    instructor: "MM",
+    price: "$2,000",
+    isFree: false,
+    duration: "40hr",
+    level: "Beginner to Pro",
+    lessons: "20",
+    image: "/images/canvaAI.jpeg",
+    icon: <PaintBucket size={20} />,
+    color: "#850796",
+  },
+];
 
 const Portal = () => {
   const navigate = useNavigate();
@@ -257,8 +259,6 @@ const Portal = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  
 
   return (
     <div style={styles.pageWrapper}>
@@ -533,9 +533,13 @@ const AppCard = ({ data }) => {
           style={styles.cardImg}
           alt={data.title}
           onError={(e) => {
-            if (e.target.src !== "https://via.placeholder.com/400x200?text=No+Image+Found") {
-    e.target.src = "https://via.placeholder.com/400x200?text=No+Image+Found";
-  }
+            if (
+              e.target.src !==
+              "https://via.placeholder.com/400x200?text=No+Image+Found"
+            ) {
+              e.target.src =
+                "https://via.placeholder.com/400x200?text=No+Image+Found";
+            }
           }}
         />
 
