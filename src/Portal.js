@@ -31,19 +31,7 @@ import {
   ChessKing,
 } from "lucide-react";
 
-const Portal = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("apps");
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [selectedCourse, setSelectedCourse] = useState(null);
-
-  React.useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // --- Apps Data ---
+// --- Apps Data ---
   const apps = [
     {
       title: "ReMember",
@@ -138,6 +126,15 @@ const Portal = () => {
       icon: <ChartBar size={20} />,
       color: "#068014",
     },
+    {
+title: "Daily Scheduler",
+desc: "စနစ်ကျတဲ့ တစ်နေ့တာကို ဖန်တီးဖို့ Focus Timer ပါဝင်တဲ့ Scheduler",
+url: "https://remember.mmusa.org", // Family Vault ထဲမှာပဲ Tab အနေနဲ့ ရှိနေမှာမို့လို့ပါ
+image: "/images/sales.jpeg",
+icon: <Clock size={20} />,
+color: "#3b82f6",
+isFree: true
+}
   ];
 
   // --- YouTube Data ---
@@ -249,6 +246,20 @@ const Portal = () => {
     },
   ];
 
+const Portal = () => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("apps");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  
+
   return (
     <div style={styles.pageWrapper}>
       <header style={styles.header}>
@@ -351,7 +362,7 @@ const Portal = () => {
           <div style={styles.gridContainer}>
             {courses.map((course, index) => (
               <CourseCard
-                key={course.id}
+                key={index}
                 data={course}
                 onEnroll={(data) => setSelectedCourse(data)}
               />
@@ -522,8 +533,9 @@ const AppCard = ({ data }) => {
           style={styles.cardImg}
           alt={data.title}
           onError={(e) => {
-            e.target.src =
-              "https://via.placeholder.com/400x200?text=No+Image+Found";
+            if (e.target.src !== "https://via.placeholder.com/400x200?text=No+Image+Found") {
+    e.target.src = "https://via.placeholder.com/400x200?text=No+Image+Found";
+  }
           }}
         />
 

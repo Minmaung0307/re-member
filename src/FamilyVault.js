@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { auth, googleProvider, db, storage } from "./firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import SmartScheduler from "./SmartScheduler";
 import {
   signInWithPopup, // ဒါလေး ပါသွားပါပြီ
   signInWithRedirect,
@@ -44,6 +45,7 @@ import {
   X,
   Trash2,
   CheckSquare,
+  Clock,
 } from "lucide-react";
 
 function FamilyVault() {
@@ -235,21 +237,6 @@ function FamilyVault() {
           },
           { merge: true },
         );
-
-        // --- (၃) User List Listener ---
-        // လူဟောင်းရော လူသစ်ရောအတွက် familyCode ရှိရင် Listener စဖွင့်မယ်
-        if (finalFamilyCode || userFamilyCode) {
-          const targetCode = finalFamilyCode || userFamilyCode;
-          onSnapshot(
-            query(
-              collection(db, "users"),
-              where("familyCode", "==", targetCode),
-            ),
-            (snap) => {
-              setUsers(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-            },
-          );
-        }
       } else {
         // Logout ဖြစ်သွားရင် ရှင်းထုတ်မယ်
         setUserFamilyCode(null);
@@ -776,6 +763,22 @@ function FamilyVault() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // ယနေ့ ၀ နာရီ ၀ မိနစ်
 
+  const handleKick = async (targetUser) => {
+    // 🌟 window.confirm အဟောင်းကို ဖြုတ်ပစ်လိုက်ပါပြီ 🌟
+    try {
+      const userRef = doc(db, "users", targetUser.id);
+      await updateDoc(userRef, {
+        familyId: null,
+        familyCode: "",
+        role: "Member",
+      });
+      alert("Removed successfully. ✨");
+    } catch (error) {
+      console.error("Kick Error:", error);
+      alert("Something went wrong.");
+    }
+  };
+
   users.forEach((u) => {
     if (!u.birthday || !u.birthday.includes("/")) return;
 
@@ -799,33 +802,14 @@ function FamilyVault() {
     const diffTime = bdayThisYear.getTime() - today.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-    // 🌟 Debug လုပ်ရန် Console မှာ အဖြေထုတ်ကြည့်မယ်
-    console.log(
-      `Check - Name: ${u.displayName}, Days Remaining: ${diffDays} days`,
-    );
-
     if (diffDays === 0) {
       todayBDays.push(u);
     } else if (diffDays > 0 && diffDays <= 14) {
       upcomingBDays.push({ ...u, daysLeft: diffDays });
     }
-  });
 
-  const handleKick = async (targetUser) => {
-    // 🌟 window.confirm အဟောင်းကို ဖြုတ်ပစ်လိုက်ပါပြီ 🌟
-    try {
-      const userRef = doc(db, "users", targetUser.id);
-      await updateDoc(userRef, {
-        familyId: null,
-        familyCode: "",
-        role: "Member",
-      });
-      alert("Removed successfully. ✨");
-    } catch (error) {
-      console.error("Kick Error:", error);
-      alert("Something went wrong.");
-    }
-  };
+    console.log(`Check - Name: ${u.displayName}, Days Remaining: ${diffDays} days`);
+  });
 
   const isAdmin = user?.email === "minmaung0307@gmail.com";
 
@@ -1268,6 +1252,13 @@ function FamilyVault() {
                   </div>
                 </div>
               )}
+
+              {activeTab === "scheduler" && (
+  <SmartScheduler
+    userFamilyCode={userFamilyCode}
+    setStatusModal={setStatusModal} 
+  />
+)}
 
               {activeTab === "admin" && (
                 <div
@@ -2727,6 +2718,13 @@ function FamilyVault() {
             >
               <CheckSquare size={22} />
             </button>
+            <button
+  onClick={() => setActiveTab("scheduler")} 
+  style={activeTab === "scheduler" ? activeTabBtn : tabBtn}
+>
+  <Clock size={22} />
+  <span>Plan</span>
+</button>
             <button
               onClick={() => setActiveTab("admin")}
               style={activeTab === "admin" ? activeTabBtn : tabBtn}
