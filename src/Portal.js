@@ -5,31 +5,33 @@ import CourseEnrollPage from "./components/CourseEnrollPage";
 // import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import {
-  Heart,
-  QrCode,
-  FileText,
-  BookText,
-  Wallet,
-  Calculator,
-  Gift,
-  Play,
-  Video,
-  Youtube,
-  LayoutGrid,
-  Info,
-  BookOpen,
   ArrowRight,
-  Star,
-  Crown,
-  Grid3X3,
-  Gamepad2,
+  BookOpen,
+  BookText,
   Clock,
   CheckCircle,
-  PaintBucket,
   Calendar,
   ChartBar,
   ChessKing,
+  Crown,
+  Calculator,
   FileCode,
+  FileText,
+  Grid3X3,
+  Gamepad2,
+  Gift,
+  Heart,
+  Info,
+  PaintBucket,
+  Play,
+  PlayCircle,
+  Rocket,
+  Star,
+  QrCode,
+  LayoutGrid,
+  Wallet,
+  Video,
+  Youtube,
 } from "lucide-react";
 
 // --- Apps Data ---
@@ -248,6 +250,84 @@ const courses = [
   },
 ];
 
+const AboutSection = () => {
+  return (
+    <div style={styles.aboutWrapper}>
+      <div style={styles.aboutHero}>
+        <h1 style={styles.aboutMainTitle}>
+          Empower Your Journey. <br />
+          <span style={{ color: "#3b82f6" }}>Master Your Future.</span>
+        </h1>
+        <p style={styles.aboutSubTitle}>
+          Welcome to MMUSA, your personal digital toolkit for growth. We believe
+          that with the right tools, anyone can transform their life.
+        </p>
+      </div>
+
+      <div style={styles.statsGrid}>
+        <div style={styles.statCard}>
+          <div style={{ ...styles.iconCircle, backgroundColor: "#e0f2fe" }}>
+            <Rocket color="#3b82f6" />
+          </div>
+          <h3 style={{ marginBottom: "10px" }}>Applications</h3>
+          <p style={{ fontSize: "13px", color: "#64748b" }}>
+            Digital instruments designed to help you work smarter and streamline
+            your daily life.
+          </p>
+        </div>
+        <div style={styles.statCard}>
+          <div style={{ ...styles.iconCircle, backgroundColor: "#dcfce7" }}>
+            <PlayCircle color="#10b981" />
+          </div>
+          <h3 style={{ marginBottom: "10px" }}>Knowledge</h3>
+          <p style={{ fontSize: "13px", color: "#64748b" }}>
+            High-value insights and tech tips to help you absorb new information
+            in minutes.
+          </p>
+        </div>
+        <div style={styles.statCard}>
+          <div style={{ ...styles.iconCircle, backgroundColor: "#fef3c7" }}>
+            <BookOpen color="#f59e0b" />
+          </div>
+          <h3 style={{ marginBottom: "10px" }}>Mastery</h3>
+          <p style={{ fontSize: "13px", color: "#64748b" }}>
+            Structured roadmaps led by experts to take you from beginner to
+            professional mastery.
+          </p>
+        </div>
+      </div>
+
+      <div style={styles.motivationContent}>
+        <h2 style={styles.contentHeader}>
+          Why MMUSA? Because You Deserve More.
+        </h2>
+        <p style={styles.contentText}>
+          ကျွန်တော်တို့ MMUSA မှာရှိတဲ့ Apps တွေ၊ ဗီဒီယိုတွေနဲ့ သင်တန်းတွေဟာ
+          ရိုးရိုး Digital ပစ္စည်းတွေတင် မဟုတ်ပါဘူး။ သင့်ဘဝရဲ့ တစ်နေရာရာမှာ
+          မဖြစ်မနေ အထောက်အကူပြုပေးမယ့်{" "}
+          <strong style={{ color: "#1e293b" }}>
+            "ရင်းနှီးမြှုပ်နှံမှုတွေ"
+          </strong>{" "}
+          ဖြစ်ပါတယ်။
+        </p>
+        <p style={styles.contentText}>
+          Think of MMUSA as your <strong>Personal Digital Toolkit</strong>.
+          Whether it’s a skill you learn from a course or an app that helps you
+          organize your business, MMUSA is right there with you, supporting your
+          progress every step of the way.
+        </p>
+      </div>
+
+      <div style={styles.finalQuote}>
+        <p>
+          "Don’t just watch the future happen —{" "}
+          <strong style={{ color: "#1e293b" }}>Create it.</strong>"
+        </p>
+      </div>
+    </div>
+  );
+};
+
 const Portal = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("apps");
@@ -377,15 +457,7 @@ const Portal = () => {
         )}
 
         {/* --- About Tab --- */}
-        {activeTab === "about" && (
-          <div style={styles.aboutBox}>
-            <h2>About MMUSA</h2>
-            <p>
-              မြန်မာလူငယ်များအတွက် နည်းပညာနှင့် လူမှုရေးဆိုင်ရာ အထောက်အကူပြု
-              Apps များကို တစ်နေရာတည်းတွင် စုစည်းပေးထားသော Portal ဖြစ်ပါသည်။
-            </p>
-          </div>
-        )}
+        {activeTab === "about" && <AboutSection />}
       </main>
 
       <footer style={styles.footer}>
@@ -1590,6 +1662,75 @@ const styles = {
     cursor: "pointer",
     boxSizing: "border-box",
     transition: "background-color 0.3s ease",
+  },
+  aboutWrapper: {
+    maxWidth: "1000px",
+    margin: "0 auto",
+    padding: "40px 20px",
+    textAlign: "center",
+  },
+  aboutHero: { marginBottom: "60px" },
+  aboutMainTitle: {
+    fontSize: "32px",
+    fontWeight: "800",
+    color: "#1e293b",
+    lineHeight: "1.2",
+    marginBottom: "20px",
+  },
+  aboutSubTitle: {
+    fontSize: "16px",
+    color: "#64748b",
+    lineHeight: "1.6",
+    maxWidth: "700px",
+    margin: "0 auto",
+  },
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "20px",
+    marginBottom: "60px",
+  },
+  statCard: {
+    padding: "30px",
+    backgroundColor: "#fff",
+    borderRadius: "24px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+    textAlign: "center",
+  },
+  iconCircle: {
+    width: "50px",
+    height: "50px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 auto 15px",
+  },
+  motivationContent: {
+    textAlign: "left",
+    backgroundColor: "#fff",
+    padding: "40px",
+    borderRadius: "30px",
+    border: "1px solid #f1f5f9",
+    marginBottom: "40px",
+  },
+  contentHeader: {
+    fontSize: "22px",
+    fontWeight: "700",
+    color: "#1e293b",
+    marginBottom: "20px",
+  },
+  contentText: {
+    fontSize: "15px",
+    color: "#475569",
+    lineHeight: "1.8",
+    marginBottom: "20px",
+  },
+  finalQuote: {
+    fontSize: "18px",
+    color: "#3b82f6",
+    fontStyle: "italic",
+    marginTop: "40px",
   },
 };
 
