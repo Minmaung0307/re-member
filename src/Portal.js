@@ -38,6 +38,7 @@ import {
 const apps = [
   {
     title: "ReMember",
+    dateAdded: "2026-08-25",
     desc: "Designed for modern living, this app lets you schedule birthday reminders and holiday/event preparations for family, friends, and team members. Keep your home running smoothly with dedicated shopping lists for all your essential household purchases. Bring everyone closer together by collecting and sharing your future dreams all in one convenient place.",
     color: "#0789d0",
     isFree: false, // Premium ($3.99)
@@ -48,6 +49,7 @@ const apps = [
   },
   {
     title: "Ledger",
+    dateAdded: "2026-08-25",
     desc: "Keep your finances organized effortless with quick weekly tracking built for busy individuals. Ledger streamlines tax preparation by mapping your records straight to the exact fields on tax forms. Save time and avoid headaches whether you're doing your own taxes or handing structured reports to your CPA.",
     color: "#10b981",
     isFree: false,
@@ -58,6 +60,7 @@ const apps = [
   },
   {
     title: "DocKeeper",
+    dateAdded: "2026-08-25",
     desc: "Safely organize and store all your vital personal documents in one secure location. Easily categorize important files related to your home, vehicle, taxes, employment, government IDs, and residency records. Designed for quick access and peace of mind, this app ensures you never lose track of your essential paperwork.",
     color: "#f6c13b",
     isFree: false,
@@ -68,6 +71,7 @@ const apps = [
   },
   {
     title: "NexQR",
+    dateAdded: "2026-08-25",
     desc: "Easily generate custom QR codes for your Wi-Fi networks, events, digital business cards (vCard), and cryptocurrency wallets in seconds. Customize your designs, share instantly, and streamline how you connect with others. Download now to turn your information into smart, scannable QR codes effortlessly!",
     isFree: true,
     url: "https://qr.mmusa.org",
@@ -77,6 +81,7 @@ const apps = [
   },
   {
     title: "KyarKwet",
+    dateAdded: "2026-08-25",
     desc: "Experience the deep strategy of traditional Myanmar Draughts (Kyarkwet) right on your smartphone, played vertically on a unique custom board. Challenge your mind by capturing one, two, or even three pieces in a single move to promote your piece to a powerful King. Master two distinct game modes—take control of the board in classic Myanmar Draughts or test your tactical survival in Tiger vs. Cows!",
     isFree: true,
     url: "https://kyar.mmusa.org",
@@ -86,6 +91,7 @@ const apps = [
   },
   {
     title: "Chess",
+    dateAdded: "2026-08-25",
     desc: "Play chess your way by challenging either friends locally or playing against intelligent AI opponents. Connect seamlessly online to match with remote players and friends anywhere in the world. Elevate your strategy with real-time AI move suggestions and analysis designed to improve your gameplay.",
     isFree: true,
     url: "https://chess.mmusa.org",
@@ -95,6 +101,7 @@ const apps = [
   },
   {
     title: "LifeManager",
+    dateAdded: "2026-08-25",
     desc: "LifeManager securely stores and organizes all your essential personal information in one convenient place. From home and vehicle details to work, office, government, and banking records, it keeps your vital data structured and easily accessible. Experience hassle-free management and stay completely in control of your daily life.",
     isFree: true,
     url: "https://lifemanager.mmusa.org",
@@ -104,6 +111,7 @@ const apps = [
   },
   {
     title: "USLife",
+    dateAdded: "2026-08-25",
     desc: "USLife tracks your income, expenses, and monthly budget effortlessly to help you stay on top of your finances. It also enables you to quickly locate nearby essentials, including restaurants, hospitals, gyms, gas stations, churches, grocery stores, urgent care centers, and police stations. Simplify your daily living and navigate your surroundings with ultimate ease.",
     isFree: true,
     url: "https://uslife.mmusa.org",
@@ -113,6 +121,7 @@ const apps = [
   },
   {
     title: "MMCal",
+    dateAdded: "2026-08-25",
     desc: "Explore full year-by-year Myanmar calendars complete with waxing/waning dates, Sabbath days, and national festivals. Effortlessly manage both traditional cultural holidays and your personal events in one place. Customize your calendar with personal notes, birthdays, and important reminders today.",
     isFree: true,
     url: "https://cal.mmusa.org",
@@ -122,6 +131,7 @@ const apps = [
   },
   {
     title: "SaleReport",
+    dateAdded: "2026-08-25",
     desc: "Track your inventory items in detail with automated record-keeping for income, expenses, and stock movements. Easily manage daily business operations, multiple branch locations, and staff assignments from a single platform. Gain full control and insights into your business growth with our comprehensive sales reporting system.",
     isFree: true,
     url: "https://sales.mmusa.org",
@@ -131,6 +141,7 @@ const apps = [
   },
   {
     title: "Daily Scheduler",
+    dateAdded: "2026-08-25",
     desc: "စနစ်ကျတဲ့ တစ်နေ့တာကို ဖန်တီးဖို့ Focus Timer ပါဝင်တဲ့ Scheduler",
     url: "https://remember.mmusa.org", // Family Vault ထဲမှာပဲ Tab အနေနဲ့ ရှိနေမှာမို့လို့ပါ
     image: "/images/sales.jpeg",
@@ -149,16 +160,19 @@ const youtubeCategories = [
         name: "HTML Tutorial",
         embedId: "2u4q2vDLiU0",
         desc: "HTML Tutorial For Beginners: HTML Crash Course (2026)",
+        dateAdded: "2026-08-28",
       },
       {
         name: "HTML & CSS – Full Course",
         embedId: "lI3iZ5xMII8",
         desc: "Web Development with HTML & CSS – Full Course for Beginners (2026)",
+        dateAdded: "2026-08-28",
       },
       {
         name: "Git & GitHub",
         embedId: "mAFoROnOfHs",
         desc: "Git & GitHub Crash Course for Beginners [2026]",
+        dateAdded: "2026-08-28",
       },
     ],
   },
@@ -169,16 +183,19 @@ const youtubeCategories = [
         name: "Node JS Tutorial",
         embedId: "FPJzYFgexJA",
         desc: "Node JS Tutorial for Beginners 2026 [Learn Node JS from Scratch]",
+        dateAdded: "2026-08-28",
       },
       {
         name: "SQL Tutorial",
         embedId: "h0nxCDiD-zg",
         desc: "SQL Tutorial for Beginners",
+        dateAdded: "2026-08-28",
       },
       {
         name: "APIs for Beginners",
         embedId: "WXsD0ZgxjRw",
         desc: "APIs for Beginners - How to use an API (Full Course / Tutorial)",
+        dateAdded: "2026-08-28",
       },
     ],
   },
@@ -188,6 +205,7 @@ const youtubeCategories = [
 const courses = [
   {
     title: "FrontEnd Web Developer",
+    dateAdded: "2026-08-25",
     desc: `Master the core foundations of modern web development by building responsive and interactive websites using HTML, CSS, and JavaScript. Gain hands-on experience with Git and GitHub to manage your code and showcase your portfolio to future employers. Start your developer journey today and turn your creative ideas into fully functional web applications!`,
     instructor: "MM",
     price: "$2,000",
@@ -211,6 +229,7 @@ const courses = [
   },
   {
     title: "BackEnd Web Developer",
+    dateAdded: "2026-08-25",
     desc: "Build robust, scalable server-side applications using Node.js while mastering database management with both SQL and NoSQL (MongoDB). Learn how to write secure APIs and seamlessly handle complex data logic for modern web applications. Master source code management and collaborative workflows using Git and GitHub to showcase your backend portfolio to top tech employers!",
     instructor: "MM",
     price: "$2,000",
@@ -224,6 +243,7 @@ const courses = [
   },
   {
     title: "Full Stack Web Developer",
+    dateAdded: "2026-08-25",
     desc: "Learn to write clean, professional code while building dynamic websites and full-featured web applications from scratch. You will develop strong problem-solving skills by tackling real-world challenges across both frontend and backend systems. Master the end-to-end development process to transform your ideas into fully functional digital solutions.",
     instructor: "MM",
     price: "$2,000",
@@ -237,6 +257,7 @@ const courses = [
   },
   {
     title: "Canva AI Video",
+    dateAdded: "2026-08-25",
     desc: "Unlock your creativity with Canva by leveraging advanced AI tools like Gemini, ChatGPT, and Google AI Studio to generate unique images and custom logos effortlessly. Bring your static designs to life with smooth animations that grab attention and add professional flair to any project. Seamlessly edit and produce eye-catching videos tailored to your exact vision, all within an intuitive workspace.",
     instructor: "MM",
     price: "$2,000",
@@ -328,11 +349,33 @@ const AboutSection = () => {
   );
 };
 
+// အသစ်တင်ထားတာ ၁၄ ရက်အတွင်း ဟုတ်မဟုတ် စစ်တဲ့ function
+const checkIfNew = (dateString) => {
+  if (!dateString) return false;
+  const today = new Date();
+  const addedDate = new Date(dateString);
+  const diffTime = today - addedDate;
+  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  return diffDays >= 0 && diffDays <= 14; // ၁၄ ရက်အတွင်းဆိုရင် true ပြန်ပေးမယ်
+};
+
 const Portal = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("apps");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [selectedCourse, setSelectedCourse] = useState(null);
+
+  // ၁။ Apps ကို အသစ်ဆုံးကနေ စီခြင်း
+  const sortedApps = [...apps].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+
+  // ၂။ Courses ကို အသစ်ဆုံးကနေ စီခြင်း
+  const sortedCourses = [...apps].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+
+  // ၃။ YouTube ကို Category အလိုက် ဗီဒီယိုအသစ်ဆုံးကနေ စီခြင်း
+  const sortedYouTube = youtubeCategories.map(category => ({
+    ...category,
+    channels: [...category.channels].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
+  }));
 
   React.useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -402,7 +445,7 @@ const Portal = () => {
         {/* --- Applications Tab --- */}
         {activeTab === "apps" && (
           <div style={styles.gridContainer}>
-            {apps.map((app, index) => (
+            {sortedApps.map((app, index) => (
               <AppCard key={index} data={app} />
             ))}
           </div>
@@ -410,7 +453,7 @@ const Portal = () => {
 
         {/* 🌟 YouTube Tab 🌟 */}
         {activeTab === "youtube" &&
-          youtubeCategories.map((cat) => (
+          sortedYouTube.map((cat) => (
             <div
               key={cat.title}
               style={{ width: "100%", marginBottom: "40px" }}
@@ -440,7 +483,7 @@ const Portal = () => {
         {/* --- Courses Tab --- */}
         {activeTab === "courses" && (
           <div style={styles.gridContainer}>
-            {courses.map((course, index) => (
+            {sortedCourses.map((course, index) => (
               <CourseCard
                 key={index}
                 data={course}
@@ -600,6 +643,8 @@ const AppCard = ({ data }) => {
       onClick={handleLaunchApp}
     >
       <div style={styles.imageContainer}>
+        {/* 🌟 NEW Sticker Logic */}
+  {checkIfNew(data.dateAdded) && <div style={styles.newBadge}>NEW</div>}
         <img
           src={data.image}
           style={styles.cardImg}
@@ -747,6 +792,8 @@ const CourseCard = ({ data, onEnroll }) => {
     >
       {/* 🖼️ Image Section */}
       <div style={styles.courseImageContainer}>
+        {/* 🌟 NEW Sticker Logic */}
+  {checkIfNew(data.dateAdded) && <div style={styles.newBadge}>NEW</div>}
         <img
           src={data.image}
           style={styles.courseImg}
@@ -871,32 +918,31 @@ const VideoCard = ({ video }) => {
 
   return (
     <div style={styles.card}>
-      {" "}
-      {/* styles.videoCard အစား styles.card ကိုသုံးတာ ပိုညီပါတယ် */}
-      <div
-        style={{
-          width: "100%",
-          height: "180px",
-          overflow: "hidden",
-          borderRadius: "15px 15px 0 0",
-        }}
-      >
-        <iframe
-          width="100%"
-          height="100%"
-          // 🌟 ဤနေရာတွင် လမ်းကြောင်းကို အမှန်ပြင်လိုက်ပါပြီ
-          src={`https://www.youtube.com/embed/${video.embedId}`}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title={video.name}
-          style={{ border: "none" }}
-        ></iframe>
+      {/* 🌟 Sticker အတွက် နေရာလွတ်ဖန်တီးရန် relative position သုံးမယ် */}
+      <div style={{ position: "relative", width: "100%", height: "180px" }}>
+        
+        {/* 🌟 ဗီဒီယိုအသစ်ဖြစ်ပါက NEW Sticker ပြမည့် Logic */}
+        {checkIfNew(video.dateAdded) && (
+          <div style={styles.newBadge}>NEW</div>
+        )}
+
+        <div style={{ width: "100%", height: "100%", overflow: "hidden", borderRadius: "15px 15px 0 0" }}>
+          <iframe
+            width="100%"
+            height="100%"
+            // 🌟 src လမ်းကြောင်းကို အမှန်ပြင်လိုက်ပါပြီ
+            src={`https://www.youtube.com/embed/${video.embedId}`}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={video.name}
+            style={{ border: "none" }}
+          ></iframe>
+        </div>
       </div>
+
       <div style={styles.cardContent}>
         <h3 style={styles.cardTitle}>{video.name}</h3>
-
-        {/* 🌟 Description - နှိပ်လိုက်ရင် အရှည်ကြီးဖြစ်သွားမယ် 🌟 */}
         <p
           style={isExpanded ? styles.cardDescFull : styles.cardDesc}
           onClick={() => setIsExpanded(!isExpanded)}
@@ -1731,6 +1777,23 @@ const styles = {
     color: "#3b82f6",
     fontStyle: "italic",
     marginTop: "40px",
+  },
+  newBadge: {
+    position: 'absolute',
+    bottom: '12px',
+    left: '12px',
+    background: 'linear-gradient(135deg, #ff4b5c 0%, #ff708d 100%)', // အနီရောင် Gradient
+    color: 'white',
+    padding: '4px 12px',
+    borderRadius: '10px',
+    fontSize: '11px',
+    fontWeight: '900',
+    letterSpacing: '1px',
+    zIndex: 50,
+    boxShadow: '0 4px 15px rgba(255, 75, 92, 0.4)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    // အနည်းငယ် တုန်ခါနေစေမည့် animation (Pulse)
+    animation: 'pulse 2s infinite',
   },
 };
 

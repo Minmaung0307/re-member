@@ -38,3 +38,9 @@ code {
 .launch-btn:hover svg {
   transform: translateX(5px); /* arrow လေးက ညာဘက်ကို တွန်းထွက်သွားမယ် */
 }
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
