@@ -37,6 +37,16 @@ import {
 // --- Apps Data ---
 const apps = [
   {
+  title: "Connected Abhidhamma",
+  dateAdded: "2026-09-20",
+  desc: "Connected Abhidhamma is a modern learning platform that connects the profound teachings of Abhidhamma with everyday life. Explore Paramattha Dhammas, Suttas, Yamaka and Paṭṭhāna, and practical SEL-based learning through clear, accessible resources. Designed to help learners understand, reflect on, and apply Dhamma in daily life, CA brings timeless Buddhist wisdom into a connected digital experience.",
+  color: "#B45309",
+  isFree: false, // Premium ($3.99)
+  url: "[**https://ca.mmusa.org**](https://ca.mmusa.org)",
+  image: "/images/lotus.png",
+  icon: <Compass size={20} />,
+},
+  {
     title: "ReMember",
     dateAdded: "2026-08-25",
     desc: "Designed for modern living, this app lets you schedule birthday reminders and holiday/event preparations for family, friends, and team members. Keep your home running smoothly with dedicated shopping lists for all your essential household purchases. Bring everyone closer together by collecting and sharing your future dreams all in one convenient place.",
@@ -369,7 +379,7 @@ const Portal = () => {
   const sortedApps = [...apps].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
 
   // ၂။ Courses ကို အသစ်ဆုံးကနေ စီခြင်း
-  const sortedCourses = [...apps].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+  const sortedCourses = [...courses].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
 
   // ၃။ YouTube ကို Category အလိုက် ဗီဒီယိုအသစ်ဆုံးကနေ စီခြင်း
   const sortedYouTube = youtubeCategories.map(category => ({
