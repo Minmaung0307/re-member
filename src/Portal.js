@@ -32,19 +32,40 @@ import {
   Wallet,
   Video,
   Youtube,
+  Compass,
 } from "lucide-react";
 
 // --- Apps Data ---
 const apps = [
   {
-  title: "Connected Abhidhamma",
+  title: "သာသနာလင်္ကာရ",
   dateAdded: "2026-09-20",
-  desc: "Connected Abhidhamma is a modern learning platform that connects the profound teachings of Abhidhamma with everyday life. Explore Paramattha Dhammas, Suttas, Yamaka and Paṭṭhāna, and practical SEL-based learning through clear, accessible resources. Designed to help learners understand, reflect on, and apply Dhamma in daily life, CA brings timeless Buddhist wisdom into a connected digital experience.",
+  desc: "Buddhist Scholar is a modern learning platform that connects the profound teachings of Abhidhamma with everyday life. Explore Paramattha Dhammas, Suttas, Yamaka and Paṭṭhāna, and practical SEL-based learning through clear, accessible resources. Designed to help learners understand, reflect on, and apply Dhamma in daily life, making ancient wisdom accessible to modern practitioners.",
   color: "#B45309",
   isFree: false, // Premium ($3.99)
-  url: "[**https://ca.mmusa.org**](https://ca.mmusa.org)",
-  image: "/images/lotus.png",
+  url: "https://ca.mmusa.org",
+  image: "/images/ca.jpeg",
   icon: <Compass size={20} />,
+},
+{
+  title: "DevCamp",
+  dateAdded: "2026-09-20",
+  desc: "DevCamp is an intensive, hands-on learning platform designed to empower aspiring developers and tech enthusiasts. Master modern software engineering, web development, and real-world project building through structured curriculums and practical challenges. Built to bridge the gap between theory and industry standards, helping learners launch and elevate their tech careers.",
+  color: "#2563EB", // နည်းပညာ (Tech) အတွက် ပိုမိုလိုက်ဖက်သော အရောင်ပြောင်းနိုင်သည်
+  isFree: false, // Premium ($3.99)
+  url: "https://dc.mmusa.org",
+  image: "/images/DevCamp.jpeg",
+  icon: <Compass size={20} />, // သို့မဟုတ် <Code size={20} />, <Terminal size={20} /> စသဖြင့်
+},
+{
+  title: "Shwe SarPay",
+  dateAdded: "2026-09-20",
+  desc: "Shwe SarPay is a comprehensive digital literature and reading platform dedicated to the richness of Myanmar's literary heritage. Discover curated collections of classic and contemporary Burmese literature, essays, poems, and educational books in an accessible digital format. Designed to foster a love for reading, preserve literary treasures, and connect readers with timeless knowledge.",
+  color: "#D97706", // ရွှေရောင် / စာပေနှင့် လိုက်ဖက်သော အရောင်ပြောင်းနိုင်သည်
+  isFree: false, // Premium ($3.99)
+  url: "https://shwe.mmusa.org",
+  image: "/images/ShweSarPay.jpeg",
+  icon: <Compass size={20} />, // သို့မဟုတ် <BookOpen size={20} />, <Library size={20} /> စသဖြင့်
 },
   {
     title: "ReMember",
