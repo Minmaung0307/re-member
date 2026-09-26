@@ -33,6 +33,7 @@ import {
   Video,
   Youtube,
   Compass,
+  Shield,
 } from "lucide-react";
 
 // --- Apps Data ---
@@ -66,6 +67,16 @@ const apps = [
   url: "https://shwe.mmusa.org",
   image: "/images/ShweSarPay.jpeg",
   icon: <Compass size={20} />, // သို့မဟုတ် <BookOpen size={20} />, <Library size={20} /> စသဖြင့်
+},
+{
+  title: "Family Vault",
+  dateAdded: "2026-09-20",
+  desc: "Family Vault is a secure digital sanctuary designed to protect, organize, and manage your family's most critical information. Safeguard vital documents, medical histories, financial records, and emergency contacts in an encrypted, centralized space. Designed to provide total peace of mind, ensuring your loved ones have seamless and secure access to essential data whenever needed.",
+  color: "#059669", // လုံခြုံရေးနှင့် စိတ်ချရမှုကို ကိုယ်စားပြုသည့် Emerald Green (သို့မဟုတ် #4F46E5 Indigo)
+  isFree: false, // Premium ($3.99)
+  url: "https://fvm.mmusa.org",
+  image: "/images/familyVault.jpeg", // ပုံနာမည် ပြောင်းလဲနိုင်သည်
+  icon: <Shield size={20} />, // လုံခြုံရေးအတွက် <Shield size={20} /> သို့မဟုတ် <Lock size={20} />
 },
   {
     title: "ReMember",
