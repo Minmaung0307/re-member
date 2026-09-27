@@ -8,15 +8,17 @@ import {
   ArrowRight,
   BookOpen,
   BookText,
-  Clock,
-  CheckCircle,
   Calendar,
+  CheckCircle,
   ChartBar,
   ChessKing,
+  Clock,
+  Code2,
   Crown,
   Calculator,
   FileCode,
   FileText,
+  Flower2,
   Grid3X3,
   Gamepad2,
   Gift,
@@ -34,50 +36,61 @@ import {
   Youtube,
   Compass,
   Shield,
+  Sun,
 } from "lucide-react";
 
 // --- Apps Data ---
 const apps = [
   {
-  title: "သာသနာလင်္ကာရ",
-  dateAdded: "2026-09-20",
-  desc: "Buddhist Scholar is a modern learning platform that connects the profound teachings of Abhidhamma with everyday life. Explore Paramattha Dhammas, Suttas, Yamaka and Paṭṭhāna, and practical SEL-based learning through clear, accessible resources. Designed to help learners understand, reflect on, and apply Dhamma in daily life, making ancient wisdom accessible to modern practitioners.",
-  color: "#B45309",
-  isFree: false, // Premium ($3.99)
-  url: "https://ca.mmusa.org",
-  image: "/images/ca.jpeg",
-  icon: <Compass size={20} />,
-},
-{
-  title: "DevCamp",
-  dateAdded: "2026-09-20",
-  desc: "DevCamp is an intensive, hands-on learning platform designed to empower aspiring developers and tech enthusiasts. Master modern software engineering, web development, and real-world project building through structured curriculums and practical challenges. Built to bridge the gap between theory and industry standards, helping learners launch and elevate their tech careers.",
-  color: "#2563EB", // နည်းပညာ (Tech) အတွက် ပိုမိုလိုက်ဖက်သော အရောင်ပြောင်းနိုင်သည်
-  isFree: false, // Premium ($3.99)
-  url: "https://dc.mmusa.org",
-  image: "/images/DevCamp.jpeg",
-  icon: <Compass size={20} />, // သို့မဟုတ် <Code size={20} />, <Terminal size={20} /> စသဖြင့်
-},
-{
-  title: "Shwe SarPay",
-  dateAdded: "2026-09-20",
-  desc: "Shwe SarPay is a comprehensive digital literature and reading platform dedicated to the richness of Myanmar's literary heritage. Discover curated collections of classic and contemporary Burmese literature, essays, poems, and educational books in an accessible digital format. Designed to foster a love for reading, preserve literary treasures, and connect readers with timeless knowledge.",
-  color: "#D97706", // ရွှေရောင် / စာပေနှင့် လိုက်ဖက်သော အရောင်ပြောင်းနိုင်သည်
-  isFree: false, // Premium ($3.99)
-  url: "https://shwe.mmusa.org",
-  image: "/images/ShweSarPay.jpeg",
-  icon: <Compass size={20} />, // သို့မဟုတ် <BookOpen size={20} />, <Library size={20} /> စသဖြင့်
-},
-{
-  title: "Family Vault",
-  dateAdded: "2026-09-20",
-  desc: "Family Vault is a secure digital sanctuary designed to protect, organize, and manage your family's most critical information. Safeguard vital documents, medical histories, financial records, and emergency contacts in an encrypted, centralized space. Designed to provide total peace of mind, ensuring your loved ones have seamless and secure access to essential data whenever needed.",
-  color: "#059669", // လုံခြုံရေးနှင့် စိတ်ချရမှုကို ကိုယ်စားပြုသည့် Emerald Green (သို့မဟုတ် #4F46E5 Indigo)
-  isFree: false, // Premium ($3.99)
-  url: "https://fvm.mmusa.org",
-  image: "/images/familyVault.jpeg", // ပုံနာမည် ပြောင်းလဲနိုင်သည်
-  icon: <Shield size={20} />, // လုံခြုံရေးအတွက် <Shield size={20} /> သို့မဟုတ် <Lock size={20} />
-},
+    title: "သာသနာလင်္ကာရ",
+    dateAdded: "2026-09-20",
+    desc: "Buddhist Scholar is a modern learning platform that connects the profound teachings of Abhidhamma with everyday life. Explore Paramattha Dhammas, Suttas, Yamaka and Paṭṭhāna, and practical SEL-based learning through clear, accessible resources. Designed to help learners understand, reflect on, and apply Dhamma in daily life, making ancient wisdom accessible to modern practitioners.",
+    color: "#C2410C",
+    isFree: false, // Premium ($3.99)
+    url: "https://ca.mmusa.org",
+    image: "/images/ca.jpeg",
+    icon: <Sun size={20} />,
+  },
+  {
+    title: "Buddhist Scholar Entry",
+    dateAdded: "2026-09-20",
+    desc: "Buddhist Scholar Entry is a foundational learning program designed to introduce students to the essential teachings of Buddhism in a clear and structured way. Explore fundamental Buddhist principles, Abhidhamma concepts, Suttas, and practical Dhamma applications through accessible lessons. Ideal for beginners and developing learners who want to build a strong foundation for deeper Buddhist study and apply the Buddha’s teachings meaningfully in everyday life.",
+    color: "#7C3AED",
+    isFree: false, // Premium ($3.99)
+    url: "https://entry.mmusa.org",
+    image: "/images/Entry.jpeg",
+    icon: <Flower2 size={20} />,
+  },
+  {
+    title: "DevCamp",
+    dateAdded: "2026-09-20",
+    desc: "DevCamp is an intensive, hands-on learning platform designed to empower aspiring developers and tech enthusiasts. Master modern software engineering, web development, and real-world project building through structured curriculums and practical challenges. Built to bridge the gap between theory and industry standards, helping learners launch and elevate their tech careers.",
+    color: "#2563EB", // နည်းပညာ (Tech) အတွက် ပိုမိုလိုက်ဖက်သော အရောင်ပြောင်းနိုင်သည်
+    isFree: false, // Premium ($3.99)
+    url: "https://dc.mmusa.org",
+    image: "/images/DevCamp.jpeg",
+    icon: <Code2 size={20} />,
+  },
+  {
+    title: "Shwe SarPay",
+    dateAdded: "2026-09-20",
+    desc: "Shwe SarPay is a comprehensive digital literature and reading platform dedicated to the richness of Myanmar's literary heritage. Discover curated collections of classic and contemporary Burmese literature, essays, poems, and educational books in an accessible digital format. Designed to foster a love for reading, preserve literary treasures, and connect readers with timeless knowledge.",
+    color: "#CA8A04", // ရွှေရောင် / စာပေနှင့် လိုက်ဖက်သော အရောင်ပြောင်းနိုင်သည်
+    isFree: false, // Premium ($3.99)
+    url: "https://shwe.mmusa.org",
+    image: "/images/ShweSarPay.jpeg",
+    icon: <BookText size={20} />,
+  },
+  {
+    title: "Family Vault",
+    dateAdded: "2026-09-20",
+    desc: "Family Vault is a secure digital sanctuary designed to protect, organize, and manage your family's most critical information. Safeguard vital documents, medical histories, financial records, and emergency contacts in an encrypted, centralized space. Designed to provide total peace of mind, ensuring your loved ones have seamless and secure access to essential data whenever needed.",
+    color: "#059669", // လုံခြုံရေးနှင့် စိတ်ချရမှုကို ကိုယ်စားပြုသည့် Emerald Green (သို့မဟုတ် #4F46E5 Indigo)
+    isFree: false, // Premium ($3.99)
+    url: "https://fvm.mmusa.org",
+    image: "/images/familyVault.jpeg", // ပုံနာမည် ပြောင်းလဲနိုင်သည်
+    icon: <Shield size={20} />, // လုံခြုံရေးအတွက် <Shield size={20} /> သို့မဟုတ် <Lock size={20} />
+  },
   {
     title: "ReMember",
     dateAdded: "2026-08-25",
@@ -408,15 +421,21 @@ const Portal = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
 
   // ၁။ Apps ကို အသစ်ဆုံးကနေ စီခြင်း
-  const sortedApps = [...apps].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+  const sortedApps = [...apps].sort(
+    (a, b) => new Date(b.dateAdded) - new Date(a.dateAdded),
+  );
 
   // ၂။ Courses ကို အသစ်ဆုံးကနေ စီခြင်း
-  const sortedCourses = [...courses].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded));
+  const sortedCourses = [...courses].sort(
+    (a, b) => new Date(b.dateAdded) - new Date(a.dateAdded),
+  );
 
   // ၃။ YouTube ကို Category အလိုက် ဗီဒီယိုအသစ်ဆုံးကနေ စီခြင်း
-  const sortedYouTube = youtubeCategories.map(category => ({
+  const sortedYouTube = youtubeCategories.map((category) => ({
     ...category,
-    channels: [...category.channels].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
+    channels: [...category.channels].sort(
+      (a, b) => new Date(b.dateAdded) - new Date(a.dateAdded),
+    ),
   }));
 
   React.useEffect(() => {
@@ -686,7 +705,7 @@ const AppCard = ({ data }) => {
     >
       <div style={styles.imageContainer}>
         {/* 🌟 NEW Sticker Logic */}
-  {checkIfNew(data.dateAdded) && <div style={styles.newBadge}>NEW</div>}
+        {checkIfNew(data.dateAdded) && <div style={styles.newBadge}>NEW</div>}
         <img
           src={data.image}
           style={styles.cardImg}
@@ -835,7 +854,7 @@ const CourseCard = ({ data, onEnroll }) => {
       {/* 🖼️ Image Section */}
       <div style={styles.courseImageContainer}>
         {/* 🌟 NEW Sticker Logic */}
-  {checkIfNew(data.dateAdded) && <div style={styles.newBadge}>NEW</div>}
+        {checkIfNew(data.dateAdded) && <div style={styles.newBadge}>NEW</div>}
         <img
           src={data.image}
           style={styles.courseImg}
@@ -962,13 +981,17 @@ const VideoCard = ({ video }) => {
     <div style={styles.card}>
       {/* 🌟 Sticker အတွက် နေရာလွတ်ဖန်တီးရန် relative position သုံးမယ် */}
       <div style={{ position: "relative", width: "100%", height: "180px" }}>
-        
         {/* 🌟 ဗီဒီယိုအသစ်ဖြစ်ပါက NEW Sticker ပြမည့် Logic */}
-        {checkIfNew(video.dateAdded) && (
-          <div style={styles.newBadge}>NEW</div>
-        )}
+        {checkIfNew(video.dateAdded) && <div style={styles.newBadge}>NEW</div>}
 
-        <div style={{ width: "100%", height: "100%", overflow: "hidden", borderRadius: "15px 15px 0 0" }}>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            overflow: "hidden",
+            borderRadius: "15px 15px 0 0",
+          }}
+        >
           <iframe
             width="100%"
             height="100%"
@@ -1821,21 +1844,21 @@ const styles = {
     marginTop: "40px",
   },
   newBadge: {
-    position: 'absolute',
-    bottom: '12px',
-    left: '12px',
-    background: 'linear-gradient(135deg, #ff4b5c 0%, #ff708d 100%)', // အနီရောင် Gradient
-    color: 'white',
-    padding: '4px 12px',
-    borderRadius: '10px',
-    fontSize: '11px',
-    fontWeight: '900',
-    letterSpacing: '1px',
+    position: "absolute",
+    bottom: "12px",
+    left: "12px",
+    background: "linear-gradient(135deg, #ff4b5c 0%, #ff708d 100%)", // အနီရောင် Gradient
+    color: "white",
+    padding: "4px 12px",
+    borderRadius: "10px",
+    fontSize: "11px",
+    fontWeight: "900",
+    letterSpacing: "1px",
     zIndex: 50,
-    boxShadow: '0 4px 15px rgba(255, 75, 92, 0.4)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: "0 4px 15px rgba(255, 75, 92, 0.4)",
+    border: "1px solid rgba(255, 255, 255, 0.3)",
     // အနည်းငယ် တုန်ခါနေစေမည့် animation (Pulse)
-    animation: 'pulse 2s infinite',
+    animation: "pulse 2s infinite",
   },
 };
 
