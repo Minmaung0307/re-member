@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { auth, googleProvider, db, storage } from "./firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import SmartScheduler from "./SmartScheduler";
+import StarterSamples from "./components/StarterSamples";
 import {
   signInWithPopup, // ဒါလေး ပါသွားပါပြီ
   signInWithRedirect,
@@ -985,6 +986,7 @@ function FamilyVault() {
                 maxWidth: activeTab === "workspace" ? "100%" : "850px",
               }}
             >
+              <StarterSamples userId={user.uid} tab={activeTab} darkMode={darkMode} />
               {activeTab === "feed" && (
                 <MainDashboard
                   posts={posts}
@@ -2695,41 +2697,52 @@ function FamilyVault() {
             }}
           >
             <button
+              aria-label="ပင်မ"
               onClick={() => setActiveTab("feed")}
               style={activeTab === "feed" ? activeTabBtn : tabBtn}
             >
               <Home size={22} />
+              <span className="rm-nav-label">ပင်မ</span>
             </button>
             <button
+              aria-label="ဓာတ်ပုံ"
               onClick={() => setActiveTab("gallery")}
               style={activeTab === "gallery" ? activeTabBtn : tabBtn}
             >
               <Palette size={22} />
+              <span className="rm-nav-label">ဓာတ်ပုံ</span>
             </button>
             <button
+              aria-label="ပွဲများ"
               onClick={() => setActiveTab("events")}
               style={activeTab === "events" ? activeTabBtn : tabBtn}
             >
               <Gift size={22} />
+              <span className="rm-nav-label">ပွဲများ</span>
             </button>
             <button
+              aria-label="လုပ်စရာ"
               onClick={() => setActiveTab("workspace")}
               style={activeTab === "workspace" ? activeTabBtn : tabBtn}
             >
               <CheckSquare size={22} />
+              <span className="rm-nav-label">လုပ်စရာ</span>
             </button>
             <button
-  onClick={() => setActiveTab("scheduler")} 
+  aria-label="အစီအစဉ်"
+              onClick={() => setActiveTab("scheduler")} 
   style={activeTab === "scheduler" ? activeTabBtn : tabBtn}
 >
   <Clock size={22} />
-  <span>Plan</span>
+  <span className="rm-nav-label">အစီအစဉ်</span>
 </button>
             <button
+              aria-label="ကိုယ်ရေး"
               onClick={() => setActiveTab("admin")}
               style={activeTab === "admin" ? activeTabBtn : tabBtn}
             >
               {isAdmin ? <ShieldCheck size={22} /> : <Users size={22} />}
+              <span className="rm-nav-label">ကိုယ်ရေး</span>
             </button>
           </div>
 

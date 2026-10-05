@@ -1,70 +1,60 @@
-# Getting Started with Create React App
+# MMUSA App Studio
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Two independent applications, extracted from the uploaded `24.zip`.
 
-## Available Scripts
+- **registry/** — redesigned, responsive app portfolio and project registry.
+- **re-member/** — original Re-Member application, with its root route dedicated to Re-Member. The portfolio component and hostname-dependent routing have been removed.
 
-In the project directory, you can run:
+## Run the registry
 
-### `npm start`
+Install Node.js 22.12 or newer, open a terminal in `registry`, then:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```sh
+npm ci
+npm run dev
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Open the local address shown in the terminal. For a production build, run `npm run build`; serve `dist/` using `npm run preview` or a static host. Do not open `index.html` directly from disk.
 
-### `npm test`
+The registry works immediately without Firebase setup. It starts with all **16 original app records** and their original descriptions, links, images, free/paid flags and dates. Existing lifecycle statuses were not supplied, so they start as **Unreviewed**. No repositories, accounts, emails, roles or user counts have been invented. Daily Scheduler remains listed but is explicitly identified as a feature within Re-Member.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Manage apps
 
-### `npm run build`
+Choose **Manage apps → Add a new app**. The editor has three sections:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. App details: name, description, launch URL, category, status, pricing, date and featured flag.
+2. Artwork: optional uploaded JPG/PNG/WebP, image URL, or automatic icon/gradient artwork with an adjustable accent. Images are resized locally; missing and broken images fall back automatically.
+3. Project management: repository/GitHub URL, Firebase project ID, account label, email, roles, users/audience and notes.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Search, category/status filtering, sorting, gallery/list views and saved apps are available. Export creates a JSON backup including private metadata; import merges by ID, validates the entire file first, and asks before updating matching records. Removing a record does not delete its deployed app or service accounts.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**Local mode** stores records in this browser and origin only. It has no authentication and is intended for personal use. Clearing browser data removes local edits; export backups regularly. Moving to a different port or device uses a different browser store. Do not store passwords, API secrets or recovery codes in project metadata. Exported files include private information.
 
-### `npm run eject`
+## Optional cloud mode with owner authentication
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Use a **separate Firebase project**, not the existing Re-Member project. The registry does not connect to or modify Re-Member's database.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. Create the registry Firebase project and a Web app. Enable Firestore and Google sign-in. Add your deployment domain (and localhost for development) to Authentication authorized domains.
+2. Copy `.env.example` to `.env.local` inside `registry`; fill in the four Web app configuration values. These Firebase client configuration values are not admin credentials.
+3. Sign in via Manage apps, then open Setup to see your Firebase UID. Set it as `VITE_ADMIN_UID`, and replace `REPLACE_WITH_OWNER_UID` in `firestore.rules` with the same UID.
+4. Deploy the registry's rules to this new project with `firebase deploy --only firestore:rules --project YOUR_REGISTRY_PROJECT_ID`. Until configured, the supplied rules deny all writes and private reads.
+5. Restart the development server or rebuild. Sign in as the owner. Choose **Setup → Import original apps** or import your exported local backup. The empty cloud collection is intentionally not automatically seeded.
+6. Build and deploy with `npm run build` and `firebase deploy --only hosting --project YOUR_REGISTRY_PROJECT_ID`.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Public metadata is stored in `apps`; admin-only metadata is stored in `appPrivate`. Private fields are not fetched for visitors. Firestore rules enforce owner-only edits and private reads. Public and private writes are batched together. Cloud imports are limited to 200 records per file. Uploaded images are compressed into the app record, with an encoded limit below Firestore's document limit; no Storage setup is needed. Public images and descriptions are, by design, public.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Keep the owner UID in the client and rules in sync. Client-side admin controls are convenience UI; deployed Firestore rules provide authorization. Firebase sign-in and production rules require configuration and were not exercised against your live services. No deployment has been performed.
 
-## Learn More
+## Re-Member
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Inside `re-member`, run `npm ci` then `npm start`; `npm run build` creates its original production build. Its existing Firebase configuration, screens, scheduler, family features and application logic are preserved. Its root now always opens the original `FamilyVault` component, which is the uploaded Re-Member implementation despite that internal filename. Existing `/family/*` URLs continue to resolve to this same app.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The original Firebase rules are preserved for compatibility, but they permit any authenticated user to read/write broadly; they are not the new registry rules. This redesign does not claim to audit or change Re-Member's existing security model. Deploy the two projects separately; use `remember.mmusa.org` for Re-Member and a separate domain for the registry.
 
-### Code Splitting
+## Validation
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+`cd registry && npm test` validates migration, metadata separation, safe URLs, optional images and malformed backups. `npm run build` builds the registry. See `VALIDATION.md` for the executed UI checks and limitations.
 
-### Analyzing the Bundle Size
+### Repeat browser checks
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Start the registry with `npm run dev` in one terminal. In another terminal in `registry`, run `npx playwright install chromium` once, then `npm run test:ui`. If Chrome is already installed, use `BROWSER_CHANNEL=chrome npm run test:ui` instead. The tests create an isolated browser session and exercise CRUD, image upload/fallback, local persistence, backups and narrow layouts. `TEST_URL` can override the default `http://127.0.0.1:5173`. Screenshots are written to `tests/screenshots/`.
